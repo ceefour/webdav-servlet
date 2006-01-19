@@ -474,7 +474,7 @@ public class WebdavServlet extends HttpServlet {
 			IWebdavStorage store) throws ServletException, IOException {
 
 		String path = getRelativePath(req);
-		if (resLocks.isLocked(path)) {
+		if (!resLocks.isLocked(path)) {
 
 			resp.addHeader("DAV", "1, 2");
 
@@ -505,7 +505,7 @@ public class WebdavServlet extends HttpServlet {
 		// Retrieve the resources
 
 		String path = getRelativePath(req);
-		if (resLocks.isLocked(path)) {
+		if (!resLocks.isLocked(path)) {
 
 			if (!store.objectExists(path)) {
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -589,7 +589,7 @@ public class WebdavServlet extends HttpServlet {
 			IOException {
 
 		String path = getRelativePath(req);
-		if (resLocks.isLocked(path)) {
+		if (!resLocks.isLocked(path)) {
 
 			if (store.isResource(path)) {
 				// path points to a file but ends with / or \
