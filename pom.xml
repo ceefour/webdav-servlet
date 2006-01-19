@@ -1,0 +1,158 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>webdav-servlet</groupId>
+	<artifactId>webdav-servlet</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0</version>
+	<name>WebDAV-Servlet</name>
+	<description>
+		a servlet that brings easy WebDAV access to any store, only 1 interface needs to be implemented
+	</description>
+	<url>http://sourceforge.net/projects/webdav-servlet</url>
+	<scm>
+		<connection>
+			scm:cvs:pserver:anonymous@cvs.sourceforge.net:/cvsroot/webdav-servlet
+		</connection>
+		<developerConnection>
+			ext:developername@cvs.sourceforge.net:/cvsroot/webdav-servlet
+		</developerConnection>
+		<url>http://cvs.sourceforge.net/viewcvs.py/webdav-servlet</url>
+	</scm>
+	<inceptionYear>2006</inceptionYear>
+	<mailingLists>
+		<mailingList>
+			<name>webdav-servlet-general</name>
+			<post>webdav-servlet-general@lists.sourceforge.net</post>
+			<subscribe>
+				http://lists.sourceforge.net/lists/listinfo/webdav-servlet-general
+			</subscribe>
+		</mailingList>
+	</mailingLists>
+	<developers>
+		<developer>
+			<name>Robert Erler</name>
+			<id>yavarin</id>
+			<email>yavarin(at)gmx(.)de</email>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<name>Stefan Groschupf</name>
+			<id>joa</id>
+			<email>sg@media-style.com</email>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>LICENSE.txt</url>
+		</license>
+	</licenses>
+	<organization>
+		<name>media-style</name>
+		<url>http://www.media-style.com/</url>
+	</organization>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>ant1</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<tasks>
+								<echo>
+									copy the readme.txt to the webapp folder
+								</echo>
+								<copy file="readme.txt"
+									todir="target/${artifactId}-${version}"
+									preservelastmodified="true" />
+								<echo>
+									copy the LICENSE.txt to the webapp folder
+								</echo>
+								<copy file="LICENSE.txt"
+									todir="target/${artifactId}-${version}"
+									preservelastmodified="true" />
+								<echo>
+									copy the sources to target/classes that they are included in the jar
+								</echo>
+								<copy todir="target/classes"
+									preservelastmodified="true">
+									<fileset dir="src/main/java" />
+								</copy>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>ant2</id>
+						<phase>package</phase>
+						<configuration>
+							<tasks>
+								<echo>
+									creating archive files with sources
+								</echo>
+								<zip
+									destfile="target/${artifactId}-${version}-src.zip">
+									<zipfileset
+										excludes="target/,bin/,trash/" dir="./"
+										prefix="${artifactId}-${version}/" />
+								</zip>
+								<tar
+									destfile="target/${artifactId}-${version}-src.tar">
+									<tarfileset
+										excludes="target/,bin/,trash/" dir="./"
+										prefix="${artifactId}-${version}/" />
+								</tar>
+								<gzip
+									src="target/${artifactId}-${version}-src.tar"
+									destfile="target/${artifactId}-${version}-src.tar.gz" />
+								<delete
+									file="target/${artifactId}-${version}-src.tar" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Maven Repository Switchboard</name>
+			<layout>default</layout>
+			<url>http://www.ibiblio.org/maven2</url>
+			<!--
+				<url>http://repo1.maven.org/maven2</url>
+			-->
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<!-- no tests existing...awwwww  -->
+		<!-- dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency-->
+		<dependency>
+			<groupId>tomcat</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>5.5.12</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>
