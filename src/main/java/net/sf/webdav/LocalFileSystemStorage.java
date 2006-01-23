@@ -1,5 +1,17 @@
-/**
- * 
+/*
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 package net.sf.webdav;
 
@@ -23,7 +35,7 @@ import java.util.ArrayList;
  * Reference Implementation of IWebdavStorage
  * 
  * @author joa
- * 
+ * @author re
  */
 public class LocalFileSystemStorage implements IWebdavStorage {
 
@@ -49,17 +61,17 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 		}
 		if (debug == 1)
 			System.out.println("LocalFileSystemStore.begin()");
-		if (LocalFileSystemStorage.root == null) {
+		if (root == null) {
 
 			String rootPath = (String) parameters.get(ROOTPATH_PARAMETER);
 			if (rootPath == null) {
 				throw new Exception("missing parameter: " + ROOTPATH_PARAMETER);
 			}
-			LocalFileSystemStorage.root = new File(rootPath);
-			if (!LocalFileSystemStorage.root.exists()) {
-				if (!LocalFileSystemStorage.root.mkdirs()) {
+			root = new File(rootPath);
+			if (!root.exists()) {
+				if (!root.mkdirs()) {
 					throw new Exception(ROOTPATH_PARAMETER + ": "
-							+ LocalFileSystemStorage.root
+							+ root
 							+ " does not exist and could not be created");
 				}
 			}
@@ -113,8 +125,6 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 	/**
 	 * @throws IOException
 	 *             if the folder cannot be created
-	 * @throws SecurityException
-	 *             if the creation of the folder is not permitted
 	 */
 	public void createFolder(String uri) throws IOException {
 		if (debug == 1)

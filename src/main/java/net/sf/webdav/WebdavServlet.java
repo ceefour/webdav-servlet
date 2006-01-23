@@ -206,6 +206,7 @@ public class WebdavServlet extends HttpServlet {
 		System.out.println("-----------\n request: method = " + method);
 		System.out.println("Zeit: " + System.currentTimeMillis());
 		System.out.println("path: " + getRelativePath(req));
+		System.out.println("-----------");
 		// ***************LOGGING*************
 
 		try {
@@ -259,6 +260,8 @@ public class WebdavServlet extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ServletException(e);
+		} catch (Throwable t){
+			t.printStackTrace();
 		}
 
 	}
@@ -873,11 +876,15 @@ public class WebdavServlet extends HttpServlet {
 							sendReport(req, resp, errorList);
 						}
 
+					}else{
+						System.out.println("error while copying");
+						resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 					}
 				} finally {
 					resLocks.unlock(path);
 				}
 			} else {
+				System.out.println("could not lock "+path );
 				resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
@@ -1027,7 +1034,7 @@ public class WebdavServlet extends HttpServlet {
 				}
 
 			} finally {
-				resLocks.unlock(path);
+				resLocks.unlock(destinationPath);
 			}
 		} else {
 			resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
