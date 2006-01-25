@@ -29,8 +29,7 @@
 			<param-name>rootpath</param-name>
 			<param-value>d:/tmp/</param-value>
 			<description>
-				place where to store the webdavcontent on the local
-				filesystem
+				place where to store the webdavcontent on the filesystem
 			</description>
 		</init-param>
 		<init-param>

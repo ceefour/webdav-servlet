@@ -2,10 +2,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>webdav-servlet</groupId>
+	<groupId>net.sf.webdav-servlet</groupId>
 	<artifactId>webdav-servlet</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.1</version>
 	<name>WebDAV-Servlet</name>
 	<description>
 		a servlet that brings easy WebDAV access to any store, only 1 interface needs to be implemented
@@ -77,12 +77,17 @@
 									todir="target/${artifactId}-${version}"
 									preservelastmodified="true" />
 								<echo>
-									copy the sources to target/classes that they are included in the jar
-								</echo>
-								<copy todir="target/classes"
-									preservelastmodified="true">
-									<fileset dir="src/main/java" />
-								</copy>
+									copy the LICENSE.txt to target/classes/ , to include it in the .jar
+								</echo> 						
+								<copy file="LICENSE.txt"
+									 todir="target/classes" 
+									 preservelastmodified="true"/>
+								<echo>
+									copy the readme.txt to target/classes/ , to include it in the .jar
+								</echo> 						
+								<copy file="readme.txt"
+									 todir="target/classes" 
+									 preservelastmodified="true"/>									 
 							</tasks>
 						</configuration>
 						<goals>
@@ -96,25 +101,25 @@
 						<configuration>
 							<tasks>
 								<echo>
-									creating archive files with sources
+									creating archive files with complete project
 								</echo>
 								<zip
-									destfile="target/${artifactId}-${version}-src.zip">
+									destfile="target/${artifactId}-${version}-project.zip">
 									<zipfileset
 										excludes="target/,bin/,trash/" dir="./"
 										prefix="${artifactId}-${version}/" />
 								</zip>
 								<tar
-									destfile="target/${artifactId}-${version}-src.tar">
+									destfile="target/${artifactId}-${version}-project.tar">
 									<tarfileset
 										excludes="target/,bin/,trash/" dir="./"
 										prefix="${artifactId}-${version}/" />
 								</tar>
 								<gzip
-									src="target/${artifactId}-${version}-src.tar"
-									destfile="target/${artifactId}-${version}-src.tar.gz" />
+									src="target/${artifactId}-${version}-project.tar"
+									destfile="target/${artifactId}-${version}-project.tar.gz" />
 								<delete
-									file="target/${artifactId}-${version}-src.tar" />
+									file="target/${artifactId}-${version}-project.tar" />
 							</tasks>
 						</configuration>
 						<goals>
