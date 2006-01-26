@@ -160,4 +160,41 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+	<reporting>
+	<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-project-info-reports-plugin</artifactId>
+			<reportSets>
+				<reportSet>
+					<reports>
+						<report>dependencies</report>
+						<report>project-team</report>
+						<report>mailing-list</report>
+						<!--report>cim</report-->
+						<!--report>issue-tracking</report-->
+						<report>license</report>
+						<report>scm</report>
+					</reports>
+				</reportSet>
+			</reportSets>
+		</plugin>
+		<!-- plugin>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>surefire-report-maven-plugin</artifactId>
+		</plugin-->
+		<!-- ERROR: Can't find bundle for base name checkstyle-report, locale de_DE 
+			is fixed but the new version is not yet released -->
+		<!--plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-checkstyle-plugin</artifactId>
+
+		</plugin-->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>2.0-beta-3</version>
+		</plugin>
+	</plugins> 
+</reporting>
 </project>
