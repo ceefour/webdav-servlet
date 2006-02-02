@@ -28,6 +28,7 @@
 			<subscribe>
 				http://lists.sourceforge.net/lists/listinfo/webdav-servlet-general
 			</subscribe>
+			<archive>http://sourceforge.net/mailarchive/forum.php?forum_id=47560</archive>
 		</mailingList>
 	</mailingLists>
 	<developers>
