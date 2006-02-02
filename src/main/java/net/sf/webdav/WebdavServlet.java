@@ -160,6 +160,10 @@ public class WebdavServlet extends HttpServlet {
 
 	private IWebdavStorage store = null;
 
+	private static final String DEBUG_PARAMETER = "servletDebug";
+
+	private static int fdebug = -1;
+
 	private WebdavStoreFactory fFactory;
 
 	private Hashtable fParameter;
@@ -202,19 +206,41 @@ public class WebdavServlet extends HttpServlet {
 
 		String method = req.getMethod();
 
-		// ***************LOGGING*************
-		// System.out.println("-----------\n request: method = " + method);
-		// System.out.println("Zeit: " + System.currentTimeMillis());
-		// System.out.println("path: " + getRelativePath(req));
-		// System.out.println("-----------");
-		// ***************LOGGING*************
+		if (fdebug == 1) {
+			System.out.println("-----------");
+			System.out.println("WebdavServlet\n request: method = " + method);
+			System.out.println("Zeit: " + System.currentTimeMillis());
+			System.out.println("path: " + getRelativePath(req));
+			System.out.println("-----------");
+			Enumeration e = req.getHeaderNames();
+			while (e.hasMoreElements()) {
+				String s = (String) e.nextElement();
+				System.out.println("header: " + s + " " + req.getHeader(s));
+			}
+			e = req.getAttributeNames();
+			while (e.hasMoreElements()) {
+				String s = (String) e.nextElement();
+				System.out.println("attribute: " + s + " "
+						+ req.getAttribute(s));
+			}
+			e = req.getParameterNames();
+			while (e.hasMoreElements()) {
+				String s = (String) e.nextElement();
+				System.out.println("parameter: " + s + " "
+						+ req.getParameter(s));
+			}
+		}
 
 		try {
 			if (store == null) {
 				store = fFactory.getStore();
-			}
-			if (resLocks == null) {
 				resLocks = new ResourceLocks(store);
+				String debugString = (String) fParameter.get(DEBUG_PARAMETER);
+				if (debugString == null) {
+					fdebug = 0;
+				} else {
+					fdebug = Integer.parseInt(debugString);
+				}
 			}
 			store.begin(req.getUserPrincipal(), fParameter);
 			store.checkAuthentication();
@@ -510,13 +536,14 @@ public class WebdavServlet extends HttpServlet {
 				+ req.toString();
 		String path = getRelativePath(req);
 		if (resLocks.lock(path, lockOwner, false)) {
-			// tries to lock ALL resources when path is the root !
+			// tries to share-lock ALL resources when path is the root !
 			try {
 				if (!store.objectExists(path)) {
 					resp
 							.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-					return; // we do not to continue since there is no root
-							// resource
+					return;
+					// we do not to continue since there is no root
+					// resource
 				}
 
 				Vector properties = null;
@@ -610,6 +637,59 @@ public class WebdavServlet extends HttpServlet {
 						resp.sendError(HttpServletResponse.SC_NOT_FOUND, req
 								.getRequestURI());
 					} else {
+
+						// setting headers
+						long lastModified = store.getLastModified(path)
+								.getTime();
+						resp.setDateHeader("last-modified", lastModified);
+
+						long resourceLength = store.getResourceLength(path);
+						if (resourceLength > 0) {
+							if (resourceLength <= Integer.MAX_VALUE) {
+								resp.setContentLength((int) resourceLength);
+							} else {
+								resp.setHeader("content-length", ""
+										+ resourceLength);
+								// is "content-length" the right header? is long
+								// a valid format?
+							}
+
+						}
+
+						resp.setHeader("ETag", getETag(path, store));
+
+						String mimeType = getServletContext().getMimeType(path);
+						if (mimeType != null) {
+							resp.setContentType(mimeType);
+						}
+
+						// resp.setHeader
+						// ("Content-Language", "en-us");
+						// resp.setHeader("name","nameFromHeader");
+						// resp.setHeader("parentname",getParentPath(path));
+						// resp.setHeader("href","hrefFromHeader");
+						// resp.setHeader("ishidden","f");
+						// resp.setHeader("iscollection","f");
+						// resp.setHeader("isreadonly","f");
+						// resp.setHeader("getcontenttype","contenttypeFromHeader");
+						// resp.setHeader("getcontentlanguage", "en-us");
+						// resp.setHeader("contentclass","contentclassFromHeader");
+						// resp.setDateHeader("creationdate",
+						// store.getLastModified(
+						// path).getTime());
+						// resp.setDateHeader("getlastmodified",
+						// store.getLastModified(
+						// path).getTime());
+						// resp.setDateHeader("lastaccessed",
+						// store.getLastModified(
+						// path).getTime());
+						// resp.setHeader("getcontentlength",""+store.getResourceLength(path));
+						// resp.setHeader("resourcetype","resourcetypeFromHeader");
+						// resp.setHeader("isstructureddocument","f");
+						// resp.setHeader("defaultdocument","f");
+						// resp.setHeader("displayname","displaynameFromHeader");
+						// resp.setHeader("isroot","f");
+
 						if (includeBody) {
 							OutputStream out = resp.getOutputStream();
 							InputStream in = store.getResourceContent(path);
@@ -626,22 +706,14 @@ public class WebdavServlet extends HttpServlet {
 
 								in.close();
 								out.flush();
-
+								out.close();
 							}
 						}
-						resp.setContentType("text/plain");
-						resp.setContentLength((int) store
-								.getResourceLength(path));
-						resp.setHeader("ETag", getETag(path, store));
-						resp.setHeader("Last-Modified", store.getLastModified(
-								path).toString());
-						resp.setContentType(getServletContext().getMimeType(
-								path));
 					}
 				} else {
 					if (includeBody && store.isFolder(path)) {
 						// TODO some folder response (for browsers, DAV tools
-						// use propfind)
+						// use propfind) in html?
 						OutputStream out = resp.getOutputStream();
 						String[] children = store.getChildrenNames(path);
 						StringBuffer childrenTemp = new StringBuffer();
