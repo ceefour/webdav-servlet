@@ -63,7 +63,7 @@ INSTALLATION & CONFIGURATION
    and copy your .jar to /WEB-INF/lib/
   -with /* as servlet mapping, every request to the webapp is handled by
    the servlet. change this if you want
-  -with the "storeDebug" parameter you can trigger the store implementation
+  -with the "storeDebug" parameter you can trigger the reference store implementation
    to spam at every method call. this parameter is optional and can be omitted
   -authentication is done by the servlet-container. If you need it, you have to
    add the appropriate sections to the web.xml

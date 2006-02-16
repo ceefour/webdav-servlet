@@ -5,7 +5,7 @@
 	<groupId>net.sf.webdav-servlet</groupId>
 	<artifactId>webdav-servlet</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1</version>
+	<version>1.2</version>
 	<name>WebDAV-Servlet</name>
 	<description>
 		a servlet that brings easy WebDAV access to any store, only 1 interface needs to be implemented
@@ -82,13 +82,7 @@
 								</echo> 						
 								<copy file="LICENSE.txt"
 									 todir="target/classes" 
-									 preservelastmodified="true"/>
-								<echo>
-									copy the readme.txt to target/classes/ , to include it in the .jar
-								</echo> 						
-								<copy file="readme.txt"
-									 todir="target/classes" 
-									 preservelastmodified="true"/>									 
+									 preservelastmodified="true"/>							 
 							</tasks>
 						</configuration>
 						<goals>

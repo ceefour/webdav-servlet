@@ -1,7 +1,7 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.1 2006-01-19 16:07:06 yavarin Exp $
- * $Revision: 1.1 $
- * $Date: 2006-01-19 16:07:06 $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.2 2006-02-16 09:17:00 yavarin Exp $
+ * $Revision: 1.2 $
+ * $Date: 2006-02-16 09:17:00 $
  *
  * ====================================================================
  *
@@ -46,24 +46,13 @@ public interface IWebdavStorage {
      * called by (@link WebdavStoreAdapter} at the beginning of each request.
      * 
      * 
-     * @param service
-     *            the Slide service that feeds this store, to be used in
-     *            ServiceAccessException
      * @param principal
      *            the principal that started this request or <code>null</code>
      *            if there is non available
-     * @param connection
-     *            connection to the underlying persistence storage or
-     *            <code>null</code> if either not applicable or not available
      * @param parameters
      *            Hashtable containing the parameters' names and associated
-     *            values as configured with this store
-     * @throws ServiceAccessException
-     *             if any kind of internal error or any unexpected state occurs
-     * @exception ServiceParameterErrorException
-     *                Incorrect service parameter
-     * @exception ServiceParameterMissingException
-     *                Service parameter missing
+     *            values configured in the <init-param> from web.xml
+     * @throws Exception
      */
     void begin(Principal principal,  Hashtable parameters)
             throws Exception;
@@ -207,7 +196,7 @@ public interface IWebdavStorage {
      * 
      * @param folderUri
      *            URI of the folder
-     * @return array containing names of the children
+     * @return array containing names of the children or null if it is no folder
      * @throws IOException
      * 				if something goes wrong on the store level
      */
