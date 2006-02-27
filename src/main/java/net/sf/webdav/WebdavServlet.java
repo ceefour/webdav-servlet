@@ -289,12 +289,21 @@ public class WebdavServlet extends HttpServlet {
 		}
 
 	}
-
-	// protected long getLastModified
-
+	
 	/**
 	 * goes recursive through all folders. used by propfind
 	 * 
+	 * @param currentPath
+	 *            the current path
+	 * @param req
+	 *            HttpServletRequest
+	 * @param generatedXML
+	 * @param propertyFindType
+	 * @param properties
+	 * @param depth 
+	 *             depth of the propfind
+	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
 	private void recursiveParseProperties(String currentPath,
 			HttpServletRequest req,
@@ -325,6 +334,7 @@ public class WebdavServlet extends HttpServlet {
 	 * @param propNode
 	 * @param type
 	 * @param req
+	 *            HttpServletRequest
 	 * @throws ServletException
 	 */
 	private void getPropertyNodeAndType(Node propNode, int type,
@@ -366,6 +376,13 @@ public class WebdavServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * creates the parent path from the given path by removing the last
+	 * '/' and everything after that
+	 * 
+	 * @param path the path
+	 * @return parent path
+	 */
 	private String getParentPath(String path) {
 		int slash = path.lastIndexOf('/');
 		if (slash != -1) {
@@ -453,7 +470,7 @@ public class WebdavServlet extends HttpServlet {
 	 * reads the depth header from the request and returns it as a int
 	 * 
 	 * @param req
-	 * @return
+	 * @return the depth from the depth header
 	 */
 	private int getDepth(HttpServletRequest req) {
 		int depth = INFINITY;
@@ -473,7 +490,7 @@ public class WebdavServlet extends HttpServlet {
 	/**
 	 * removes a / at the end of the path string, if present
 	 * 
-	 * @param path
+	 * @param path the path
 	 * @return the path without trailing /
 	 */
 	private String getCleanPath(String path) {
@@ -491,13 +508,11 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
 	protected void doOptions(HttpServletRequest req, HttpServletResponse resp
-			) throws ServletException, IOException {
+			) throws IOException {
 
 		String lockOwner = "doOptions" + System.currentTimeMillis()
 				+ req.toString();
@@ -506,7 +521,7 @@ public class WebdavServlet extends HttpServlet {
 			try {
 				resp.addHeader("DAV", "1, 2");
 
-				String methodsAllowed = determineMethodsAllowed(path,fStore.objectExists(path),fStore.isFolder(path));
+				String methodsAllowed = determineMethodsAllowed(fStore.objectExists(path),fStore.isFolder(path));
 				resp.addHeader("Allow", methodsAllowed);
 				resp.addHeader("MS-Author-Via", "DAV");
 			} finally {
@@ -524,10 +539,9 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
+	 * @throws ServletException
 	 */
 	protected void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -591,14 +605,12 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
 	protected void doProppatch(HttpServletRequest req,
 			HttpServletResponse resp)
-			throws ServletException, IOException {
+			throws IOException {
 
 		if (readOnly) {
 			resp.sendError(WebdavStatus.SC_FORBIDDEN);
@@ -616,14 +628,13 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
+	 * @param includeBody
+	 *            if the resource content should be included or not (GET/HEAD)
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp,
-			boolean includeBody) throws ServletException,
-			IOException {
+			boolean includeBody) throws IOException {
 
 		String lockOwner = "doGet" + System.currentTimeMillis()
 				+ req.toString();
@@ -661,34 +672,6 @@ public class WebdavServlet extends HttpServlet {
 						if (mimeType != null) {
 							resp.setContentType(mimeType);
 						}
-
-						//resp.setHeader("ETag", getETag(path));
-						// resp.setHeader
-						// ("Content-Language", "en-us");
-						// resp.setHeader("name","nameFromHeader");
-						// resp.setHeader("parentname",getParentPath(path));
-						// resp.setHeader("href","hrefFromHeader");
-						// resp.setHeader("ishidden","f");
-						// resp.setHeader("iscollection","f");
-						// resp.setHeader("isreadonly","f");
-						// resp.setHeader("getcontenttype","contenttypeFromHeader");
-						// resp.setHeader("getcontentlanguage", "en-us");
-						// resp.setHeader("contentclass","contentclassFromHeader");
-						// resp.setDateHeader("creationdate",
-						// store.getLastModified(
-						// path).getTime());
-						// resp.setDateHeader("getlastmodified",
-						// store.getLastModified(
-						// path).getTime());
-						// resp.setDateHeader("lastaccessed",
-						// store.getLastModified(
-						// path).getTime());
-						// resp.setHeader("getcontentlength",""+store.getResourceLength(path));
-						// resp.setHeader("resourcetype","resourcetypeFromHeader");
-						// resp.setHeader("isstructureddocument","f");
-						// resp.setHeader("defaultdocument","f");
-						// resp.setHeader("displayname","displaynameFromHeader");
-						// resp.setHeader("isroot","f");
 
 						if (includeBody) {
 							OutputStream out = resp.getOutputStream();
@@ -746,12 +729,10 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		doGet(req, resp, false);
 	}
 
@@ -762,12 +743,10 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doMkcol(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doMkcol(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if (req.getContentLength() != 0) {
 			resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
@@ -789,7 +768,7 @@ public class WebdavServlet extends HttpServlet {
 
 							} else {
 								// object already exists
-								String methodsAllowed = determineMethodsAllowed(path,true,fStore.isFolder(path));
+								String methodsAllowed = determineMethodsAllowed(true,fStore.isFolder(path));
 								resp.addHeader("Allow", methodsAllowed);
 								resp
 										.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
@@ -817,12 +796,10 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if (!readOnly) {
 			String path = getRelativePath(req);
@@ -856,11 +833,9 @@ public class WebdavServlet extends HttpServlet {
 	 *            The servlet response we are creating
 	 * 
 	 * @exception IOException
-	 *                if an input/output error occurs
-	 * @exception ServletException
-	 *                if a servlet-specified error occurs
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (!readOnly) {
 			String path = getRelativePath(req);
 			String parentPath = getParentPath(path);
@@ -903,12 +878,10 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doCopy(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doCopy(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		String path = getRelativePath(req);
 		if (!readOnly) {
@@ -937,12 +910,11 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
 	 * @throws ServletException
 	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
-	protected void doMove(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doMove(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (!readOnly) {
 
 			String path = getRelativePath(req);
@@ -977,6 +949,7 @@ public class WebdavServlet extends HttpServlet {
 
 	/**
 	 * Generate the namespace declarations.
+	 * @return the namespace declaration
 	 */
 	private String generateNamespaceDeclarations() {
 		return " xmlns=\"" + DEFAULT_NAMESPACE + "\"";
@@ -989,11 +962,13 @@ public class WebdavServlet extends HttpServlet {
 	 *            Servlet request
 	 * @param resp
 	 *            Servlet response
-	 * @return boolean true if the copy is successful
+	 * @return true if the copy is successful
+	 * @throws IOException
+	 *             if an error in the underlying store occurs
 	 */
 	private boolean copyResource(HttpServletRequest req,
 			HttpServletResponse resp)
-			throws ServletException, IOException {
+			throws IOException {
 
 		// Parsing destination header
 
@@ -1139,16 +1114,12 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
-	 * @throws ServletException
 	 */
 	private void copy(String sourcePath, String destinationPath,
 			Hashtable errorList, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException,
-			ServletException {
+			HttpServletResponse resp) throws IOException{
 
 		if (fStore.isResource(sourcePath)) {
 			fStore.createResource(destinationPath);
@@ -1169,18 +1140,21 @@ public class WebdavServlet extends HttpServlet {
 	 * destination path
 	 * 
 	 * @param sourcePath
+	 *            where to read
 	 * @param destinationPath
+	 *            where to write
 	 * @param errorList
+	 * 			  all errors that ocurred
 	 * @param req
+	 *            HttpServletRequest
 	 * @param resp
-	 * @param store
+	 *            HttpServletResponse
 	 * @throws IOException
-	 * @throws ServletException
+	 *             if an error in the underlying store occurs
 	 */
 	private void copyFolder(String sourcePath, String destinationPath,
 			Hashtable errorList, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException,
-			ServletException {
+			HttpServletResponse resp) throws IOException{
 
 		fStore.createFolder(destinationPath);
 		boolean infiniteDepth = true;
@@ -1217,15 +1191,18 @@ public class WebdavServlet extends HttpServlet {
 	 * deletes the recources at "path"
 	 * 
 	 * @param path
+	 *            the folder to be deleted
 	 * @param errorList
+	 * 			  all errors that ocurred
 	 * @param req
+	 *            HttpServletRequest
 	 * @param resp
-	 * @param store
+	 *            HttpServletResponse
 	 * @throws IOException
-	 * @throws ServletException
+	 *             if an error in the underlying store occurs
 	 */
 	private void deleteResource(String path, Hashtable errorList,
-			HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+			HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setStatus(WebdavStatus.SC_NO_CONTENT);
 		if (!readOnly) {
 
@@ -1253,18 +1230,17 @@ public class WebdavServlet extends HttpServlet {
 	 * 
 	 * @param path
 	 *            the folder to be deleted
+	 * @param errorList
+	 * 			  all errors that ocurred
 	 * @param req
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @param store
-	 *            class that handles the actual storing
-	 * @return
 	 * @throws IOException
-	 * @throws ServletException
+	 *             if an error in the underlying store occurs
 	 */
 	private void deleteFolder(String path, Hashtable errorList,
-			HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+			HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		String[] children = fStore.getChildrenNames(path);
 		for (int i = children.length - 1; i >= 0; i--) {
@@ -1304,9 +1280,6 @@ public class WebdavServlet extends HttpServlet {
 
 		// Create a place for the normalized path
 		String normalized = path;
-
-		// if (normalized == null)
-		// return (null);
 
 		if (normalized.equals("/."))
 			return "/";
@@ -1364,7 +1337,7 @@ public class WebdavServlet extends HttpServlet {
 	 *            List of error to be displayed
 	 */
 	private void sendReport(HttpServletRequest req, HttpServletResponse resp,
-			Hashtable errorList) throws ServletException, IOException {
+			Hashtable errorList) throws IOException {
 
 		resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
 
@@ -1413,8 +1386,6 @@ public class WebdavServlet extends HttpServlet {
 	 * 
 	 * @param req
 	 *            The servlet request
-	 * @param resources
-	 *            Resources object associated with this context
 	 * @param generatedXML
 	 *            XML response to the Propfind request
 	 * @param path
@@ -1496,20 +1467,6 @@ public class WebdavServlet extends HttpServlet {
 			}
 
 			generatedXML.writeProperty(null, "source", "");
-
-			// String supportedLocks = "<lockentry>"
-			// + "<lockscope><exclusive/></lockscope>"
-			// + "<locktype><write/></locktype>" + "</lockentry>"
-			// + "<lockentry>" + "<lockscope><shared/></lockscope>"
-			// + "<locktype><write/></locktype>" + "</lockentry>";
-			// generatedXML.writeElement(null, "supportedlock",
-			// XMLWriter.OPENING);
-			// generatedXML.writeText(supportedLocks);
-			// generatedXML.writeElement(null, "supportedlock",
-			// XMLWriter.CLOSING);
-			//
-			// generateLockDiscovery(path, generatedXML);
-
 			generatedXML.writeElement(null, "prop", XMLWriter.CLOSING);
 			generatedXML.writeElement(null, "status", XMLWriter.OPENING);
 			generatedXML.writeText(status);
@@ -1626,21 +1583,6 @@ public class WebdavServlet extends HttpServlet {
 					}
 				} else if (property.equals("source")) {
 					generatedXML.writeProperty(null, "source", "");
-					// } else if (property.equals("supportedlock")) {
-					// supportedLocks = "<lockentry>"
-					// + "<lockscope><exclusive/></lockscope>"
-					// + "<locktype><write/></locktype>" + "</lockentry>"
-					// + "<lockentry>"
-					// + "<lockscope><shared/></lockscope>"
-					// + "<locktype><write/></locktype>" + "</lockentry>";
-					// generatedXML.writeElement(null, "supportedlock",
-					// XMLWriter.OPENING);
-					// generatedXML.writeText(supportedLocks);
-					// generatedXML.writeElement(null, "supportedlock",
-					// XMLWriter.CLOSING);
-					// } else if (property.equals("lockdiscovery")) {
-					// if (!generateLockDiscovery(path, generatedXML))
-					// propertiesNotFound.addElement(property);
 				} else {
 					propertiesNotFound.addElement(property);
 				}
@@ -1689,19 +1631,20 @@ public class WebdavServlet extends HttpServlet {
 	/**
 	 * Get the ETag associated with a file.
 	 * 
-	 * @param resourceInfo
-	 *            File object
+	 * @param path
+	 * 			path to the resource
+	 * @param resourceLength
+	 * 			filesize
+	 * @param lastModified
+	 * 			last-modified date
+	 * @return the ETag
 	 */
-	protected String getETag(String path, String resourceLength, String lastModified)
-			throws IOException {
-		// if (resourceInfo.strongETag != null) {
-		// return resourceInfo.strongETag;
-		// } else if (resourceInfo.weakETag != null) {
-		// return resourceInfo.weakETag;
-		// } else {
+	protected String getETag(String path, String resourceLength, String lastModified){
+		// TODO create a real (?) ETag
+		// parameter "path" is not used at the monent
 		return "W/\"" + resourceLength + "-"
 				+ lastModified + "\"";
-		// }
+		
 	}
 
 	/**
@@ -1709,6 +1652,7 @@ public class WebdavServlet extends HttpServlet {
 	 * 
 	 * @param path
 	 *            Path which has to be rewiten
+	 * @return the rewritten path
 	 */
 	protected String rewriteUrl(String path) {
 		return urlEncoder.encode(path);
@@ -1716,6 +1660,10 @@ public class WebdavServlet extends HttpServlet {
 
 	/**
 	 * Get creation date in ISO format.
+	 * 
+	 * @param creationDate
+	 * 			the date in milliseconds
+	 * @return the Date in ISO format
 	 */
 	private String getISOCreationDate(long creationDate) {
 		StringBuffer creationDateValue = new StringBuffer(creationDateFormat
@@ -1730,12 +1678,17 @@ public class WebdavServlet extends HttpServlet {
 		 */
 		return creationDateValue.toString();
 	}
-
+	
 	/**
 	 * Determines the methods normally allowed for the resource.
 	 * 
+	 * @param exists
+	 * 			does the resource exist?
+	 * @param isFolder
+	 * 			is the resource a folder?
+	 * @return all allowed methods, separated by commas
 	 */
-	private String determineMethodsAllowed(String uri, boolean exists, boolean isFolder) {
+	private String determineMethodsAllowed( boolean exists, boolean isFolder) {
 		StringBuffer methodsAllowed = new StringBuffer();
 		try {
 			if (exists) {

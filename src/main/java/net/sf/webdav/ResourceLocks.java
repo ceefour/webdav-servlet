@@ -129,7 +129,10 @@ public class ResourceLocks {
 	}
 
 	/**
-	 * deletes unused LockObjects and resets the counter
+	 * deletes unused LockObjects and resets the counter.
+	 * works recursively starting at the given LockObject
+	 * 
+	 * @param lo
 	 * 
 	 */
 	private boolean cleanLockObjects(LockObject lo) {
@@ -167,6 +170,13 @@ public class ResourceLocks {
 		}
 	}
 
+	/**
+	 * creates the parent path from the given path by removing the last
+	 * '/' and everything after that
+	 * 
+	 * @param path the path
+	 * @return parent path
+	 */
 	private String getParentPath(String path) {
 		int slash = path.lastIndexOf('/');
 		if (slash == -1) {
@@ -182,7 +192,13 @@ public class ResourceLocks {
 	}
 
 	// ----------------------------------------------------------------------------
-
+	
+	/**
+	 * a helper class for ResourceLocks, represents the Locks
+	 * 
+	 * @author re
+	 *
+	 */
 	private class LockObject {
 
 		String fPath;
@@ -210,10 +226,6 @@ public class ResourceLocks {
 		 * 
 		 * @param path
 		 *            the path to the locked object
-		 * @param owner
-		 *            a String that represents the owner of the lock
-		 * @param exclusive
-		 *            true if the lock is exclusive, false otherwise
 		 */
 		LockObject(String path) {
 			this.fPath = path;
@@ -286,6 +298,10 @@ public class ResourceLocks {
 			}
 		}
 
+		/**
+		 * adds a new child lock to this lock
+		 * @param newChild
+		 */
 		void addChild(LockObject newChild) {
 			if (this.fChildren == null) {
 				this.fChildren = new LockObject[0];
@@ -335,9 +351,13 @@ public class ResourceLocks {
 		}
 
 		/**
+		 * checks if a lock of the given exclusivity can be placed,
+		 * only considering cildren up to "depth"
 		 * 
 		 * @param exclusive
 		 *            wheather the new lock should be exclusive
+		 * @param depth
+		 *            the depth to which should be checked
 		 * @return true if the lock can be placed
 		 */
 		boolean checkLocks(boolean exclusive, int depth) {
@@ -346,6 +366,7 @@ public class ResourceLocks {
 		}
 
 		/**
+		 * helper of checkLocks(). looks if the parents are locked
 		 * 
 		 * @param exclusive
 		 *            wheather the new lock should be exclusive
@@ -374,6 +395,7 @@ public class ResourceLocks {
 		}
 
 		/**
+		 * helper of checkLocks(). looks if the children are locked
 		 * 
 		 * @param exclusive
 		 *            wheather the new lock should be exclusive
