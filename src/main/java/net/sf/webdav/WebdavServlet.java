@@ -38,6 +38,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.AccessDeniedException;
+import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
+import net.sf.webdav.exceptions.ObjectNotFoundException;
+import net.sf.webdav.exceptions.UnauthenticatedException;
+
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.URLEncoder;
@@ -281,15 +287,14 @@ public class WebdavServlet extends HttpServlet {
 				throw new ServletException(e);
 			}
 
-		} catch (Exception e) {
+		} catch (UnauthenticatedException e) {
+			resp.sendError(WebdavStatus.SC_FORBIDDEN);
+		} catch (WebdavException e) {
 			e.printStackTrace();
 			throw new ServletException(e);
-		} catch (Throwable t) {
-			t.printStackTrace();
 		}
-
 	}
-	
+
 	/**
 	 * goes recursive through all folders. used by propfind
 	 * 
@@ -308,7 +313,7 @@ public class WebdavServlet extends HttpServlet {
 	private void recursiveParseProperties(String currentPath,
 			HttpServletRequest req,
 			XMLWriter generatedXML, int propertyFindType, Vector properties,
-			int depth) throws IOException {
+			int depth) throws WebdavException {
 
 		parseProperties(req, generatedXML, currentPath,
 				propertyFindType, properties);
@@ -511,8 +516,8 @@ public class WebdavServlet extends HttpServlet {
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
 	 */
-	protected void doOptions(HttpServletRequest req, HttpServletResponse resp
-			) throws IOException {
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		String lockOwner = "doOptions" + System.currentTimeMillis()
 				+ req.toString();
@@ -524,6 +529,10 @@ public class WebdavServlet extends HttpServlet {
 				String methodsAllowed = determineMethodsAllowed(fStore.objectExists(path),fStore.isFolder(path));
 				resp.addHeader("Allow", methodsAllowed);
 				resp.addHeader("MS-Author-Via", "DAV");
+			} catch (AccessDeniedException e) {
+				resp.sendError(WebdavStatus.SC_FORBIDDEN);
+			} catch (WebdavException e) {
+				resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				fResLocks.unlock(path, lockOwner);
 			}
@@ -543,7 +552,8 @@ public class WebdavServlet extends HttpServlet {
 	 *             if an error in the underlying store occurs
 	 * @throws ServletException
 	 */
-	protected void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPropfind(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		// Retrieve the resources
 		String lockOwner = "doPropfind" + System.currentTimeMillis()
@@ -590,6 +600,10 @@ public class WebdavServlet extends HttpServlet {
 				generatedXML.writeElement(null, "multistatus",
 						XMLWriter.CLOSING);
 				generatedXML.sendData();
+			} catch (AccessDeniedException e) {
+				resp.sendError(WebdavStatus.SC_FORBIDDEN);
+			} catch (WebdavException e) {
+				resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				fResLocks.unlock(path, lockOwner);
 			}
@@ -608,9 +622,8 @@ public class WebdavServlet extends HttpServlet {
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
 	 */
-	protected void doProppatch(HttpServletRequest req,
-			HttpServletResponse resp)
-			throws IOException {
+	protected void doProppatch(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		if (readOnly) {
 			resp.sendError(WebdavStatus.SC_FORBIDDEN);
@@ -634,7 +647,7 @@ public class WebdavServlet extends HttpServlet {
 	 *             if an error in the underlying store occurs
 	 */
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp,
-			boolean includeBody) throws IOException {
+			boolean includeBody) throws ServletException, IOException {
 
 		String lockOwner = "doGet" + System.currentTimeMillis()
 				+ req.toString();
@@ -714,6 +727,12 @@ public class WebdavServlet extends HttpServlet {
 
 					}
 				}
+			} catch (AccessDeniedException e) {
+				resp.sendError(WebdavStatus.SC_FORBIDDEN);
+			} catch (ObjectAlreadyExistsException e) {
+				resp.sendError(WebdavStatus.SC_NOT_FOUND, req.getRequestURI());
+			} catch (WebdavException e) {
+				resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				fResLocks.unlock(path, lockOwner);
 			}
@@ -732,7 +751,8 @@ public class WebdavServlet extends HttpServlet {
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
 	 */
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 		doGet(req, resp, false);
 	}
 
@@ -746,7 +766,8 @@ public class WebdavServlet extends HttpServlet {
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
 	 */
-	protected void doMkcol(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doMkcol(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		if (req.getContentLength() != 0) {
 			resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
@@ -760,15 +781,23 @@ public class WebdavServlet extends HttpServlet {
 						+ req.toString();
 				if (fResLocks.lock(path, lockOwner, true, 0)) {
 					try {
-
-						if (parentPath != null && fStore.isFolder(parentPath)) {
+						if (parentPath != null
+								&& fStore.isFolder(parentPath)) {
+							boolean isFolder = fStore.isFolder(path);
 							if (!fStore.objectExists(path)) {
-
-								fStore.createFolder(path);
-
+								try {
+									fStore.createFolder(path);
+								} catch (ObjectAlreadyExistsException e) {
+									String methodsAllowed = determineMethodsAllowed(
+											true, isFolder);
+									resp.addHeader("Allow", methodsAllowed);
+									resp
+											.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+								}
 							} else {
 								// object already exists
-								String methodsAllowed = determineMethodsAllowed(true,fStore.isFolder(path));
+								String methodsAllowed = determineMethodsAllowed(
+										true, isFolder);
 								resp.addHeader("Allow", methodsAllowed);
 								resp
 										.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
@@ -776,6 +805,10 @@ public class WebdavServlet extends HttpServlet {
 						} else {
 							resp.sendError(WebdavStatus.SC_CONFLICT);
 						}
+					} catch (AccessDeniedException e) {
+						resp.sendError(WebdavStatus.SC_FORBIDDEN);
+					} catch (WebdavException e) {
+						resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 					} finally {
 						fResLocks.unlock(path, lockOwner);
 					}
@@ -799,7 +832,8 @@ public class WebdavServlet extends HttpServlet {
 	 * @throws IOException
 	 *             if an error in the underlying store occurs
 	 */
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		if (!readOnly) {
 			String path = getRelativePath(req);
@@ -812,6 +846,13 @@ public class WebdavServlet extends HttpServlet {
 					if (!errorList.isEmpty()) {
 						sendReport(req, resp, errorList);
 					}
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebdavStatus.SC_FORBIDDEN);
+				} catch (ObjectAlreadyExistsException e) {
+					resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+							.getRequestURI());
+				} catch (WebdavException e) {
+					resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					fResLocks.unlock(path, lockOwner);
 				}
@@ -832,10 +873,11 @@ public class WebdavServlet extends HttpServlet {
 	 * @param resp
 	 *            The servlet response we are creating
 	 * 
-	 * @exception IOException
-	 *             if an error in the underlying store occurs
+	 * @exception WebdavException
+	 *                if an error in the underlying store occurs
 	 */
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 		if (!readOnly) {
 			String path = getRelativePath(req);
 			String parentPath = getParentPath(path);
@@ -858,7 +900,10 @@ public class WebdavServlet extends HttpServlet {
 					} else {
 						resp.sendError(WebdavStatus.SC_CONFLICT);
 					}
-
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebdavStatus.SC_FORBIDDEN);
+				} catch (WebdavException e) {
+					resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					fResLocks.unlock(path, lockOwner);
 				}
@@ -878,10 +923,13 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 *             when an error occurs while sending the response
 	 */
-	protected void doCopy(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doCopy(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		String path = getRelativePath(req);
 		if (!readOnly) {
@@ -890,6 +938,16 @@ public class WebdavServlet extends HttpServlet {
 			if (fResLocks.lock(path, lockOwner, false, -1)) {
 				try {
 					copyResource(req, resp);
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebdavStatus.SC_FORBIDDEN);
+				} catch (ObjectAlreadyExistsException e) {
+					resp.sendError(WebdavStatus.SC_CONFLICT, req
+							.getRequestURI());
+				} catch (ObjectNotFoundException e) {
+					resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+							.getRequestURI());
+				} catch (WebdavException e) {
+					resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					fResLocks.unlock(path, lockOwner);
 				}
@@ -911,10 +969,13 @@ public class WebdavServlet extends HttpServlet {
 	 * @param resp
 	 *            HttpServletResponse
 	 * @throws ServletException
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 *             when an error occurs while sending the response
 	 */
-	protected void doMove(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doMove(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 		if (!readOnly) {
 
 			String path = getRelativePath(req);
@@ -933,6 +994,13 @@ public class WebdavServlet extends HttpServlet {
 					} else {
 						resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 					}
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebdavStatus.SC_FORBIDDEN);
+				} catch (ObjectAlreadyExistsException e) {
+					resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+							.getRequestURI());
+				} catch (WebdavException e) {
+					resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					fResLocks.unlock(path, lockOwner);
 				}
@@ -963,12 +1031,13 @@ public class WebdavServlet extends HttpServlet {
 	 * @param resp
 	 *            Servlet response
 	 * @return true if the copy is successful
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 *             when an error occurs while sending the response
 	 */
 	private boolean copyResource(HttpServletRequest req,
-			HttpServletResponse resp)
-			throws IOException {
+			HttpServletResponse resp) throws WebdavException, IOException {
 
 		// Parsing destination header
 
@@ -1114,12 +1183,13 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
+	 * @throws IOException
 	 */
 	private void copy(String sourcePath, String destinationPath,
 			Hashtable errorList, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException{
+			HttpServletResponse resp) throws WebdavException, IOException {
 
 		if (fStore.isResource(sourcePath)) {
 			fStore.createResource(destinationPath);
@@ -1149,12 +1219,12 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
 	 */
 	private void copyFolder(String sourcePath, String destinationPath,
 			Hashtable errorList, HttpServletRequest req,
-			HttpServletResponse resp) throws IOException{
+			HttpServletResponse resp) throws WebdavException {
 
 		fStore.createFolder(destinationPath);
 		boolean infiniteDepth = true;
@@ -1179,7 +1249,16 @@ public class WebdavServlet extends HttpServlet {
 						copyFolder(sourcePath + children[i], destinationPath
 								+ children[i], errorList, req, resp);
 					}
-				} catch (IOException e) {
+				} catch (AccessDeniedException e) {
+					errorList.put(destinationPath + children[i], new Integer(
+							WebdavStatus.SC_FORBIDDEN));
+				} catch (ObjectNotFoundException e) {
+					errorList.put(destinationPath + children[i], new Integer(
+							WebdavStatus.SC_NOT_FOUND));
+				} catch (ObjectAlreadyExistsException e) {
+					errorList.put(destinationPath + children[i], new Integer(
+							WebdavStatus.SC_CONFLICT));
+				} catch (WebdavException e) {
 					errorList.put(destinationPath + children[i], new Integer(
 							WebdavStatus.SC_INTERNAL_SERVER_ERROR));
 				}
@@ -1198,11 +1277,15 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 *             when an error occurs while sending the response
 	 */
 	private void deleteResource(String path, Hashtable errorList,
-			HttpServletRequest req, HttpServletResponse resp) throws IOException {
+			HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, WebdavException {
+
 		resp.setStatus(WebdavStatus.SC_NO_CONTENT);
 		if (!readOnly) {
 
@@ -1236,11 +1319,12 @@ public class WebdavServlet extends HttpServlet {
 	 *            HttpServletRequest
 	 * @param resp
 	 *            HttpServletResponse
-	 * @throws IOException
+	 * @throws WebdavException
 	 *             if an error in the underlying store occurs
 	 */
 	private void deleteFolder(String path, Hashtable errorList,
-			HttpServletRequest req, HttpServletResponse resp) throws IOException {
+			HttpServletRequest req, HttpServletResponse resp)
+			throws WebdavException {
 
 		String[] children = fStore.getChildrenNames(path);
 		for (int i = children.length - 1; i >= 0; i--) {
@@ -1255,7 +1339,13 @@ public class WebdavServlet extends HttpServlet {
 					fStore.removeObject(path + children[i]);
 
 				}
-			} catch (IOException e) {
+			} catch (AccessDeniedException e) {
+				errorList.put(path + children[i], new Integer(
+						WebdavStatus.SC_FORBIDDEN));
+			} catch (ObjectNotFoundException e) {
+				errorList.put(path + children[i], new Integer(
+						WebdavStatus.SC_NOT_FOUND));
+			} catch (WebdavException e) {
 				errorList.put(path + children[i], new Integer(
 						WebdavStatus.SC_INTERNAL_SERVER_ERROR));
 			}
@@ -1398,7 +1488,7 @@ public class WebdavServlet extends HttpServlet {
 	 */
 	private void parseProperties(HttpServletRequest req,
 			XMLWriter generatedXML, String path, int type,
-			Vector propertiesVector) throws IOException {
+			Vector propertiesVector) throws WebdavException {
 
 		String creationdate = getISOCreationDate(fStore.getCreationDate(path)
 				.getTime());

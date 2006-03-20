@@ -1,7 +1,7 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.2 2006-02-16 09:17:00 yavarin Exp $
- * $Revision: 1.2 $
- * $Date: 2006-02-16 09:17:00 $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.3 2006-03-20 19:09:07 yavarin Exp $
+ * $Revision: 1.3 $
+ * $Date: 2006-03-20 19:09:07 $
  *
  * ====================================================================
  *
@@ -22,6 +22,8 @@
  */
 
 package net.sf.webdav;
+
+import net.sf.webdav.exceptions.WebdavException;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -52,38 +54,38 @@ public interface IWebdavStorage {
      * @param parameters
      *            Hashtable containing the parameters' names and associated
      *            values configured in the <init-param> from web.xml
-     * @throws Exception
+     * @throws WebdavException
      */
     void begin(Principal principal,  Hashtable parameters)
-            throws Exception;
+            throws WebdavException;
 
     /**
      * Checks if authentication information passed in {@link #begin(Service, Principal, Object, LoggerFacade, Hashtable)}
      * is valid. If not throws an exception.
      * 
-     * @throws SecurityException if authentication is not valid
+     * @throws UnauthenticatedException if authentication is not valid
      */
-    void checkAuthentication() throws SecurityException;
+    void checkAuthentication() throws WebdavException;
     
     /**
      * Indicates that all changes done inside this request shall be made
      * permanent and any transactions, connections and other temporary resources
      * shall be terminated.
      * 
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    void commit() throws IOException;
+    void commit() throws WebdavException;
 
     /**
      * Indicates that all changes done inside this request shall be undone and
      * any transactions, connections and other temporary resources shall be
      * terminated.
      * 
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    void rollback() throws IOException;
+    void rollback() throws WebdavException;
 
     /**
      * Checks if there is an object at the position specified by
@@ -92,10 +94,10 @@ public interface IWebdavStorage {
      * @param uri
      *            URI of the object to check
      * @return <code>true</code> if the object at <code>uri</code> exists
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    boolean objectExists(String uri) throws IOException;
+    boolean objectExists(String uri) throws WebdavException;
 
     /**
      * Checks if there is an object at the position specified by
@@ -105,10 +107,10 @@ public interface IWebdavStorage {
      *            URI of the object to check
      * @return <code>true</code> if the object at <code>uri</code> exists
      *         and is a folder
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    boolean isFolder(String uri) throws IOException;
+    boolean isFolder(String uri) throws WebdavException;
 
     /**
      * Checks if there is an object at the position specified by
@@ -118,20 +120,20 @@ public interface IWebdavStorage {
      *            URI of the object to check
      * @return <code>true</code> if the object at <code>uri</code> exists
      *         and is a content resource
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    boolean isResource(String uri) throws IOException;
+    boolean isResource(String uri) throws WebdavException;
 
     /**
      * Creates a folder at the position specified by <code>folderUri</code>.
      * 
      * @param folderUri
      *            URI of the folder
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    void createFolder(String folderUri) throws IOException;
+    void createFolder(String folderUri) throws WebdavException;
 
     /**
      * Creates a content resource at the position specified by
@@ -139,10 +141,10 @@ public interface IWebdavStorage {
      * 
      * @param resourceUri
      *            URI of the content resource
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    void createResource(String resourceUri) throws IOException;
+    void createResource(String resourceUri) throws WebdavException;
 
     /**
      * Sets / stores the content of the resource specified by
@@ -157,11 +159,11 @@ public interface IWebdavStorage {
      * @param characterEncoding
      *            character encoding of the resource or <code>null</code> if
      *            unknown or not applicable
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
     void setResourceContent(String resourceUri, InputStream content, String contentType, String characterEncoding)
-            throws IOException;
+            throws WebdavException;
 
     /**
      * Gets the date of the last modiciation of the object specified by
@@ -172,10 +174,10 @@ public interface IWebdavStorage {
      * @return date of last modification, <code>null</code> declares this
      *         value as invalid and asks the adapter to try to set it from the
      *         properties if possible
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    Date getLastModified(String uri) throws IOException;
+    Date getLastModified(String uri) throws WebdavException;
 
     /**
      * Gets the date of the creation of the object specified by <code>uri</code>.
@@ -185,10 +187,10 @@ public interface IWebdavStorage {
      * @return date of creation, <code>null</code> declares this value as
      *         invalid and asks the adapter to try to set it from the properties
      *         if possible
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    Date getCreationDate(String uri) throws IOException;
+    Date getCreationDate(String uri) throws WebdavException;
 
     /**
      * Gets the names of the children of the folder specified by
@@ -197,10 +199,10 @@ public interface IWebdavStorage {
      * @param folderUri
      *            URI of the folder
      * @return array containing names of the children or null if it is no folder
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    String[] getChildrenNames(String folderUri) throws IOException;
+    String[] getChildrenNames(String folderUri) throws WebdavException;
 
     /**
      * Gets the content of the resource specified by <code>resourceUri</code>.
@@ -208,10 +210,10 @@ public interface IWebdavStorage {
      * @param resourceUri
      *            URI of the content resource
      * @return input stream you can read the content of the resource from
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    InputStream getResourceContent(String resourceUri) throws IOException;
+    InputStream getResourceContent(String resourceUri) throws WebdavException;
 
     /**
      * Gets the length of the content resource specified by
@@ -222,18 +224,18 @@ public interface IWebdavStorage {
      * @return length of the resource in bytes,
      *         <code>-1</code> declares this value as invalid and asks the
      *         adapter to try to set it from the properties if possible
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    long getResourceLength(String resourceUri) throws IOException;
+    long getResourceLength(String resourceUri) throws WebdavException;
 
     /**
      * Removes the object specified by <code>uri</code>.
      * 
      * @param uri
      *            URI of the object, i.e. content resource or folder
-     * @throws IOException
+     * @throws WebdavException
      * 				if something goes wrong on the store level
      */
-    void removeObject(String uri) throws IOException;
+    void removeObject(String uri) throws WebdavException;
 }
