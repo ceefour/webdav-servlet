@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Vector;
 
@@ -1493,7 +1494,10 @@ public class WebdavServlet extends HttpServlet {
 		String creationdate = getISOCreationDate(fStore.getCreationDate(path)
 				.getTime());
 		boolean isFolder = fStore.isFolder(path);
-		String lastModified = fStore.getLastModified(path).toString();
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+                        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+                        String lastModified = formatter.format(fStore.getLastModified
+                (path));
 		String resourceLength = String.valueOf(fStore.getResourceLength(path));
 
 		// ResourceInfo resourceInfo = new ResourceInfo(path, resources);
