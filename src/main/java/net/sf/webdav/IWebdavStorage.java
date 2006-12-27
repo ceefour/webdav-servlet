@@ -1,7 +1,7 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.3 2006-03-20 19:09:07 yavarin Exp $
- * $Revision: 1.3 $
- * $Date: 2006-03-20 19:09:07 $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.4 2006-12-27 11:27:45 joa23 Exp $
+ * $Revision: 1.4 $
+ * $Date: 2006-12-27 11:27:45 $
  *
  * ====================================================================
  *
@@ -26,7 +26,6 @@ package net.sf.webdav;
 import net.sf.webdav.exceptions.WebdavException;
 
 import java.io.InputStream;
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Date;
 import java.util.Hashtable;

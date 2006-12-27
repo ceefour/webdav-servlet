@@ -17,8 +17,8 @@
 package net.sf.webdav;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,11 +39,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.UnauthenticatedException;
+import net.sf.webdav.exceptions.WebdavException;
 
 import org.apache.catalina.util.MD5Encoder;
 import org.apache.catalina.util.RequestUtil;

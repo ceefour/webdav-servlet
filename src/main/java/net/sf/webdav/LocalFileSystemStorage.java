@@ -15,21 +15,19 @@
  */
 package net.sf.webdav;
 
-import java.io.InputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
-
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.Principal;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.ArrayList;
 
 import net.sf.webdav.exceptions.WebdavException;
 
