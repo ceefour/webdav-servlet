@@ -118,10 +118,14 @@ public class ResourceLocks {
      */
     private LockObject generateLockObjects(String path) {
         if (!this.fLocks.containsKey(path)) {
-            LockObject parentLockObject = generateLockObjects(getParentPath(path));
             LockObject returnObject = new LockObject(path);
-            parentLockObject.addChild(returnObject);
-            returnObject.fParent = parentLockObject;
+            String parentPath = getParentPath(path);
+            if (parentPath != null) {
+                LockObject parentLockObject = generateLockObjects(parentPath);
+                parentLockObject.addChild(returnObject);
+                returnObject.fParent = parentLockObject;
+            }
+
             return returnObject;
         } else {
             return (LockObject) this.fLocks.get(path);
@@ -383,7 +387,11 @@ public class ResourceLocks {
 
                 if (this.fOwner == null) {
                     // no owner, checking parents
-                    return this.fParent.checkParents(exclusive);
+                    if(this.fParent!= null){
+                        return this.fParent.checkParents(exclusive);
+                    } else {
+                        return false;
+                    }
                 } else {
                     // there already is a owner
                     if (this.fExclusive || exclusive) {
