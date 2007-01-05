@@ -53,7 +53,7 @@ public class DoGet extends AbstractMethod {
             }
         }
         if (!store.objectExists(path)) {
-            if (this.insteadOf404 != null) {
+            if (this.insteadOf404 != null && !insteadOf404.trim().equals("")) {
                 path = this.insteadOf404;
             }
         }
