@@ -1,10 +1,9 @@
 package net.sf.webdav;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -31,6 +30,8 @@ import net.sf.webdav.fromcatalina.MD5Encoder;
 import net.sf.webdav.fromcatalina.RequestUtil;
 import net.sf.webdav.fromcatalina.URLEncoder;
 import net.sf.webdav.fromcatalina.XMLWriter;
+import net.sf.webdav.methods.AbstractMethod;
+import net.sf.webdav.methods.DoGet;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,11 +92,6 @@ public class WebDavServletBean extends HttpServlet {
     private static final int FIND_PROPERTY_NAMES = 2;
 
     /**
-     * size of the io-buffer
-     */
-    private static int BUF_SIZE = 50000;
-
-    /**
      * Default namespace.
      */
     protected static final String DEFAULT_NAMESPACE = "DAV:";
@@ -120,9 +116,11 @@ public class WebDavServletBean extends HttpServlet {
 
     private WebdavStore store = null;
 
-    private static int debug = -1;
+    private int debug = -1;
 
     private boolean lazyFolderCreationOnPut;
+
+    private DoGet doGet;
 
     static {
         creationDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -142,6 +140,21 @@ public class WebDavServletBean extends HttpServlet {
 
     public WebDavServletBean() {
         this.resLocks = new ResourceLocks();
+        try {
+            md5Helper = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException();
+        }
+    }
+
+    public void init(WebdavStore store, String dftIndexFile,
+            String insteadOf404, int nocontentLenghHeaders,
+            boolean lazyFolderCreationOnPut, int debug) throws ServletException {
+
+        this.store = store;
+        this.debug = debug;
+        this.doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks,
+                nocontentLenghHeaders, debug);
     }
 
     /**
@@ -156,7 +169,7 @@ public class WebDavServletBean extends HttpServlet {
             System.out.println("-----------");
             System.out.println("WebdavServlet\n request: method = " + method);
             System.out.println("time: " + System.currentTimeMillis());
-            System.out.println("path: " + getRelativePath(req));
+            System.out.println("path: " + AbstractMethod.getRelativePath(req));
             System.out.println("-----------");
             Enumeration e = req.getHeaderNames();
             while (e.hasMoreElements()) {
@@ -341,38 +354,6 @@ public class WebDavServletBean extends HttpServlet {
         return documentBuilder;
     }
 
-    /**
-     * Return the relative path associated with this servlet.
-     * 
-     * @param request
-     *            The servlet request we are processing
-     */
-    protected String getRelativePath(HttpServletRequest request) {
-
-        // Are we being processed by a RequestDispatcher.include()?
-        if (request.getAttribute("javax.servlet.include.request_uri") != null) {
-            String result = (String) request
-                    .getAttribute("javax.servlet.include.path_info");
-            if (result == null)
-                result = (String) request
-                        .getAttribute("javax.servlet.include.servlet_path");
-            if ((result == null) || (result.equals("")))
-                result = "/";
-            return (result);
-        }
-
-        // No, extract the desired path directly from the request
-        String result = request.getPathInfo();
-        if (result == null) {
-            result = request.getServletPath();
-        }
-        if ((result == null) || (result.equals(""))) {
-            result = "/";
-        }
-        return (result);
-
-    }
-
     private Vector getPropertiesFromXML(Node propNode) {
         Vector properties;
         properties = new Vector();
@@ -454,7 +435,7 @@ public class WebDavServletBean extends HttpServlet {
 
         String lockOwner = "doOptions" + System.currentTimeMillis()
                 + req.toString();
-        String path = getRelativePath(req);
+        String path = AbstractMethod.getRelativePath(req);
         if (resLocks.lock(path, lockOwner, false, 0)) {
             try {
                 resp.addHeader("DAV", "1, 2");
@@ -495,7 +476,7 @@ public class WebDavServletBean extends HttpServlet {
         // Retrieve the resources
         String lockOwner = "doPropfind" + System.currentTimeMillis()
                 + req.toString();
-        String path = getRelativePath(req);
+        String path = AbstractMethod.getRelativePath(req);
         int depth = getDepth(req);
         if (resLocks.lock(path, lockOwner, false, depth)) {
             try {
@@ -508,7 +489,7 @@ public class WebDavServletBean extends HttpServlet {
                 }
 
                 Vector properties = null;
-                path = getCleanPath(getRelativePath(req));
+                path = getCleanPath(AbstractMethod.getRelativePath(req));
 
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;
@@ -573,148 +554,11 @@ public class WebDavServletBean extends HttpServlet {
         // TODO implement proppatch
     }
 
-    /**
-     * GET Method
-     * 
-     * @param req
-     *            HttpServletRequest
-     * @param resp
-     *            HttpServletResponse
-     * @param includeBody
-     *            if the resource content should be included or not (GET/HEAD)
-     * @throws IOException
-     *             if an error in the underlying store occurs
-     */
     protected void doGet(HttpServletRequest req, HttpServletResponse resp,
             boolean includeBody) throws ServletException, IOException {
-
-        String path = getRelativePath(req);
-
-        if (debug == 1)
-            System.err.println("-- doGet " + path);
-
-        try {
-            if (store.isFolder(path)) {
-                String dftIndxFile = getServletConfig().getInitParameter(
-                        "default-index-file");
-                if (dftIndxFile != null) {
-                    resp.sendRedirect(resp.encodeRedirectURL(req
-                            .getRequestURI()
-                            + dftIndxFile));
-                    return;
-                }
-            }
-            if (!store.objectExists(path)) {
-                String insteadOf404 = getServletConfig().getInitParameter(
-                        "instead-of-404");
-                if (insteadOf404 != null) {
-                    path = insteadOf404;
-                }
-            }
-
-        } catch (WebdavException e) {}
-
-        String lockOwner = "doGet" + System.currentTimeMillis()
-                + req.toString();
-
-        if (resLocks.lock(path, lockOwner, false, 0)) {
-            try {
-
-                if (store.isResource(path)) {
-                    // path points to a file but ends with / or \
-                    if (path.endsWith("/") || (path.endsWith("\\"))) {
-                        resp.sendError(HttpServletResponse.SC_NOT_FOUND, req
-                                .getRequestURI());
-                    } else {
-
-                        // setting headers
-                        long lastModified = store.getLastModified(path)
-                                .getTime();
-                        resp.setDateHeader("last-modified", lastModified);
-
-                        long resourceLength = store.getResourceLength(path);
-                        String contLength = getServletConfig()
-                                .getInitParameter("no-content-length-headers");
-                        if (contLength == null) {
-                            if (resourceLength > 0) {
-                                if (resourceLength <= Integer.MAX_VALUE) {
-                                    resp.setContentLength((int) resourceLength);
-                                } else {
-                                    resp.setHeader("content-length", ""
-                                            + resourceLength);
-                                    // is "content-length" the right header?
-                                    // is
-                                    // long
-                                    // a valid format?
-                                }
-                            }
-                        }
-
-                        String mimeType = getServletContext().getMimeType(path);
-                        if (mimeType != null) {
-                            resp.setContentType(mimeType);
-                        } else {
-                            int lastSlash = path.replace('\\', '/')
-                                    .lastIndexOf('/');
-                            int lastDot = path.indexOf(".", lastSlash);
-                            if (lastDot == -1) {
-                                resp.setContentType("text/html");
-                            }
-                        }
-
-                        if (includeBody) {
-                            OutputStream out = resp.getOutputStream();
-                            InputStream in = store.getResourceContent(path);
-                            try {
-                                int read = -1;
-                                byte[] copyBuffer = new byte[BUF_SIZE];
-
-                                while ((read = in.read(copyBuffer, 0,
-                                        copyBuffer.length)) != -1) {
-                                    out.write(copyBuffer, 0, read);
-                                }
-
-                            } finally {
-
-                                in.close();
-                                out.flush();
-                                out.close();
-                            }
-                        }
-                    }
-                } else {
-                    if (includeBody && store.isFolder(path)) {
-                        // TODO some folder response (for browsers, DAV tools
-                        // use propfind) in html?
-                        OutputStream out = resp.getOutputStream();
-                        String[] children = store.getChildrenNames(path);
-                        StringBuffer childrenTemp = new StringBuffer();
-                        childrenTemp.append("Contents of this Folder:\n");
-                        for (int i = 0; i < children.length; i++) {
-                            childrenTemp.append(children[i]);
-                            childrenTemp.append("\n");
-                        }
-                        out.write(childrenTemp.toString().getBytes());
-                    } else {
-                        if (!store.objectExists(path)) {
-                            resp.sendError(HttpServletResponse.SC_NOT_FOUND,
-                                    req.getRequestURI());
-                        }
-
-                    }
-                }
-            } catch (AccessDeniedException e) {
-                resp.sendError(WebdavStatus.SC_FORBIDDEN);
-            } catch (ObjectAlreadyExistsException e) {
-                resp.sendError(WebdavStatus.SC_NOT_FOUND, req.getRequestURI());
-            } catch (WebdavException e) {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-            } finally {
-                resLocks.unlock(path, lockOwner);
-            }
-        } else {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-        }
+        String relativePath = AbstractMethod.getRelativePath(req);
+        String mimeType = getServletContext().getMimeType(relativePath);
+        this.doGet.execute(req, resp, includeBody, mimeType);
     }
 
     /**
@@ -756,7 +600,7 @@ public class WebDavServletBean extends HttpServlet {
 
             if (!readOnly) {
                 // not readonly
-                String path = getRelativePath(req);
+                String path = AbstractMethod.getRelativePath(req);
                 String parentPath = getParentPath(path);
                 String lockOwner = "doMkcol" + System.currentTimeMillis()
                         + req.toString();
@@ -819,7 +663,7 @@ public class WebDavServletBean extends HttpServlet {
             System.err.println("-- doDelete");
 
         if (!readOnly) {
-            String path = getRelativePath(req);
+            String path = AbstractMethod.getRelativePath(req);
             String lockOwner = "doDelete" + System.currentTimeMillis()
                     + req.toString();
             if (resLocks.lock(path, lockOwner, true, -1)) {
@@ -866,7 +710,7 @@ public class WebDavServletBean extends HttpServlet {
             System.err.println("-- doPut");
 
         if (!readOnly) {
-            String path = getRelativePath(req);
+            String path = AbstractMethod.getRelativePath(req);
             String parentPath = getParentPath(path);
             String lockOwner = "doPut" + System.currentTimeMillis()
                     + req.toString();
@@ -922,7 +766,7 @@ public class WebDavServletBean extends HttpServlet {
         if (debug == 1)
             System.err.println("-- doCopy");
 
-        String path = getRelativePath(req);
+        String path = AbstractMethod.getRelativePath(req);
         if (!readOnly) {
             String lockOwner = "doCopy" + System.currentTimeMillis()
                     + req.toString();
@@ -972,7 +816,7 @@ public class WebDavServletBean extends HttpServlet {
             if (debug == 1)
                 System.err.println("-- doMove");
 
-            String path = getRelativePath(req);
+            String path = AbstractMethod.getRelativePath(req);
             String lockOwner = "doMove" + System.currentTimeMillis()
                     + req.toString();
             if (resLocks.lock(path, lockOwner, false, -1)) {
@@ -1094,7 +938,7 @@ public class WebDavServletBean extends HttpServlet {
             }
         }
 
-        String path = getRelativePath(req);
+        String path = AbstractMethod.getRelativePath(req);
 
         // if source = destination
         if (path.equals(destinationPath)) {
@@ -1425,7 +1269,7 @@ public class WebDavServletBean extends HttpServlet {
         resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
 
         String absoluteUri = req.getRequestURI();
-        String relativePath = getRelativePath(req);
+        String relativePath = AbstractMethod.getRelativePath(req);
 
         XMLWriter generatedXML = new XMLWriter();
         generatedXML.writeXMLHeader();
@@ -1796,20 +1640,20 @@ public class WebDavServletBean extends HttpServlet {
 
     }
 
-    public void setMd5Helper(MessageDigest md5Helper) {
-        this.md5Helper = md5Helper;
-    }
-
-    public void setStore(WebdavStore store) {
-        this.store = store;
-    }
-
-    public void setLazyFolderCreationOnPut(boolean lazyFolderCreationOnPut) {
-        this.lazyFolderCreationOnPut = lazyFolderCreationOnPut;
-    }
-
-    public void setDebug(int debug) {
-        this.debug = debug;
-    }
+    // public void setMd5Helper(MessageDigest md5Helper) {
+    // this.md5Helper = md5Helper;
+    // }
+    //
+    // public void setStore(WebdavStore store) {
+    // this.store = store;
+    // }
+    //
+    // public void setLazyFolderCreationOnPut(boolean lazyFolderCreationOnPut) {
+    // this.lazyFolderCreationOnPut = lazyFolderCreationOnPut;
+    // }
+    //
+    // public void setDebug(int debug) {
+    // this.debug = debug;
+    // }
 
 }

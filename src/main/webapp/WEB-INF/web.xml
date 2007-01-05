@@ -32,6 +32,11 @@
 				place where to store the webdavcontent on the filesystem
 			</description>
 		</init-param>
+		
+		 <init-param>
+            <param-name>servletDebug</param-name>
+            <param-value>1</param-value>
+        </init-param>
 		<init-param>
 			<param-name>storeDebug</param-name>
 			<param-value>0</param-value>
@@ -40,6 +45,7 @@
 				ResourceHandlerImplementation
 			</description>
 		</init-param>
+		
 	    <init-param>
 	        <param-name>lazyFolderCreationOnPut</param-name>
 	        <param-value>0</param-value>
@@ -48,6 +54,22 @@
                 created, can be created too if they do not exist.
 	        </description>
 	    </init-param>
+	            <init-param>
+            <param-name>no-content-length-headers</param-name>
+            <param-value>0</param-value>
+            <description>
+	          TODO
+	        </description>
+        </init-param>
+        <init-param>
+            <param-name>default-index-file</param-name>
+            <param-value></param-value>
+        </init-param>
+        <init-param>
+            <param-name>instead-of-404</param-name>
+            <param-value></param-value>
+        </init-param>
+
     </servlet>
 
 	<!-- The mapping for the webdav servlet -->

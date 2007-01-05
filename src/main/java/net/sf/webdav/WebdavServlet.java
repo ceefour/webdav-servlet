@@ -36,6 +36,7 @@ import net.sf.webdav.exceptions.WebdavException;
  */
 
 public class WebdavServlet extends WebDavServletBean {
+
     private static final String DEBUG_SERVLET_PARAMETER = "servletDebug";
 
     private static final String DEBUG_STORE_PARAMETER = "storeDebug";
@@ -43,11 +44,6 @@ public class WebdavServlet extends WebDavServletBean {
     private static final String ROOTPATH_PARAMETER = "rootpath";
 
     public void init() throws ServletException {
-        try {
-            setMd5Helper(MessageDigest.getInstance("MD5"));
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException();
-        }
 
         // Parameters from web.xml
         String clazzName = getServletConfig().getInitParameter(
@@ -55,39 +51,44 @@ public class WebdavServlet extends WebDavServletBean {
 
         // WebdavStore store = factory.getStore();
         String debugStoreString = (String) getInitParameter(DEBUG_STORE_PARAMETER);
-        int storeDebug = -1;
-        if (debugStoreString != null) {
-            storeDebug = Integer.parseInt(debugStoreString);
-        }
+        int storeDebug = getIntInitParameter(DEBUG_STORE_PARAMETER);
+
         File root = getFileRoot();
 
         WebdavStore webdavStore = constructStore(clazzName, storeDebug, root);
 
-        setStore(webdavStore);
-
-        String debugString = getInitParameter(DEBUG_SERVLET_PARAMETER);
-        if (debugString == null) {
-            setDebug(-1);
-        } else {
-            setDebug(Integer.parseInt(debugString));
-        }
+        int servletDebug = getIntInitParameter(DEBUG_SERVLET_PARAMETER);
 
         boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
                 && getInitParameter("lazyFolderCreationOnPut").equals("1");
-        setLazyFolderCreationOnPut(lazyFolderCreationOnPut);
+
+        String dftIndexFile = getInitParameter("default-index-file");
+        String insteadOf404 = getInitParameter("instead-of-404");
+
+        int noContentLengthHeader = getIntInitParameter("no-content-length-headers");
+
+        super.init(webdavStore, dftIndexFile, insteadOf404,
+                noContentLengthHeader, lazyFolderCreationOnPut, servletDebug);
     }
 
-    protected WebdavStore constructStore(String clazzName, int storeDebug, File root) {
+    private int getIntInitParameter(String key) {
+        return getInitParameter(key) != null ? -1 : Integer
+                .parseInt(getInitParameter(key));
+
+    }
+
+    protected WebdavStore constructStore(String clazzName, int storeDebug,
+            File root) {
         WebdavStore webdavStore = null;
         try {
             Class clazz = WebdavServlet.class.getClassLoader().loadClass(
                     clazzName);
 
-            Constructor ctor = clazz.getConstructor(new Class[]{Integer.class,
-                    File.class});
+            Constructor ctor = clazz.getConstructor(new Class[] {
+                    Integer.class, File.class });
 
-            webdavStore = (WebdavStore) ctor.newInstance(new Object[]{
-                    new Integer(storeDebug), root});
+            webdavStore = (WebdavStore) ctor.newInstance(new Object[] {
+                    new Integer(storeDebug), root });
         } catch (Exception e) {
             throw new RuntimeException("some problem making store component", e);
         }
