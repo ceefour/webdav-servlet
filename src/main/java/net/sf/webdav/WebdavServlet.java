@@ -32,6 +32,7 @@ import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -174,8 +175,9 @@ public class WebdavServlet extends HttpServlet {
 	private WebdavStoreFactory fFactory;
 
 	private Hashtable fParameter;
+    private boolean lazyFolderCreationOnPut;
 
-	/**
+    /**
 	 * Initialize this servlet.
 	 */
 	public void init() throws ServletException {
@@ -215,7 +217,9 @@ public class WebdavServlet extends HttpServlet {
 			e.printStackTrace();
 			throw new ServletException(e);
 		}
-	}
+        lazyFolderCreationOnPut = fParameter.get("lazyFolderCreationOnPut") != null && fParameter.get("lazyFolderCreationOnPut").equals("1");
+
+    }
 
 	/**
 	 * Handles the special WebDAV methods.
@@ -430,7 +434,7 @@ public class WebdavServlet extends HttpServlet {
 						.getAttribute("javax.servlet.include.servlet_path");
 			if ((result == null) || (result.equals("")))
 				result = "/";
-			return (result);
+            return (result);
 		}
 
 		// No, extract the desired path directly from the request
@@ -520,7 +524,10 @@ public class WebdavServlet extends HttpServlet {
 	protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		String lockOwner = "doOptions" + System.currentTimeMillis()
+        if (fdebug == 1)
+        System.err.println("-- doOptions");
+
+        String lockOwner = "doOptions" + System.currentTimeMillis()
 				+ req.toString();
 		String path = getRelativePath(req);
 		if (fResLocks.lock(path, lockOwner, false, 0)) {
@@ -556,7 +563,11 @@ public class WebdavServlet extends HttpServlet {
 	protected void doPropfind(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		// Retrieve the resources
+        if (fdebug == 1)
+        System.err.println("-- doPropfind");
+
+
+        // Retrieve the resources
 		String lockOwner = "doPropfind" + System.currentTimeMillis()
 				+ req.toString();
 		String path = getRelativePath(req);
@@ -626,7 +637,11 @@ public class WebdavServlet extends HttpServlet {
 	protected void doProppatch(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		if (readOnly) {
+        if (fdebug == 1)
+        System.err.println("-- doProppatch");
+
+
+        if (readOnly) {
 			resp.sendError(WebdavStatus.SC_FORBIDDEN);
 
 		} else
@@ -650,10 +665,34 @@ public class WebdavServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp,
 			boolean includeBody) throws ServletException, IOException {
 
-		String lockOwner = "doGet" + System.currentTimeMillis()
-				+ req.toString();
-		String path = getRelativePath(req);
-		if (fResLocks.lock(path, lockOwner, false, 0)) {
+
+        String path = getRelativePath(req);
+
+        if (fdebug == 1)
+        System.err.println("-- doGet " + path);
+
+        try {
+            if (fStore.isFolder(path)) {
+                String dftIndxFile = getServletConfig().getInitParameter("default-index-file");
+                if (dftIndxFile != null) {
+                    resp.sendRedirect(resp.encodeRedirectURL(req.getRequestURI() + dftIndxFile));
+                    return;
+                }
+            }
+            if (!fStore.objectExists(path)) {
+                String insteadOf404 = getServletConfig().getInitParameter("instead-of-404");
+                if (insteadOf404 != null) {
+                    path = insteadOf404;
+                }
+            }
+
+        } catch (WebdavException e) {
+        }
+
+        String lockOwner = "doGet" + System.currentTimeMillis()
+                + req.toString();
+
+        if (fResLocks.lock(path, lockOwner, false, 0)) {
 			try {
 
 				if (fStore.isResource(path)) {
@@ -669,23 +708,31 @@ public class WebdavServlet extends HttpServlet {
 						resp.setDateHeader("last-modified", lastModified);
 
 						long resourceLength = fStore.getResourceLength(path);
-						if (resourceLength > 0) {
-							if (resourceLength <= Integer.MAX_VALUE) {
-								resp.setContentLength((int) resourceLength);
-							} else {
-								resp.setHeader("content-length", ""
-										+ resourceLength);
-								// is "content-length" the right header? is long
-								// a valid format?
-							}
+                        String contLength = getServletConfig().getInitParameter("no-content-length-headers");
+                        if (contLength == null) {
+                            if (resourceLength > 0) {
+                                if (resourceLength <= Integer.MAX_VALUE) {
+                                    resp.setContentLength((int) resourceLength);
+                                } else {
+                                    resp.setHeader("content-length", ""
+                                            + resourceLength);
+                                    // is "content-length" the right header? is long
+                                    // a valid format?
+                                }
+                            }
+                        }
 
-						}
 
-
-						String mimeType = getServletContext().getMimeType(path);
+                        String mimeType = getServletContext().getMimeType(path);
 						if (mimeType != null) {
 							resp.setContentType(mimeType);
-						}
+						} else {
+                            int lastSlash = path.replace('\\','/').lastIndexOf('/');
+                            int lastDot = path.indexOf(".", lastSlash);
+                            if (lastDot == -1) {
+                                resp.setContentType("text/html");
+                            }
+                        }
 
 						if (includeBody) {
 							OutputStream out = resp.getOutputStream();
@@ -754,10 +801,14 @@ public class WebdavServlet extends HttpServlet {
 	 */
 	protected void doHead(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+        if (fdebug == 1)
+        System.err.println("-- doHead");
 		doGet(req, resp, false);
 	}
 
-	/**
+
+
+    /**
 	 * MKCOL Method.
 	 * 
 	 * @param req
@@ -770,7 +821,11 @@ public class WebdavServlet extends HttpServlet {
 	protected void doMkcol(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		if (req.getContentLength() != 0) {
+        if (fdebug == 1)
+        System.err.println("-- doMkcol");
+
+
+        if (req.getContentLength() != 0) {
 			resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
 		} else {
 
@@ -836,7 +891,11 @@ public class WebdavServlet extends HttpServlet {
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		if (!readOnly) {
+        if (fdebug == 1)
+        System.err.println("-- doDelete");
+
+
+        if (!readOnly) {
 			String path = getRelativePath(req);
 			String lockOwner = "doDelete" + System.currentTimeMillis()
 					+ req.toString();
@@ -879,40 +938,44 @@ public class WebdavServlet extends HttpServlet {
 	 */
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		if (!readOnly) {
-			String path = getRelativePath(req);
+
+        if (fdebug == 1)
+        System.err.println("-- doPut");
+
+        if (!readOnly) {
+            String path = getRelativePath(req);
 			String parentPath = getParentPath(path);
 			String lockOwner = "doPut" + System.currentTimeMillis()
 					+ req.toString();
-			if (fResLocks.lock(path, lockOwner, true, -1)) {
-				try {
-					if (parentPath != null && fStore.isFolder(parentPath)
-							&& !fStore.isFolder(path)) {
-						if (!fStore.objectExists(path)) {
-							fStore.createResource(path);
-							resp.setStatus(HttpServletResponse.SC_CREATED);
-						} else {
-							resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-						}
-						fStore.setResourceContent(path, req.getInputStream(),
-								null, null);
-						resp.setContentLength((int) fStore
-								.getResourceLength(path));
-					} else {
-						resp.sendError(WebdavStatus.SC_CONFLICT);
-					}
+            if (fResLocks.lock(path, lockOwner, true, -1)) {
+                try {
+                    if (parentPath != null && !fStore.isFolder(parentPath) && lazyFolderCreationOnPut) {
+                        fStore.createFolder(parentPath);
+                    }
+                    if (!fStore.isFolder(path)) {
+                        if (!fStore.objectExists(path)) {
+                            fStore.createResource(path);
+                            resp.setStatus(HttpServletResponse.SC_CREATED);
+                        } else {
+                            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                        }
+                        fStore.setResourceContent(path, req.getInputStream(),
+                                null, null);
+                        resp.setContentLength((int) fStore
+                                .getResourceLength(path));
+                    }
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
 				} catch (WebdavException e) {
-					resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					fResLocks.unlock(path, lockOwner);
 				}
 			} else {
-				resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
-			resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebdavStatus.SC_FORBIDDEN);
 		}
 
 	}
@@ -932,7 +995,12 @@ public class WebdavServlet extends HttpServlet {
 	protected void doCopy(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		String path = getRelativePath(req);
+        if (fdebug == 1)
+        System.err
+                .println("-- doCopy");
+
+
+        String path = getRelativePath(req);
 		if (!readOnly) {
 			String lockOwner = "doCopy" + System.currentTimeMillis()
 					+ req.toString();
@@ -979,7 +1047,11 @@ public class WebdavServlet extends HttpServlet {
 			throws ServletException, IOException {
 		if (!readOnly) {
 
-			String path = getRelativePath(req);
+            if (fdebug == 1)
+            System.err.println("-- doMove");
+
+
+            String path = getRelativePath(req);
 			String lockOwner = "doMove" + System.currentTimeMillis()
 					+ req.toString();
 			if (fResLocks.lock(path, lockOwner, false, -1)) {

@@ -68,7 +68,22 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 				throw new WebdavException("missing parameter: "
 						+ ROOTPATH_PARAMETER);
 			}
-			root = new File(rootPath);
+            if (rootPath.equals("*WAR-FILE-ROOT*")) {
+                String file = LocalFileSystemStorage.class.getProtectionDomain().getCodeSource().getLocation().getFile().replace('\\','/');
+                if (file.charAt(0) == '/' && System.getProperty("os.name").indexOf("Windows") != -1) {
+                    file = file.substring(1, file.length());
+                }
+
+                int ix = file.indexOf("/WEB-INF/");
+                if (ix != -1) {
+                    rootPath = file.substring(0, ix).replace('/', File.separatorChar);
+                } else {
+                    throw new WebdavException("Could not determine root of war file. Can't extract from path '"
+                            + file + "' for this web container");                    
+                }
+            }
+            root = new File(rootPath);
+
 			if (!root.exists()) {
 				if (!root.mkdirs()) {
 					throw new WebdavException(ROOTPATH_PARAMETER + ": " + root
@@ -148,7 +163,10 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 			if (!file.createNewFile())
 				throw new WebdavException("cannot create file: " + uri);
 		} catch (IOException e) {
-			throw new WebdavException(e);
+            if (debug == 1)
+			System.out.println("LocalFileSystemStore.createResource(" + uri
+					+ ") failed");
+            throw new WebdavException(e);
 		}
 	}
 
@@ -182,7 +200,10 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 				}
 			}
 		} catch (IOException e) {
-			throw new WebdavException(e);
+            if (debug == 1)
+			System.out.println("LocalFileSystemStore.setResourceContent(" + uri
+					+ ") failed");
+            throw new WebdavException(e);
 		}
 	}
 
@@ -250,7 +271,11 @@ public class LocalFileSystemStorage implements IWebdavStorage {
 		try {
 			in = new BufferedInputStream(new FileInputStream(file));
 		} catch (IOException e) {
-			throw new WebdavException(e);
+            if (debug == 1)
+			System.out.println("LocalFileSystemStore.getResourceContent(" + uri
+					+ ") failed");
+
+            throw new WebdavException(e);
 		}
 		return in;
 	}
