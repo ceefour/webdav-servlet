@@ -15,7 +15,7 @@
  */
 
 
-package org.apache.catalina.util;
+package net.sf.webdav.fromcatalina;
 
 
 /**
@@ -26,7 +26,7 @@ package org.apache.catalina.util;
  * of the digest.
  *
  * @author Remy Maucherat
- * @version $Revision: 1.1 $ $Date: 2006-01-19 16:07:06 $
+ * @version $Revision: 1.1 $ $Date: 2007-01-05 03:23:22 $
  */
 
 public final class MD5Encoder {

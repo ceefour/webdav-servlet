@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.catalina.util;
+package net.sf.webdav.fromcatalina;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

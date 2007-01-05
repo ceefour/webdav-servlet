@@ -28,11 +28,11 @@ import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.UnauthenticatedException;
 import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.fromcatalina.MD5Encoder;
+import net.sf.webdav.fromcatalina.RequestUtil;
+import net.sf.webdav.fromcatalina.URLEncoder;
+import net.sf.webdav.fromcatalina.XMLWriter;
 
-import org.apache.catalina.util.MD5Encoder;
-import org.apache.catalina.util.RequestUtil;
-import org.apache.catalina.util.URLEncoder;
-import org.apache.catalina.util.XMLWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
