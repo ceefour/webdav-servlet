@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -119,7 +118,7 @@ public class WebDavServletBean extends HttpServlet {
 
     private ResourceLocks resLocks = null;
 
-    private IWebdavStorage store = null;
+    private WebdavStore store = null;
 
     private static int debug = -1;
 
@@ -1801,7 +1800,7 @@ public class WebDavServletBean extends HttpServlet {
         this.md5Helper = md5Helper;
     }
 
-    public void setStore(IWebdavStorage store) {
+    public void setStore(WebdavStore store) {
         this.store = store;
     }
 

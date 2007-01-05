@@ -8,8 +8,8 @@ public class WebdavStoreFactory {
 		fImplementation = class1;
 	}
 
-	public IWebdavStorage getStore() throws InstantiationException, IllegalAccessException {
-		return (IWebdavStorage) fImplementation.newInstance();
+	public WebdavStore getStore() throws InstantiationException, IllegalAccessException {
+		return (WebdavStore) fImplementation.newInstance();
 	}
 
 }

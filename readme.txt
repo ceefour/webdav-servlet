@@ -27,11 +27,11 @@ INSTALLATION & CONFIGURATION
 		<init-param>
 			<param-name>ResourceHandlerImplementation</param-name>
 			<param-value>
-				net.sf.webdav.LocalFileSystemStorage
+				net.sf.webdav.LocalFileSystemStore
 			</param-value>
 			<description>
 				name of the class that implements
-				net.sf.webdav.IWebdavStorage
+				net.sf.webdav.WebdavStore
 			</description>
 		</init-param>
 		<init-param>

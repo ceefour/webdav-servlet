@@ -18,6 +18,7 @@ package net.sf.webdav;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -52,26 +53,19 @@ public class WebdavServlet extends WebDavServletBean {
         String clazzName = getServletConfig().getInitParameter(
                 "ResourceHandlerImplementation");
 
-        try {
-            Class clazz = WebdavServlet.class.getClassLoader().loadClass(
-                    clazzName);
-            // IWebdavStorage store = factory.getStore();
-            String debugStoreString = (String) getInitParameter(DEBUG_STORE_PARAMETER);
-            int storeDebug = -1;
-            if (debugStoreString != null) {
-                storeDebug = Integer.parseInt(debugStoreString);
-            }
-            Constructor ctor = clazz.getConstructor(new Class[] { Integer.class,
-                    File.class });
-
-            File root = getFileRoot();
-            setStore((IWebdavStorage) ctor.newInstance(new Object[] {
-                    new Integer(storeDebug), root }));
-        } catch (Exception e) {
-            throw new ServletException(e);
+        // WebdavStore store = factory.getStore();
+        String debugStoreString = (String) getInitParameter(DEBUG_STORE_PARAMETER);
+        int storeDebug = -1;
+        if (debugStoreString != null) {
+            storeDebug = Integer.parseInt(debugStoreString);
         }
+        File root = getFileRoot();
 
-        String debugString = (String) getInitParameter(DEBUG_SERVLET_PARAMETER);
+        WebdavStore webdavStore = constructStore(clazzName, storeDebug, root);
+
+        setStore(webdavStore);
+
+        String debugString = getInitParameter(DEBUG_SERVLET_PARAMETER);
         if (debugString == null) {
             setDebug(-1);
         } else {
@@ -83,6 +77,23 @@ public class WebdavServlet extends WebDavServletBean {
         setLazyFolderCreationOnPut(lazyFolderCreationOnPut);
     }
 
+    protected WebdavStore constructStore(String clazzName, int storeDebug, File root) {
+        WebdavStore webdavStore = null;
+        try {
+            Class clazz = WebdavServlet.class.getClassLoader().loadClass(
+                    clazzName);
+
+            Constructor ctor = clazz.getConstructor(new Class[]{Integer.class,
+                    File.class});
+
+            webdavStore = (WebdavStore) ctor.newInstance(new Object[]{
+                    new Integer(storeDebug), root});
+        } catch (Exception e) {
+            throw new RuntimeException("some problem making store component", e);
+        }
+        return webdavStore;
+    }
+
     private File getFileRoot() {
         String rootPath = (String) getInitParameter(ROOTPATH_PARAMETER);
         if (rootPath == null) {
@@ -90,7 +101,7 @@ public class WebdavServlet extends WebDavServletBean {
                     + ROOTPATH_PARAMETER);
         }
         if (rootPath.equals("*WAR-FILE-ROOT*")) {
-            String file = LocalFileSystemStorage.class.getProtectionDomain()
+            String file = LocalFileSystemStore.class.getProtectionDomain()
                     .getCodeSource().getLocation().getFile().replace('\\', '/');
             if (file.charAt(0) == '/'
                     && System.getProperty("os.name").indexOf("Windows") != -1) {
