@@ -16,7 +16,7 @@
 
 package net.sf.webdav.exceptions;
 
-public class WebdavException extends Exception {
+public class WebdavException extends RuntimeException {
     
     public WebdavException(){
         super();

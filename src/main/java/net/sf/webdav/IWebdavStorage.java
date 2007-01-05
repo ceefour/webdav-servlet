@@ -1,7 +1,7 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.4 2006-12-27 11:27:45 joa23 Exp $
- * $Revision: 1.4 $
- * $Date: 2006-12-27 11:27:45 $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStorage.java,v 1.5 2007-01-05 03:13:08 joa23 Exp $
+ * $Revision: 1.5 $
+ * $Date: 2007-01-05 03:13:08 $
  *
  * ====================================================================
  *
@@ -50,12 +50,10 @@ public interface IWebdavStorage {
      * @param principal
      *            the principal that started this request or <code>null</code>
      *            if there is non available
-     * @param parameters
-     *            Hashtable containing the parameters' names and associated
-     *            values configured in the <init-param> from web.xml
+
      * @throws WebdavException
      */
-    void begin(Principal principal,  Hashtable parameters)
+    void begin(Principal principal)
             throws WebdavException;
 
     /**
@@ -237,4 +235,5 @@ public interface IWebdavStorage {
      * 				if something goes wrong on the store level
      */
     void removeObject(String uri) throws WebdavException;
+
 }

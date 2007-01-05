@@ -27,7 +27,7 @@
 		</init-param>
 		<init-param>
 			<param-name>rootpath</param-name>
-			<param-value>d:/tmp/</param-value>
+			<param-value>/tmp/</param-value>
 			<description>
 				place where to store the webdavcontent on the filesystem
 			</description>
