@@ -12,6 +12,7 @@ import net.sf.webdav.methods.DoMove;
 import net.sf.webdav.methods.DoOptions;
 import net.sf.webdav.methods.DoPropfind;
 import net.sf.webdav.methods.DoPut;
+import net.sf.webdav.methods.DoHead;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -39,15 +40,14 @@ public class WebDavServletBean extends HttpServlet {
      */
     private static final boolean readOnly = false;
 
+    private ResourceLocks resLocks;
 
-    private ResourceLocks resLocks = null;
-
-    private WebdavStore store = null;
+    private WebdavStore store;
 
     private int debug = -1;
 
-
     private DoGet doGet;
+    private DoHead doHead;
     private DoDelete doDelete;
     private DoMove doMove;
     private DoCopy doCopy;
@@ -55,8 +55,6 @@ public class WebDavServletBean extends HttpServlet {
     private DoOptions doOptions;
     private DoPut doPut;
     private DoPropfind doPropfind;
-
-    private MimeTyper mimeTyper;
 
 
     public WebDavServletBean() {
@@ -75,15 +73,14 @@ public class WebDavServletBean extends HttpServlet {
         this.store = store;
         this.debug = debug;
 
-        mimeTyper = new MimeTyper() {
-
+        MimeTyper mimeTyper = new MimeTyper() {
             public String getMimeType(String path) {
                 return getServletContext().getMimeType(path);
             }
         };
 
-        doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper,
-                nocontentLenghHeaders, debug);
+        doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug);
+        doHead = new DoHead(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug);
         doDelete = new DoDelete(store, resLocks, readOnly, debug);
         doCopy = new DoCopy(store, resLocks, doDelete, readOnly, debug);
         doMove = new DoMove(resLocks, doDelete, doCopy, readOnly, debug);
@@ -145,7 +142,7 @@ public class WebDavServletBean extends HttpServlet {
                 } else if (method.equals("PUT")) {
                     doPut(req, resp);
                 } else if (method.equals("GET")) {
-                    this.doGet.execute(req, resp, true);
+                    doGet.execute(req, resp);
                 } else if (method.equals("OPTIONS")) {
                     doOptions(req, resp);
                 } else if (method.equals("HEAD")) {
@@ -230,7 +227,7 @@ public class WebDavServletBean extends HttpServlet {
             throws ServletException, IOException {
         if (debug == 1)
             System.err.println("-- doHead");
-        doGet.execute(req, resp, false);
+        doHead.execute(req, resp);
     }
 
     /**

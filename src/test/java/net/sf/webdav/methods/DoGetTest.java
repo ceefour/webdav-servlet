@@ -53,7 +53,7 @@ public class DoGetTest extends MockObjectTestCase {
                 eq("/index.html"));
 
         doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy(), true);
+                (HttpServletResponse) mockRes.proxy());
 
     }
 
@@ -97,7 +97,7 @@ public class DoGetTest extends MockObjectTestCase {
         mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
 
         doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy(), true);
+                (HttpServletResponse) mockRes.proxy());
 
         assertEquals("<hello/>", tos.toString());
 
@@ -129,7 +129,7 @@ public class DoGetTest extends MockObjectTestCase {
         mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
 
         doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy(), true);
+                (HttpServletResponse) mockRes.proxy());
 
         assertEquals("Contents of this Folder:\nAAA\nBBB\n", tos.toString());
 
@@ -156,7 +156,7 @@ public class DoGetTest extends MockObjectTestCase {
         mockRes.expects(once()).method("sendRedirect").with(eq(null));
 
         doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy(), true);
+                (HttpServletResponse) mockRes.proxy());
 
 
     }
@@ -195,7 +195,7 @@ public class DoGetTest extends MockObjectTestCase {
         TestingOutputStream tos = new TestingOutputStream();
         mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
 
-        doGet.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy(), true);
+        doGet.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
 
         assertEquals("<hello/>", tos.toString());
 

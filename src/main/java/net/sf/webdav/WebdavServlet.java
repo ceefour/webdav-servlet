@@ -46,11 +46,11 @@ public class WebdavServlet extends WebDavServletBean {
     public void init() throws ServletException {
 
         // Parameters from web.xml
-        String clazzName = getServletConfig().getInitParameter(
-                "ResourceHandlerImplementation");
+        String clazzName = getServletConfig().getInitParameter("ResourceHandlerImplementation");
+        if (clazzName == null || clazzName.equals("")) {
+            clazzName = LocalFileSystemStore.class.getName();
+        }
 
-        // WebdavStore store = factory.getStore();
-        String debugStoreString = (String) getInitParameter(DEBUG_STORE_PARAMETER);
         int storeDebug = getIntInitParameter(DEBUG_STORE_PARAMETER);
 
         File root = getFileRoot();
