@@ -51,7 +51,7 @@ public class DoHead extends AbstractMethod {
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = getRelativePath(req);
         if (debug == 1)
-            System.err.println("-- doGet " + path);
+            System.err.println("-- do " + req.getMethod());
 
         if (store.isFolder(path)) {
             if (dftIndexFile != null && !dftIndexFile.trim().equals("")) {

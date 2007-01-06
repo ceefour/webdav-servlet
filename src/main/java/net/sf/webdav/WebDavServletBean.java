@@ -3,7 +3,6 @@ package net.sf.webdav;
 import net.sf.webdav.exceptions.UnauthenticatedException;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.fromcatalina.MD5Encoder;
-import net.sf.webdav.methods.AbstractMethod;
 import net.sf.webdav.methods.DoCopy;
 import net.sf.webdav.methods.DoDelete;
 import net.sf.webdav.methods.DoGet;
@@ -13,6 +12,7 @@ import net.sf.webdav.methods.DoOptions;
 import net.sf.webdav.methods.DoPropfind;
 import net.sf.webdav.methods.DoPut;
 import net.sf.webdav.methods.DoHead;
+import net.sf.webdav.methods.DoNotImplemented;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -55,6 +55,7 @@ public class WebDavServletBean extends HttpServlet {
     private DoOptions doOptions;
     private DoPut doPut;
     private DoPropfind doPropfind;
+    private DoNotImplemented doNotImplemented;
 
 
     public WebDavServletBean() {
@@ -88,6 +89,7 @@ public class WebDavServletBean extends HttpServlet {
         doOptions = new DoOptions(store, resLocks, debug);
         doPut = new DoPut(store, resLocks, readOnly, debug, lazyFolderCreationOnPut);
         doPropfind = new DoPropfind(store, resLocks, readOnly, mimeTyper, debug);
+        doNotImplemented = new DoNotImplemented(readOnly, debug);
     }
 
     /**
@@ -132,7 +134,7 @@ public class WebDavServletBean extends HttpServlet {
                 if (method.equals("PROPFIND")) {
                     doPropfind.execute(req, resp);
                 } else if (method.equals("PROPPATCH")) {
-                    doProppatch(req, resp);
+                    doNotImplemented.execute(req, resp);
                 } else if (method.equals("MKCOL")) {
                     doMkcol.execute(req, resp);
                 } else if (method.equals("COPY")) {
@@ -140,13 +142,13 @@ public class WebDavServletBean extends HttpServlet {
                 } else if (method.equals("MOVE")) {
                     doMove.execute(req, resp);
                 } else if (method.equals("PUT")) {
-                    doPut(req, resp);
+                    doPut.execute(req, resp);
                 } else if (method.equals("GET")) {
                     doGet.execute(req, resp);
                 } else if (method.equals("OPTIONS")) {
-                    doOptions(req, resp);
+                    doOptions.execute(req, resp);
                 } else if (method.equals("HEAD")) {
-                    doHead(req, resp);
+                    doHead.execute(req, resp);
                 } else if (method.equals("DELETE")) {
                     doDelete.execute(req, resp);
                 } else {
@@ -168,84 +170,6 @@ public class WebDavServletBean extends HttpServlet {
             throw new ServletException(e);
         }
     }
-
-
-    /**
-     * OPTIONS Method.</br>
-     * 
-     * 
-     * @param req
-     *            HttpServletRequest
-     * @param resp
-     *            HttpServletResponse
-     * @throws IOException
-     *             if an error in the underlying store occurs
-     */
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        doOptions.execute(req, resp);
-    }
-
-    /**
-     * PROPPATCH Method.
-     * 
-     * @param req
-     *            HttpServletRequest
-     * @param resp
-     *            HttpServletResponse
-     * @throws IOException
-     *             if an error in the underlying store occurs
-     */
-    protected void doProppatch(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        if (debug == 1)
-            System.err.println("-- doProppatch");
-
-        if (readOnly) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
-
-        } else
-
-            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        // TODO implement proppatch
-    }
-
-    /**
-     * HEAD Method.
-     * 
-     * @param req
-     *            HttpServletRequest
-     * @param resp
-     *            HttpServletResponse
-     * @throws IOException
-     *             if an error in the underlying store occurs
-     */
-    protected void doHead(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-        if (debug == 1)
-            System.err.println("-- doHead");
-        doHead.execute(req, resp);
-    }
-
-    /**
-     * Process a POST request for the specified resource.
-     * 
-     * @param req
-     *            The servlet request we are processing
-     * @param resp
-     *            The servlet response we are creating
-     * 
-     * @exception WebdavException
-     *                if an error in the underlying store occurs
-     */
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        doPut.execute(req, resp);
-    }
-
 
 
 }
