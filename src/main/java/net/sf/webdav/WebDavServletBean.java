@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 public class WebDavServletBean extends HttpServlet {
 
@@ -46,16 +47,7 @@ public class WebDavServletBean extends HttpServlet {
 
     private int debug = -1;
 
-    private DoGet doGet;
-    private DoHead doHead;
-    private DoDelete doDelete;
-    private DoMove doMove;
-    private DoCopy doCopy;
-    private DoMkcol doMkcol;
-    private DoOptions doOptions;
-    private DoPut doPut;
-    private DoPropfind doPropfind;
-    private DoNotImplemented doNotImplemented;
+    private HashMap methodMap = new HashMap();
 
 
     public WebDavServletBean() {
@@ -80,16 +72,22 @@ public class WebDavServletBean extends HttpServlet {
             }
         };
 
-        doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug);
-        doHead = new DoHead(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug);
-        doDelete = new DoDelete(store, resLocks, readOnly, debug);
-        doCopy = new DoCopy(store, resLocks, doDelete, readOnly, debug);
-        doMove = new DoMove(resLocks, doDelete, doCopy, readOnly, debug);
-        doMkcol = new DoMkcol(store, resLocks, readOnly, debug);
-        doOptions = new DoOptions(store, resLocks, debug);
-        doPut = new DoPut(store, resLocks, readOnly, debug, lazyFolderCreationOnPut);
-        doPropfind = new DoPropfind(store, resLocks, readOnly, mimeTyper, debug);
-        doNotImplemented = new DoNotImplemented(readOnly, debug);
+        register("GET", new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug));
+        register("HEAD", new DoHead(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug));
+        DoDelete doDelete = (DoDelete) register("DELETE", new DoDelete(store, resLocks, readOnly, debug));
+        DoCopy doCopy = (DoCopy) register("COPY", new DoCopy(store, resLocks, doDelete, readOnly, debug));
+        register("MOVE", new DoMove(resLocks, doDelete, doCopy, readOnly, debug));
+        register("MKCOL", new DoMkcol(store, resLocks, readOnly, debug));
+        register("OPTIONS", new DoOptions(store, resLocks, debug));
+        register("PUT", new DoPut(store, resLocks, readOnly, debug, lazyFolderCreationOnPut));
+        register("PROPFIND", new DoPropfind(store, resLocks, readOnly, mimeTyper, debug));
+        register("PROPPATCH", new DoNotImplemented(readOnly, debug));
+        register("*NO*IMPL*", new DoNotImplemented(readOnly, debug));
+    }
+
+    private MethodExecutor register(String methodName, MethodExecutor method) {
+        methodMap.put(methodName, method);
+        return method;
     }
 
     /**
@@ -98,11 +96,11 @@ public class WebDavServletBean extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String method = req.getMethod();
+        String methodName = req.getMethod();
 
         if (debug == 1) {
             System.out.println("-----------");
-            System.out.println("WebdavServlet\n request: method = " + method);
+            System.out.println("WebdavServlet\n request: methodName = " + methodName);
             System.out.println("time: " + System.currentTimeMillis());
             System.out.println("path: " + req.getRequestURI() );
             System.out.println("-----------");
@@ -131,29 +129,11 @@ public class WebDavServletBean extends HttpServlet {
             resp.setStatus(WebdavStatus.SC_OK);
 
             try {
-                if (method.equals("PROPFIND")) {
-                    doPropfind.execute(req, resp);
-                } else if (method.equals("PROPPATCH")) {
-                    doNotImplemented.execute(req, resp);
-                } else if (method.equals("MKCOL")) {
-                    doMkcol.execute(req, resp);
-                } else if (method.equals("COPY")) {
-                    doCopy.execute(req, resp);
-                } else if (method.equals("MOVE")) {
-                    doMove.execute(req, resp);
-                } else if (method.equals("PUT")) {
-                    doPut.execute(req, resp);
-                } else if (method.equals("GET")) {
-                    doGet.execute(req, resp);
-                } else if (method.equals("OPTIONS")) {
-                    doOptions.execute(req, resp);
-                } else if (method.equals("HEAD")) {
-                    doHead.execute(req, resp);
-                } else if (method.equals("DELETE")) {
-                    doDelete.execute(req, resp);
-                } else {
-                    super.service(req, resp);
+                MethodExecutor methodExecutor = (MethodExecutor) methodMap.get(methodName);
+                if (methodExecutor == null) {
+                    methodExecutor = (MethodExecutor) methodMap.get("*NO*IMPL*");
                 }
+                methodExecutor.execute(req, resp);
 
                 store.commit();
             } catch (IOException e) {
