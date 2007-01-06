@@ -47,6 +47,54 @@ public class DoGetTest extends MockObjectTestCase {
 
     }
 
+
+    public void testAccessOfaPageResultsInPage() throws Exception {
+
+        Mock mockStore = mock(WebdavStore.class);
+        mockStore.expects(once()).method("isFolder").with(
+                eq("/index.html")).will(returnValue(false));
+
+        // there is something extraneous about this objectExists() invocation. Whether true or
+        // false it does not affect the outcome
+
+        mockStore.expects(once()).method("objectExists").with(
+                eq("/index.html")).will(returnValue(true));
+        mockStore.expects(once()).method("isResource").with(eq("/index.html"))
+                .will(returnValue(true));
+        Date now = new Date(System.currentTimeMillis());
+        mockStore.expects(once()).method("getLastModified").with(eq("/index.html"))
+                .will(returnValue(now));
+        mockStore.expects(once()).method("getResourceLength").with(eq("/index.html"))
+                .will(returnValue(8L));
+        ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] {'<','h','e','l','l','o','/','>'});
+        mockStore.expects(once()).method("getResourceContent").with(eq("/index.html"))
+                .will(returnValue(bais));
+
+        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
+                new ResourceLocks(), 0, 0);
+        Mock mockReq = mock(HttpServletRequest.class);
+
+        mockReq.expects(once()).method("getAttribute").with(
+                eq("javax.servlet.include.request_uri"))
+                .will(returnValue(null));
+
+        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
+                returnValue("/index.html"));
+
+        Mock mockRes = mock(HttpServletResponse.class);
+        mockRes.expects(once()).method("setDateHeader").with(eq("last-modified"), eq(now.getTime()));
+        mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
+        TestingOutputStream tos = new TestingOutputStream();
+        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
+
+        doGet.execute((HttpServletRequest) mockReq.proxy(),
+                (HttpServletResponse) mockRes.proxy(), true, "text/foo");
+
+        assertEquals("<hello/>", tos.toString());
+
+    }
+
+
     public void testAccessOfaDirectoryResultsInRudimentaryChildList() throws Exception {
 
         Mock mockStore = mock(WebdavStore.class);
@@ -111,7 +159,7 @@ public class DoGetTest extends MockObjectTestCase {
 
     }
 
-    public void testAccessOfaMissingPageResultsIn404s() throws Exception {
+    public void testAccessOfaMissingPageResultsInPossibleAlternatveTo404() throws Exception {
 
         Mock mockStore = mock(WebdavStore.class);
         mockStore.expects(once()).method("isFolder").with(
