@@ -50,7 +50,7 @@ public class DoCopy extends ReportingMethod {
         if (debug == 1)
             System.err.println("-- doCopy");
 
-        String path = AbstractMethod.getRelativePath(req);
+        String path = getRelativePath(req);
         if (!readOnly) {
             String lockOwner = "doCopy" + System.currentTimeMillis()
                     + req.toString();
@@ -158,7 +158,7 @@ public class DoCopy extends ReportingMethod {
             }
         }
 
-        String path = AbstractMethod.getRelativePath(req);
+        String path = getRelativePath(req);
 
         // if source = destination
         if (path.equals(destinationPath)) {

@@ -1,3 +1,18 @@
+/*
+ * Copyright 1999,2004 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.sf.webdav.methods;
 
 import org.w3c.dom.Node;
@@ -20,6 +35,7 @@ import java.text.SimpleDateFormat;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.WebdavStore;
 import net.sf.webdav.ResourceLocks;
+import net.sf.webdav.MimeTyper;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.fromcatalina.XMLWriter;
@@ -64,6 +80,7 @@ public class DoPropfind extends AbstractMethod {
     private WebdavStore store;
     private ResourceLocks resLocks;
     private boolean readOnly;
+    private MimeTyper mimeTyper;
     private int debug;
 
     static {
@@ -80,14 +97,15 @@ public class DoPropfind extends AbstractMethod {
     }
 
 
-    public DoPropfind(WebdavStore store, ResourceLocks resLocks, boolean readOnly, int debug) {
+    public DoPropfind(WebdavStore store, ResourceLocks resLocks, boolean readOnly, MimeTyper mimeTyper, int debug) {
         this.store = store;
         this.resLocks = resLocks;
         this.readOnly = readOnly;
+        this.mimeTyper = mimeTyper;
         this.debug = debug;
     }
 
-    public void execute(HttpServletRequest req, HttpServletResponse resp, String mimeType) throws IOException {
+    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (debug == 1)
             System.err.println("-- doPropfind");
 
@@ -107,7 +125,7 @@ public class DoPropfind extends AbstractMethod {
                 }
 
                 Vector properties = null;
-                path = getCleanPath(AbstractMethod.getRelativePath(req));
+                path = getCleanPath(getRelativePath(req));
 
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;
@@ -126,10 +144,10 @@ public class DoPropfind extends AbstractMethod {
                 generatedXML.writeElement(null, "multistatus xmlns=\"DAV:\"", XMLWriter.OPENING);
                 if (depth == 0) {
                     parseProperties(req, generatedXML, path, propertyFindType,
-                            properties, mimeType);
+                            properties, mimeTyper.getMimeType(path));
                 } else {
                     recursiveParseProperties(path, req, generatedXML,
-                            propertyFindType, properties, depth, mimeType);
+                            propertyFindType, properties, depth, mimeTyper.getMimeType(path));
                 }
                 generatedXML.writeElement(null, "multistatus",
                         XMLWriter.CLOSING);

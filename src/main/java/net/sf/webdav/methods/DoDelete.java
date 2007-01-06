@@ -48,7 +48,7 @@ public class DoDelete extends ReportingMethod {
             System.err.println("-- doDelete");
 
         if (!readOnly) {
-            String path = AbstractMethod.getRelativePath(req);
+            String path = getRelativePath(req);
             String lockOwner = "doDelete" + System.currentTimeMillis()
                     + req.toString();
             if (resourceLocks.lock(path, lockOwner, true, -1)) {

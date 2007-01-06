@@ -56,6 +56,8 @@ public class WebDavServletBean extends HttpServlet {
     private DoPut doPut;
     private DoPropfind doPropfind;
 
+    private MimeTyper mimeTyper;
+
 
     public WebDavServletBean() {
         this.resLocks = new ResourceLocks();
@@ -72,7 +74,15 @@ public class WebDavServletBean extends HttpServlet {
 
         this.store = store;
         this.debug = debug;
-        doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks,
+
+        mimeTyper = new MimeTyper() {
+
+            public String getMimeType(String path) {
+                return getServletContext().getMimeType(path);
+            }
+        };
+
+        doGet = new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper,
                 nocontentLenghHeaders, debug);
         doDelete = new DoDelete(store, resLocks, readOnly, debug);
         doCopy = new DoCopy(store, resLocks, doDelete, readOnly, debug);
@@ -80,7 +90,7 @@ public class WebDavServletBean extends HttpServlet {
         doMkcol = new DoMkcol(store, resLocks, readOnly, debug);
         doOptions = new DoOptions(store, resLocks, debug);
         doPut = new DoPut(store, resLocks, readOnly, debug, lazyFolderCreationOnPut);
-        doPropfind = new DoPropfind(store, resLocks, readOnly, debug);
+        doPropfind = new DoPropfind(store, resLocks, readOnly, mimeTyper, debug);
     }
 
     /**
@@ -95,7 +105,7 @@ public class WebDavServletBean extends HttpServlet {
             System.out.println("-----------");
             System.out.println("WebdavServlet\n request: method = " + method);
             System.out.println("time: " + System.currentTimeMillis());
-            System.out.println("path: " + AbstractMethod.getRelativePath(req));
+            System.out.println("path: " + req.getRequestURI() );
             System.out.println("-----------");
             Enumeration e = req.getHeaderNames();
             while (e.hasMoreElements()) {
@@ -123,8 +133,7 @@ public class WebDavServletBean extends HttpServlet {
 
             try {
                 if (method.equals("PROPFIND")) {
-                    String relativePath = AbstractMethod.getRelativePath(req);
-                    doPropfind.execute(req, resp, getServletContext().getMimeType(relativePath));
+                    doPropfind.execute(req, resp);
                 } else if (method.equals("PROPPATCH")) {
                     doProppatch(req, resp);
                 } else if (method.equals("MKCOL")) {
@@ -136,8 +145,7 @@ public class WebDavServletBean extends HttpServlet {
                 } else if (method.equals("PUT")) {
                     doPut(req, resp);
                 } else if (method.equals("GET")) {
-                    String relativePath = AbstractMethod.getRelativePath(req);
-                    this.doGet.execute(req, resp, true, getServletContext().getMimeType(relativePath));
+                    this.doGet.execute(req, resp, true);
                 } else if (method.equals("OPTIONS")) {
                     doOptions(req, resp);
                 } else if (method.equals("HEAD")) {
@@ -222,9 +230,7 @@ public class WebDavServletBean extends HttpServlet {
             throws ServletException, IOException {
         if (debug == 1)
             System.err.println("-- doHead");
-        String relativePath = AbstractMethod.getRelativePath(req);
-        String mimeType = getServletContext().getMimeType(relativePath);
-        this.doGet.execute(req, resp, false, mimeType);
+        doGet.execute(req, resp, false);
     }
 
     /**

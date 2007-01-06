@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.io.IOException;
 import java.io.Writer;
 
-public class ReportingMethod {
+public abstract class ReportingMethod extends AbstractMethod {
 
     /**
      * Send a multistatus element containing a complete error report to the
@@ -44,7 +44,7 @@ public class ReportingMethod {
         resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
 
         String absoluteUri = req.getRequestURI();
-        String relativePath = AbstractMethod.getRelativePath(req);
+        String relativePath = getRelativePath(req);
 
         XMLWriter generatedXML = new XMLWriter();
         generatedXML.writeXMLHeader();

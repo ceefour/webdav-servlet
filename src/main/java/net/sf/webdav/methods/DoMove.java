@@ -50,7 +50,7 @@ public class DoMove extends ReportingMethod {
             if (debug == 1)
                 System.err.println("-- doMove");
 
-            String path = AbstractMethod.getRelativePath(req);
+            String path = getRelativePath(req);
             String lockOwner = "doMove" + System.currentTimeMillis()
                     + req.toString();
             if (resourceLocks.lock(path, lockOwner, false, -1)) {

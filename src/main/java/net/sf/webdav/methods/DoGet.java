@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ResourceLocks;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.WebdavStore;
+import net.sf.webdav.MimeTyper;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.WebdavException;
@@ -41,21 +42,23 @@ public class DoGet extends AbstractMethod {
 
     private ResourceLocks resLocks;
 
+    private MimeTyper mimeTyper;
     private int contLength;
 
     public DoGet(WebdavStore store, String dftIndexFile, String insteadOf404,
-            ResourceLocks resourceLocks, int contentLengthHeader, int debug) {
+            ResourceLocks resourceLocks, MimeTyper mimeTyper,int contentLengthHeader, int debug) {
         this.store = store;
         this.dftIndexFile = dftIndexFile;
         this.insteadOf404 = insteadOf404;
         this.resLocks = resourceLocks;
+        this.mimeTyper = mimeTyper;
         this.contLength = contentLengthHeader;
         this.debug = debug;
 
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp,
-            boolean includeBody, String mimeType) throws IOException {
+            boolean includeBody) throws IOException {
         String path = getRelativePath(req);
         if (debug == 1)
             System.err.println("-- doGet " + path);
@@ -108,6 +111,7 @@ public class DoGet extends AbstractMethod {
                             }
                         }
 
+                        String mimeType = mimeTyper.getMimeType(path);
                         if (mimeType != null) {
                             resp.setContentType(mimeType);
                         } else {

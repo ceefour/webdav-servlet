@@ -30,7 +30,7 @@ public abstract class AbstractMethod {
      * @param request
      *            The servlet request we are processing
      */
-    public static String getRelativePath(HttpServletRequest request) {
+    protected String getRelativePath(HttpServletRequest request) {
 
         // Are we being processed by a RequestDispatcher.include()?
         if (request.getAttribute("javax.servlet.include.request_uri") != null) {
