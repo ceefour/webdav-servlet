@@ -79,6 +79,34 @@ public class DoGetTest extends MockObjectTestCase {
         assertEquals("Contents of this Folder:\nAAA\nBBB\n", tos.toString());
 
     }
+    public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent() throws Exception {
+
+        Mock mockStore = mock(WebdavStore.class);
+        mockStore.expects(once()).method("isFolder").with(
+                eq("/foo/")).will(returnValue(true));
+
+        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), "/yeehaaa", null,
+                new ResourceLocks(), 0, 0);
+        Mock mockReq = mock(HttpServletRequest.class);
+
+        mockReq.expects(once()).method("getAttribute").with(
+                eq("javax.servlet.include.request_uri"))
+                .will(returnValue(null));
+
+        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
+                returnValue("/foo/"));
+        mockReq.expects(once()).method("getRequestURI").withNoArguments().will(
+                returnValue("/foo"));
+
+        Mock mockRes = mock(HttpServletResponse.class);
+        mockRes.expects(once()).method("encodeRedirectURL").with(eq("/foo/yeehaaa"));
+        mockRes.expects(once()).method("sendRedirect").with(eq(null));
+
+        doGet.execute((HttpServletRequest) mockReq.proxy(),
+                (HttpServletResponse) mockRes.proxy(), true, "text/html");
+
+
+    }
 
 
 
