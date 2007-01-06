@@ -170,7 +170,6 @@ public class WebDavServletBean extends HttpServlet {
     }
 
 
-
     /**
      * OPTIONS Method.</br>
      * 

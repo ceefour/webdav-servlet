@@ -16,9 +16,11 @@
 
 package net.sf.webdav.methods;
 
+import net.sf.webdav.MethodExecutor;
+
 import javax.servlet.http.HttpServletRequest;
 
-public abstract class AbstractMethod {
+public abstract class AbstractMethod implements MethodExecutor {
     
     /**
      * size of the io-buffer
