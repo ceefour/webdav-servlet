@@ -9,19 +9,21 @@ import net.sf.webdav.WebdavStore;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
+import java.io.ByteArrayOutputStream;
+
 public class DoGetTest extends MockObjectTestCase {
 
-    public void testDoGet() throws Exception {
+    public void testAccessOfaMissingPageResultsIn404() throws Exception {
 
-        Mock mockWebdav = mock(WebdavStore.class);
-        mockWebdav.expects(exactly(2)).method("isFolder").with(
+        Mock mockStore = mock(WebdavStore.class);
+        mockStore.expects(exactly(2)).method("isFolder").with(
                 eq("/index.html")).will(returnValue(false));
-        mockWebdav.expects(exactly(2)).method("objectExists").with(
+        mockStore.expects(exactly(2)).method("objectExists").with(
                 eq("/index.html")).will(returnValue(false));
-        mockWebdav.expects(once()).method("isResource").with(eq("/index.html"))
+        mockStore.expects(once()).method("isResource").with(eq("/index.html"))
                 .will(returnValue(false));
 
-        DoGet doGet = new DoGet((WebdavStore) mockWebdav.proxy(), null, null,
+        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
                 new ResourceLocks(), 0, 0);
         Mock mockReq = mock(HttpServletRequest.class);
 
@@ -42,4 +44,42 @@ public class DoGetTest extends MockObjectTestCase {
                 (HttpServletResponse) mockRes.proxy(), true, "text/html");
 
     }
+
+    public void testAccessOfaDirectoryResultsInRudimentaryChildList() throws Exception {
+
+        Mock mockStore = mock(WebdavStore.class);
+        mockStore.expects(exactly(2)).method("isFolder").with(
+                eq("/foo/")).will(returnValue(true));
+        mockStore.expects(once()).method("objectExists").with(
+                eq("/foo/")).will(returnValue(false));
+        mockStore.expects(once()).method("isResource").with(eq("/foo/"))
+                .will(returnValue(false));
+        mockStore.expects(once()).method("getChildrenNames").with(eq("/foo/"))
+                .will(returnValue(new String[] {"AAA","BBB"}));
+
+
+        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
+                new ResourceLocks(), 0, 0);
+        Mock mockReq = mock(HttpServletRequest.class);
+
+        mockReq.expects(once()).method("getAttribute").with(
+                eq("javax.servlet.include.request_uri"))
+                .will(returnValue(null));
+
+        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
+                returnValue("/foo/"));
+
+        Mock mockRes = mock(HttpServletResponse.class);
+        TestingOutputStream tos = new TestingOutputStream();
+        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
+
+        doGet.execute((HttpServletRequest) mockReq.proxy(),
+                (HttpServletResponse) mockRes.proxy(), true, "");
+
+        assertEquals("Contents of this Folder:\nAAA\nBBB\n", tos.toString());
+
+    }
+
+
+
 }
