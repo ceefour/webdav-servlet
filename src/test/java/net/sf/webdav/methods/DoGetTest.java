@@ -10,6 +10,8 @@ import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.util.Date;
 
 public class DoGetTest extends MockObjectTestCase {
 
@@ -79,6 +81,7 @@ public class DoGetTest extends MockObjectTestCase {
         assertEquals("Contents of this Folder:\nAAA\nBBB\n", tos.toString());
 
     }
+
     public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent() throws Exception {
 
         Mock mockStore = mock(WebdavStore.class);
@@ -108,6 +111,47 @@ public class DoGetTest extends MockObjectTestCase {
 
     }
 
+    public void testAccessOfaMissingPageResultsIn404s() throws Exception {
+
+        Mock mockStore = mock(WebdavStore.class);
+        mockStore.expects(once()).method("isFolder").with(
+                eq("/index.html")).will(returnValue(false));
+        mockStore.expects(once()).method("objectExists").with(
+                eq("/index.html")).will(returnValue(false));
+        mockStore.expects(once()).method("isResource").with(eq("/yeehaaa"))
+                .will(returnValue(true));
+        Date now = new Date(System.currentTimeMillis());
+        mockStore.expects(once()).method("getLastModified").with(eq("/yeehaaa"))
+                .will(returnValue(now));
+        mockStore.expects(once()).method("getResourceLength").with(eq("/yeehaaa"))
+                .will(returnValue(8L));
+        ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] {'<','h','e','l','l','o','/','>'});
+        mockStore.expects(once()).method("getResourceContent").with(eq("/yeehaaa"))
+                .will(returnValue(bais));
+
+        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, "/yeehaaa",
+                new ResourceLocks(), 0, 0);
+        Mock mockReq = mock(HttpServletRequest.class);
+
+        mockReq.expects(once()).method("getAttribute").with(
+                eq("javax.servlet.include.request_uri"))
+                .will(returnValue(null));
+
+        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
+                returnValue("/index.html"));
+
+        Mock mockRes = mock(HttpServletResponse.class);
+        mockRes.expects(once()).method("setDateHeader").with(eq("last-modified"), eq(now.getTime()));
+        mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
+        TestingOutputStream tos = new TestingOutputStream();
+        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
+
+        doGet.execute((HttpServletRequest) mockReq.proxy(),
+                (HttpServletResponse) mockRes.proxy(), true, "text/foo");
+
+        assertEquals("<hello/>", tos.toString());
+
+    }
 
 
 }
