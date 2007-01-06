@@ -90,6 +90,7 @@ public class WebdavServlet extends WebDavServletBean {
             webdavStore = (WebdavStore) ctor.newInstance(new Object[] {
                     new Integer(storeDebug), root });
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("some problem making store component", e);
         }
         return webdavStore;
