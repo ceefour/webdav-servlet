@@ -1,7 +1,7 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/WebdavStore.java,v 1.1 2007-01-05 03:37:17 paul-h Exp $
- * $Revision: 1.1 $
- * $Date: 2007-01-05 03:37:17 $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/WebdavStore.java,v 1.2 2007-01-07 00:02:22 paul-h Exp $
+ * $Revision: 1.2 $
+ * $Date: 2007-01-07 00:02:22 $
  *
  * ====================================================================
  *
@@ -28,7 +28,6 @@ import net.sf.webdav.exceptions.WebdavException;
 import java.io.InputStream;
 import java.security.Principal;
 import java.util.Date;
-import java.util.Hashtable;
 
 /**
  * Interface for simple implementation of any store for the WebdavServlet
@@ -56,7 +55,7 @@ public interface WebdavStore {
     void begin(Principal principal);
 
     /**
-     * Checks if authentication information passed in {@link #begin(Service, Principal, Object, LoggerFacade, Hashtable)}
+     * Checks if authentication information passed in
      * is valid. If not throws an exception.
      * 
      */

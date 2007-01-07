@@ -26,34 +26,16 @@ import java.util.HashMap;
 
 public class WebDavServletBean extends HttpServlet {
 
-    /**
-     * MD5 message digest provider.
-     */
-    private MessageDigest md5Helper;
-
-    /**
-     * The MD5 helper object for this class.
-     */
-    protected static final MD5Encoder md5Encoder = new MD5Encoder();
-
-    /**
-     * indicates that the store is readonly ?
-     */
     private static final boolean readOnly = false;
-
     private ResourceLocks resLocks;
-
     private WebdavStore store;
-
     private int debug = -1;
-
     private HashMap methodMap = new HashMap();
-
 
     public WebDavServletBean() {
         this.resLocks = new ResourceLocks();
         try {
-            md5Helper = MessageDigest.getInstance("MD5");
+            MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException();
         }
@@ -99,28 +81,7 @@ public class WebDavServletBean extends HttpServlet {
         String methodName = req.getMethod();
 
         if (debug == 1) {
-            System.out.println("-----------");
-            System.out.println("WebdavServlet\n request: methodName = " + methodName);
-            System.out.println("time: " + System.currentTimeMillis());
-            System.out.println("path: " + req.getRequestURI() );
-            System.out.println("-----------");
-            Enumeration e = req.getHeaderNames();
-            while (e.hasMoreElements()) {
-                String s = (String) e.nextElement();
-                System.out.println("header: " + s + " " + req.getHeader(s));
-            }
-            e = req.getAttributeNames();
-            while (e.hasMoreElements()) {
-                String s = (String) e.nextElement();
-                System.out.println("attribute: " + s + " "
-                        + req.getAttribute(s));
-            }
-            e = req.getParameterNames();
-            while (e.hasMoreElements()) {
-                String s = (String) e.nextElement();
-                System.out.println("parameter: " + s + " "
-                        + req.getParameter(s));
-            }
+            debugRequest(methodName, req);
         }
 
         try {
@@ -148,6 +109,31 @@ public class WebDavServletBean extends HttpServlet {
         } catch (WebdavException e) {
             e.printStackTrace();
             throw new ServletException(e);
+        }
+    }
+
+    private void debugRequest(String methodName, HttpServletRequest req) {
+        System.out.println("-----------");
+        System.out.println("WebdavServlet\n request: methodName = " + methodName);
+        System.out.println("time: " + System.currentTimeMillis());
+        System.out.println("path: " + req.getRequestURI() );
+        System.out.println("-----------");
+        Enumeration e = req.getHeaderNames();
+        while (e.hasMoreElements()) {
+            String s = (String) e.nextElement();
+            System.out.println("header: " + s + " " + req.getHeader(s));
+        }
+        e = req.getAttributeNames();
+        while (e.hasMoreElements()) {
+            String s = (String) e.nextElement();
+            System.out.println("attribute: " + s + " "
+                    + req.getAttribute(s));
+        }
+        e = req.getParameterNames();
+        while (e.hasMoreElements()) {
+            String s = (String) e.nextElement();
+            System.out.println("parameter: " + s + " "
+                    + req.getParameter(s));
         }
     }
 

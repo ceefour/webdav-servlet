@@ -105,10 +105,6 @@ public class LocalFileSystemStore implements WebdavStore {
         return file.isFile();
     }
 
-    /**
-     * @throws IOException
-     *             if the folder cannot be created
-     */
     public void createFolder(String uri) throws WebdavException {
         if (debug == 1)
             System.out
@@ -118,10 +114,6 @@ public class LocalFileSystemStore implements WebdavStore {
             throw new WebdavException("cannot create folder: " + uri);
     }
 
-    /**
-     * @throws IOException
-     *             if the resource cannot be created
-     */
     public void createResource(String uri) throws WebdavException {
         if (debug == 1)
             System.out.println("LocalFileSystemStore.createResource(" + uri
@@ -154,7 +146,7 @@ public class LocalFileSystemStore implements WebdavStore {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(
                     file));
             try {
-                int read = -1;
+                int read;
                 byte[] copyBuffer = new byte[BUF_SIZE];
 
                 while ((read = is.read(copyBuffer, 0, copyBuffer.length)) != -1) {
@@ -175,9 +167,6 @@ public class LocalFileSystemStore implements WebdavStore {
         }
     }
 
-    /**
-     * @return the lastModified Date
-     */
     public Date getLastModified(String uri) throws WebdavException {
         if (debug == 1)
             System.out.println("LocalFileSystemStore.getLastModified(" + uri
@@ -235,7 +224,7 @@ public class LocalFileSystemStore implements WebdavStore {
                     + ")");
         File file = new File(root, uri);
 
-        InputStream in = null;
+        InputStream in;
         try {
             in = new BufferedInputStream(new FileInputStream(file));
         } catch (IOException e) {
@@ -248,9 +237,6 @@ public class LocalFileSystemStore implements WebdavStore {
         return in;
     }
 
-    /**
-     * @return the size of the file
-     */
     public long getResourceLength(String uri) throws WebdavException {
         if (debug == 1)
             System.out.println("LocalFileSystemStore.getResourceLength(" + uri
@@ -259,11 +245,6 @@ public class LocalFileSystemStore implements WebdavStore {
         return file.length();
     }
 
-    /**
-     * @throws IOException
-     *             if the deletion failed
-     * 
-     */
     public void removeObject(String uri) throws WebdavException {
         File file = new File(root, uri);
         boolean success = file.delete();

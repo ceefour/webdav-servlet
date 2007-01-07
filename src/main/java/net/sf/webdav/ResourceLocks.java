@@ -59,6 +59,7 @@ public class ResourceLocks {
      *            if the lock should be exclusive (or shared)
      * @return true if the resource at path was successfully locked, false if an
      *         existing lock prevented this
+     * @param depth depth
      */
     public synchronized boolean lock(String path, String owner,
             boolean exclusive, int depth) {
@@ -137,8 +138,9 @@ public class ResourceLocks {
      * deletes unused LockObjects and resets the counter. works recursively
      * starting at the given LockObject
      * 
-     * @param lo
-     * 
+     * @param lo lock object
+     *
+     * @return if cleaned
      */
     private boolean cleanLockObjects(LockObject lo) {
 
@@ -263,9 +265,7 @@ public class ResourceLocks {
                     }
                 }
 
-                for (int i = 0; i < size; i++) {
-                    newLockObjectOwner[i] = this.fOwner[i];
-                }
+                System.arraycopy(this.fOwner, 0, newLockObjectOwner, 0, size);
                 this.fOwner = newLockObjectOwner;
             }
 
@@ -307,7 +307,7 @@ public class ResourceLocks {
         /**
          * adds a new child lock to this lock
          * 
-         * @param newChild
+         * @param newChild new child
          */
         void addChild(LockObject newChild) {
             if (this.fChildren == null) {
@@ -315,9 +315,7 @@ public class ResourceLocks {
             }
             int size = this.fChildren.length;
             LockObject[] newChildren = new LockObject[size + 1];
-            for (int i = 0; i < size; i++) {
-                newChildren[i] = this.fChildren[i];
-            }
+            System.arraycopy(this.fChildren, 0, newChildren, 0, size);
             newChildren[size] = newChild;
             this.fChildren = newChildren;
         }
@@ -387,20 +385,10 @@ public class ResourceLocks {
 
                 if (this.fOwner == null) {
                     // no owner, checking parents
-                    if(this.fParent!= null){
-                        return this.fParent.checkParents(exclusive);
-                    } else {
-                        return false;
-                    }
+                    return this.fParent != null && this.fParent.checkParents(exclusive);
                 } else {
                     // there already is a owner
-                    if (this.fExclusive || exclusive) {
-                        // the new lock and/or the old lock are exclusive
-                        return false;
-                    } else {
-                        // new and old lock are shared
-                        return this.fParent.checkParents(exclusive);
-                    }
+                    return !(this.fExclusive || exclusive) && this.fParent.checkParents(exclusive);
                 }
             }
         }
@@ -412,24 +400,13 @@ public class ResourceLocks {
          *            wheather the new lock should be exclusive
          * @return true if no locks at the children paths are forbidding a new
          *         lock
+         * @param depth depth
          */
         private boolean checkChildren(boolean exclusive, int depth) {
             if (this.fChildren == null) {
                 // a file
 
-                if (this.fOwner == null) {
-                    // no owner
-                    return true;
-                } else {
-                    // there already is a owner
-                    if (this.fExclusive || exclusive) {
-                        // the new lock and/or the old lock are exclusive
-                        return false;
-                    } else {
-                        // new and old lock are shared
-                        return true;
-                    }
-                }
+                return this.fOwner == null || !(this.fExclusive || exclusive);
             } else {
                 // a folder
 
@@ -452,16 +429,7 @@ public class ResourceLocks {
                     }
                 } else {
                     // there already is a owner
-                    if (this.fExclusive || exclusive) {
-                        // the new lock and/or the old lock are exclusive
-                        return false;
-                    } else {
-                        // new and old lock are shared.
-                        // the old lock was successfully placed, so i can add
-                        // the new one as well, since it has the same
-                        // requirements
-                        return true;
-                    }
+                    return !(this.fExclusive || exclusive);
                 }
             }
 

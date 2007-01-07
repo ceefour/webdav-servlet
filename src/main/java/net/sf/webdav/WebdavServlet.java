@@ -18,9 +18,6 @@ package net.sf.webdav;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.ServletException;
 
@@ -79,7 +76,7 @@ public class WebdavServlet extends WebDavServletBean {
 
     protected WebdavStore constructStore(String clazzName, int storeDebug,
             File root) {
-        WebdavStore webdavStore = null;
+        WebdavStore webdavStore;
         try {
             Class clazz = WebdavServlet.class.getClassLoader().loadClass(
                     clazzName);
@@ -97,7 +94,7 @@ public class WebdavServlet extends WebDavServletBean {
     }
 
     private File getFileRoot() {
-        String rootPath = (String) getInitParameter(ROOTPATH_PARAMETER);
+        String rootPath = getInitParameter(ROOTPATH_PARAMETER);
         if (rootPath == null) {
             throw new WebdavException("missing parameter: "
                     + ROOTPATH_PARAMETER);
