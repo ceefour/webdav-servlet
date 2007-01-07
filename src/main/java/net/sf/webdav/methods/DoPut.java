@@ -64,10 +64,8 @@ public class DoPut extends AbstractMethod {
                         } else {
                             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                         }
-                        store.setResourceContent(path, req.getInputStream(),
-                                null, null);
-                        resp.setContentLength((int) store
-                                .getResourceLength(path));
+                        store.setResourceContent(path, req.getInputStream(), null, null);
+                        resp.setContentLength((int) store.getResourceLength(path));
                     }
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);
