@@ -368,6 +368,13 @@ public class DoPropfind extends AbstractMethod {
         generatedXML.writeElement(null, "href", XMLWriter.OPENING);
 
         String href = req.getContextPath();
+        String servletPath = req.getServletPath();
+		if (servletPath != null) {
+			if ((href.endsWith("/")) && (servletPath.startsWith("/")))
+				href += servletPath.substring(1);
+			else
+				href += servletPath;
+		}
         if ((href.endsWith("/")) && (path.startsWith("/")))
             href += path.substring(1);
         else

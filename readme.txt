@@ -12,7 +12,7 @@ What is it?
 REQUIREMENTS
 
   JDK 1.42 or above
-  apache-tomcat 5.0.28 or above
+  apache-tomcat 5.0.28 or above (or similar)
 
 INSTALLATION & CONFIGURATION
 
@@ -36,10 +36,9 @@ INSTALLATION & CONFIGURATION
 		</init-param>
 		<init-param>
 			<param-name>rootpath</param-name>
-			<param-value>d:/tmp/</param-value>
+			<param-value>/tmp/</pawebdav://localhost:8088ram-value>
 			<description>
-				place where to store the webdavcontent on the local
-				filesystem
+				folder where webdavcontent on the local filesystem is stored
 			</description>
 		</init-param>
 		<init-param>
