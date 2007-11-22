@@ -112,7 +112,7 @@ public class DoPropfind extends AbstractMethod {
         // Retrieve the resources
         String lockOwner = "doPropfind" + System.currentTimeMillis()
                 + req.toString();
-        String path = getRelativePath(req);
+        String path = getCleanPath(getRelativePath(req));
         int depth = getDepth(req);
         if (resLocks.lock(path, lockOwner, false, depth)) {
             try {
@@ -125,7 +125,6 @@ public class DoPropfind extends AbstractMethod {
                 }
 
                 Vector properties = null;
-                path = getCleanPath(getRelativePath(req));
 
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;

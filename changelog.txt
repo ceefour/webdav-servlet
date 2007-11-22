@@ -2,3 +2,4 @@
 + fix bug [ 1532898 ] Context path must be /*
 + add jmock 2.1 dependency
 + fix bug [ 1496904 ] Creating new directory does not work!
++ fix bug [ 1814092 ] Fix lock/unlock on Propfind

@@ -1,18 +1,17 @@
 package net.sf.webdav.methods;
 
+import java.io.ByteArrayInputStream;
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.webdav.MimeTyper;
 import net.sf.webdav.ResourceLocks;
 import net.sf.webdav.WebdavStore;
-import net.sf.webdav.MimeTyper;
 
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
-
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.util.Date;
 
 public class DoGetTest extends MockObjectTestCase {
 
@@ -51,7 +50,7 @@ public class DoGetTest extends MockObjectTestCase {
 
         mockRes.expects(once()).method("sendError").with(eq(404),
                 eq("/index.html"));
-
+        mockRes.expects(once()).method("setStatus").with(eq(404));
         doGet.execute((HttpServletRequest) mockReq.proxy(),
                 (HttpServletResponse) mockRes.proxy());
 
@@ -194,7 +193,7 @@ public class DoGetTest extends MockObjectTestCase {
         mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
         TestingOutputStream tos = new TestingOutputStream();
         mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
-
+        mockRes.expects(once()).method("setStatus").with(eq(404));
         doGet.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
 
         assertEquals("<hello/>", tos.toString());
