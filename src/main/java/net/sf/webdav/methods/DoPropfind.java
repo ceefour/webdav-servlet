@@ -43,6 +43,8 @@ import net.sf.webdav.fromcatalina.URLEncoder;
 
 public class DoPropfind extends AbstractMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     /**
      * Array containing the safe characters set.
      */
@@ -81,7 +83,6 @@ public class DoPropfind extends AbstractMethod {
     private ResourceLocks resLocks;
     private boolean readOnly;
     private MimeTyper mimeTyper;
-    private int debug;
 
     static {
         creationDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -97,17 +98,15 @@ public class DoPropfind extends AbstractMethod {
     }
 
 
-    public DoPropfind(WebdavStore store, ResourceLocks resLocks, boolean readOnly, MimeTyper mimeTyper, int debug) {
+    public DoPropfind(WebdavStore store, ResourceLocks resLocks, boolean readOnly, MimeTyper mimeTyper) {
         this.store = store;
         this.resLocks = resLocks;
         this.readOnly = readOnly;
         this.mimeTyper = mimeTyper;
-        this.debug = debug;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (debug == 1)
-            System.err.println("-- doPropfind");
+        log.trace("-- " + this.getClass().getName() );
 
         // Retrieve the resources
         String lockOwner = "doPropfind" + System.currentTimeMillis()

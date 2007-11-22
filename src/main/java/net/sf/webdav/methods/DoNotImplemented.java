@@ -13,18 +13,17 @@ import java.io.OutputStream;
 import java.io.InputStream;
 
 public class DoNotImplemented implements MethodExecutor {
-    private int debug;
+
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
     private boolean readOnly;
 
 
-    public DoNotImplemented(boolean readOnly, int debug) {
-        this.debug = debug;
+    public DoNotImplemented(boolean readOnly) {
         this.readOnly = readOnly;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (debug == 1)
-            System.err.println("-- " + req.getMethod());
+        log.trace("-- " + req.getMethod());
 
         if (readOnly) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);

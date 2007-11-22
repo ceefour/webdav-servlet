@@ -30,22 +30,21 @@ import java.io.IOException;
 
 public class DoDelete extends ReportingMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     private WebdavStore store;
     private ResourceLocks resourceLocks;
     private boolean readOnly;
-    private int debug;
 
 
-    public DoDelete(WebdavStore store, ResourceLocks resourceLocks, boolean readOnly, int debug) {
+    public DoDelete(WebdavStore store, ResourceLocks resourceLocks, boolean readOnly) {
         this.store = store;
         this.resourceLocks = resourceLocks;
         this.readOnly = readOnly;
-        this.debug = debug;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (debug == 1)
-            System.err.println("-- doDelete");
+        log.trace("-- " + this.getClass().getName() );
 
         if (!readOnly) {
             String path = getRelativePath(req);

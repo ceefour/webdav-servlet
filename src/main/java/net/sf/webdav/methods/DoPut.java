@@ -27,24 +27,23 @@ import java.io.IOException;
 
 public class DoPut extends AbstractMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     private WebdavStore store;
     private ResourceLocks resLocks;
     private boolean readOnly;
-    private int debug;
     private boolean lazyFolderCreationOnPut;
 
-    public DoPut(WebdavStore store, ResourceLocks resLocks, boolean readOnly, int debug, boolean lazyFolderCreationOnPut) {
+    public DoPut(WebdavStore store, ResourceLocks resLocks, boolean readOnly, boolean lazyFolderCreationOnPut) {
         this.store = store;
         this.resLocks = resLocks;
         this.readOnly = readOnly;
-        this.debug = debug;
         this.lazyFolderCreationOnPut = lazyFolderCreationOnPut;
     }
 
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (debug == 1)
-            System.err.println("-- doPut");
+        log.trace("-- " + this.getClass().getName() );
 
         if (!readOnly) {
             String path = getRelativePath(req);

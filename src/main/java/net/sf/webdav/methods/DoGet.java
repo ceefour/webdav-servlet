@@ -28,8 +28,8 @@ import java.io.OutputStream;
 public class DoGet extends DoHead {
 
     public DoGet(WebdavStore store, String dftIndexFile, String insteadOf404,
-            ResourceLocks resourceLocks, MimeTyper mimeTyper,int contentLengthHeader, int debug) {
-        super(store, dftIndexFile, insteadOf404, resourceLocks, mimeTyper, contentLengthHeader, debug);
+            ResourceLocks resourceLocks, MimeTyper mimeTyper,int contentLengthHeader) {
+        super(store, dftIndexFile, insteadOf404, resourceLocks, mimeTyper, contentLengthHeader);
 
     }
 

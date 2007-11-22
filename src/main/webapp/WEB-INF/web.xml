@@ -33,19 +33,6 @@
 			</description>
 		</init-param>
 		
-		 <init-param>
-            <param-name>servletDebug</param-name>
-            <param-value>1</param-value>
-        </init-param>
-		<init-param>
-			<param-name>storeDebug</param-name>
-			<param-value>0</param-value>
-			<description>
-				triggers debug output of the
-				ResourceHandlerImplementation
-			</description>
-		</init-param>
-		
 	    <init-param>
 	        <param-name>lazyFolderCreationOnPut</param-name>
 	        <param-value>0</param-value>

@@ -34,10 +34,6 @@ import net.sf.webdav.exceptions.WebdavException;
 
 public class WebdavServlet extends WebDavServletBean {
 
-    private static final String DEBUG_SERVLET_PARAMETER = "servletDebug";
-
-    private static final String DEBUG_STORE_PARAMETER = "storeDebug";
-
     private static final String ROOTPATH_PARAMETER = "rootpath";
 
     public void init() throws ServletException {
@@ -48,13 +44,9 @@ public class WebdavServlet extends WebDavServletBean {
             clazzName = LocalFileSystemStore.class.getName();
         }
 
-        int storeDebug = getIntInitParameter(DEBUG_STORE_PARAMETER);
-
         File root = getFileRoot();
 
-        WebdavStore webdavStore = constructStore(clazzName, storeDebug, root);
-
-        int servletDebug = getIntInitParameter(DEBUG_SERVLET_PARAMETER);
+        WebdavStore webdavStore = constructStore(clazzName, root);
 
         boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
                 && getInitParameter("lazyFolderCreationOnPut").equals("1");
@@ -65,7 +57,7 @@ public class WebdavServlet extends WebDavServletBean {
         int noContentLengthHeader = getIntInitParameter("no-content-length-headers");
 
         super.init(webdavStore, dftIndexFile, insteadOf404,
-                noContentLengthHeader, lazyFolderCreationOnPut, servletDebug);
+                noContentLengthHeader, lazyFolderCreationOnPut);
     }
 
     private int getIntInitParameter(String key) {
@@ -74,18 +66,17 @@ public class WebdavServlet extends WebDavServletBean {
 
     }
 
-    protected WebdavStore constructStore(String clazzName, int storeDebug,
-            File root) {
+    protected WebdavStore constructStore(String clazzName, File root) {
         WebdavStore webdavStore;
         try {
             Class clazz = WebdavServlet.class.getClassLoader().loadClass(
                     clazzName);
 
             Constructor ctor = clazz.getConstructor(new Class[] {
-                    Integer.class, File.class });
+                    File.class });
 
             webdavStore = (WebdavStore) ctor.newInstance(new Object[] {
-                    new Integer(storeDebug), root });
+                    root });
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("some problem making store component", e);

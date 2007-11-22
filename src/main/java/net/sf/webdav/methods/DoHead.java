@@ -30,24 +30,25 @@ import java.io.IOException;
 
 public class DoHead extends AbstractMethod {
 
-	protected int debug;
 	protected String dftIndexFile;
 	protected WebdavStore store;
 	protected String insteadOf404;
 	protected ResourceLocks resLocks;
 	protected MimeTyper mimeTyper;
 	protected int contLength;
+	
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+	
 
 	public DoHead(WebdavStore store, String dftIndexFile, String insteadOf404,
 			ResourceLocks resourceLocks, MimeTyper mimeTyper,
-			int contentLengthHeader, int debug) {
+			int contentLengthHeader) {
 		this.store = store;
 		this.dftIndexFile = dftIndexFile;
 		this.insteadOf404 = insteadOf404;
 		this.resLocks = resourceLocks;
 		this.mimeTyper = mimeTyper;
 		this.contLength = contentLengthHeader;
-		this.debug = debug;
 	}
 
 	public void execute(HttpServletRequest req, HttpServletResponse resp)
@@ -58,8 +59,9 @@ public class DoHead extends AbstractMethod {
 		boolean bUriExists = false;
 
 		String path = getRelativePath(req);
-		if (debug == 1)
-			System.err.println("-- do " + req.getMethod());
+		log.trace("-- " + this.getClass().getName() ); 
+	
+		log.debug("-- do " + req.getMethod());
 
 		if (store.isFolder(path)) {
 			bUriExists = true;

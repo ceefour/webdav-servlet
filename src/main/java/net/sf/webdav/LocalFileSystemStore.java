@@ -38,20 +38,18 @@ import net.sf.webdav.exceptions.WebdavException;
  */
 public class LocalFileSystemStore implements WebdavStore {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( LocalFileSystemStore.class );
+
     private static int BUF_SIZE = 50000;
 
     private File root = null;
 
-    private int debug = -1;
-
-    public LocalFileSystemStore(Integer debug, File root) {
+    public LocalFileSystemStore(File root) {
         this.root = root;
-        this.debug = debug.intValue();
     }
 
     public void begin(Principal principal) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.begin()");
+        log.trace("LocalFileSystemStore.begin()");
         if (!root.exists()) {
             if (!root.mkdirs()) {
                 throw new WebdavException("root path: "
@@ -62,69 +60,58 @@ public class LocalFileSystemStore implements WebdavStore {
     }
 
     public void checkAuthentication() throws SecurityException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.checkAuthentication()");
+        log.trace("LocalFileSystemStore.checkAuthentication()");
         // do nothing
 
     }
 
     public void commit() throws WebdavException {
         // do nothing
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.commit()");
+        log.trace("LocalFileSystemStore.commit()");
     }
 
     public void rollback() throws WebdavException {
         // do nothing
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.rollback()");
+        log.trace("LocalFileSystemStore.rollback()");
 
     }
 
     public boolean objectExists(String uri) throws WebdavException {
         File file = new File(root, uri);
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.objectExists(" + uri
-                    + ")=" + file.exists());
+        log.trace("LocalFileSystemStore.objectExists(" + uri + ")=" 
+            + file.exists());
         return file.exists();
     }
 
     public boolean isFolder(String uri) throws WebdavException {
         File file = new File(root, uri);
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.isFolder(" + uri + ")="
-                    + file.isDirectory());
+        log.trace("LocalFileSystemStore.isFolder(" + uri + ")=" 
+            + file.isDirectory());
         return file.isDirectory();
     }
 
     public boolean isResource(String uri) throws WebdavException {
         File file = new File(root, uri);
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.isResource(" + uri + ") "
-                    + file.isFile());
+        log.trace("LocalFileSystemStore.isResource(" + uri + ") "
+            + file.isFile());
         return file.isFile();
     }
 
     public void createFolder(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out
-                    .println("LocalFileSystemStore.createFolder(" + uri + ")");
+        log.trace("LocalFileSystemStore.createFolder(" + uri + ")");
         File file = new File(root, uri);
         if (!file.mkdir())
             throw new WebdavException("cannot create folder: " + uri);
     }
 
     public void createResource(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.createResource(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.createResource(" + uri + ")");
         File file = new File(root, uri);
         try {
             if (!file.createNewFile())
                 throw new WebdavException("cannot create file: " + uri);
         } catch (IOException e) {
-            if (debug == 1)
-                System.out.println("LocalFileSystemStore.createResource(" + uri
+            log.error("LocalFileSystemStore.createResource(" + uri
                         + ") failed");
             throw new WebdavException(e);
         }
@@ -138,9 +125,7 @@ public class LocalFileSystemStore implements WebdavStore {
             String contentType, String characterEncoding)
             throws WebdavException {
 
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.setResourceContent(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.setResourceContent(" + uri + ")");
         File file = new File(root, uri);
         try {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(
@@ -160,17 +145,14 @@ public class LocalFileSystemStore implements WebdavStore {
                 }
             }
         } catch (IOException e) {
-            if (debug == 1)
-                System.out.println("LocalFileSystemStore.setResourceContent("
-                        + uri + ") failed");
+            log.error("LocalFileSystemStore.setResourceContent(" + uri 
+                + ") failed");
             throw new WebdavException(e);
         }
     }
 
     public Date getLastModified(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.getLastModified(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.getLastModified(" + uri + ")");
         File file = new File(root, uri);
         return new Date(file.lastModified());
     }
@@ -180,9 +162,7 @@ public class LocalFileSystemStore implements WebdavStore {
      *         a creation date
      */
     public Date getCreationDate(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.getCreationDate(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.getCreationDate(" + uri + ")");
         // TODO return creation date instead of last modified
         File file = new File(root, uri);
         return new Date(file.lastModified());
@@ -193,9 +173,7 @@ public class LocalFileSystemStore implements WebdavStore {
      *         the uri points to a file
      */
     public String[] getChildrenNames(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.getChildrenNames(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.getChildrenNames(" + uri + ")");
         File file = new File(root, uri);
         if (file.isDirectory()) {
 
@@ -219,18 +197,15 @@ public class LocalFileSystemStore implements WebdavStore {
      * @return an input stream to the specified resource
      */
     public InputStream getResourceContent(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.getResourceContent(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.getResourceContent(" + uri + ")");
         File file = new File(root, uri);
 
         InputStream in;
         try {
             in = new BufferedInputStream(new FileInputStream(file));
         } catch (IOException e) {
-            if (debug == 1)
-                System.out.println("LocalFileSystemStore.getResourceContent("
-                        + uri + ") failed");
+            log.error("LocalFileSystemStore.getResourceContent(" + uri 
+                + ") failed");
 
             throw new WebdavException(e);
         }
@@ -238,9 +213,7 @@ public class LocalFileSystemStore implements WebdavStore {
     }
 
     public long getResourceLength(String uri) throws WebdavException {
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.getResourceLength(" + uri
-                    + ")");
+        log.trace("LocalFileSystemStore.getResourceLength(" + uri + ")");
         File file = new File(root, uri);
         return file.length();
     }
@@ -248,9 +221,7 @@ public class LocalFileSystemStore implements WebdavStore {
     public void removeObject(String uri) throws WebdavException {
         File file = new File(root, uri);
         boolean success = file.delete();
-        if (debug == 1)
-            System.out.println("LocalFileSystemStore.removeObject(" + uri
-                    + ")=" + success);
+        log.trace("LocalFileSystemStore.removeObject(" + uri + ")=" + success);
         if (!success) {
             throw new WebdavException("cannot delete object: " + uri);
         }

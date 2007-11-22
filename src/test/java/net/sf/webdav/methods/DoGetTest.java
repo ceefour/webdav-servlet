@@ -37,12 +37,14 @@ public class DoGetTest extends MockObjectTestCase {
                 .will(returnValue(false));
 
         DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0, 0);
+                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
 
         mockReq.expects(once()).method("getAttribute").with(
                 eq("javax.servlet.include.request_uri"))
                 .will(returnValue(null));
 
+        mockReq.expects(once()).method("getMethod").withNoArguments();
+        
         mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
                 returnValue("/index.html"));
         mockReq.expects(once()).method("getRequestURI").withNoArguments().will(
@@ -81,7 +83,7 @@ public class DoGetTest extends MockObjectTestCase {
         mockMimeTyper.expects(once()).method("getMimeType").with(eq("/index.html")).will(returnValue("text/foo"));
 
         DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(),0, 0);
+                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(),0);
 
         mockReq.expects(once()).method("getAttribute").with(
                 eq("javax.servlet.include.request_uri"))
@@ -89,7 +91,7 @@ public class DoGetTest extends MockObjectTestCase {
 
         mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
                 returnValue("/index.html"));
-
+        mockReq.expects(once()).method("getMethod").withNoArguments();
         mockRes.expects(once()).method("setDateHeader").with(eq("last-modified"), eq(now.getTime()));
         mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
         TestingOutputStream tos = new TestingOutputStream();
@@ -115,7 +117,7 @@ public class DoGetTest extends MockObjectTestCase {
                 .will(returnValue(new String[] {"AAA","BBB"}));
 
         DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0, 0);
+                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
 
         mockReq.expects(once()).method("getAttribute").with(
                 eq("javax.servlet.include.request_uri"))
@@ -126,7 +128,8 @@ public class DoGetTest extends MockObjectTestCase {
 
         TestingOutputStream tos = new TestingOutputStream();
         mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
-
+        mockReq.expects(once()).method("getMethod").withNoArguments();
+        
         doGet.execute((HttpServletRequest) mockReq.proxy(),
                 (HttpServletResponse) mockRes.proxy());
 
@@ -140,7 +143,7 @@ public class DoGetTest extends MockObjectTestCase {
                 eq("/foo/")).will(returnValue(true));
 
         DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), "/yeehaaa", null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0, 0);
+                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
 
         mockReq.expects(once()).method("getAttribute").with(
                 eq("javax.servlet.include.request_uri"))
@@ -153,6 +156,7 @@ public class DoGetTest extends MockObjectTestCase {
 
         mockRes.expects(once()).method("encodeRedirectURL").with(eq("/foo/yeehaaa"));
         mockRes.expects(once()).method("sendRedirect").with(eq(null));
+        mockReq.expects(once()).method("getMethod").withNoArguments();
 
         doGet.execute((HttpServletRequest) mockReq.proxy(),
                 (HttpServletResponse) mockRes.proxy());
@@ -180,8 +184,9 @@ public class DoGetTest extends MockObjectTestCase {
         mockMimeTyper.expects(once()).method("getMimeType").with(eq("/yeehaaa")).will(returnValue("text/foo"));
 
         DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, "/yeehaaa",
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0, 0);
-
+                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
+        
+        mockReq.expects(once()).method("getMethod").withNoArguments();
         mockReq.expects(once()).method("getAttribute").with(
                 eq("javax.servlet.include.request_uri"))
                 .will(returnValue(null));

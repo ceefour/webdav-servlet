@@ -39,6 +39,7 @@ public class DoHeadTest extends MockObjectTestCase {
 				.mock(HttpServletResponse.class);
 		mockery.checking(new Expectations() {
 			{
+				one(request).getMethod();
 				String indexHtml = "/index.html";
 				one(webdavStore).isFolder(indexHtml);
 				will(returnValue(false));
@@ -58,7 +59,7 @@ public class DoHeadTest extends MockObjectTestCase {
 		});
 
 		DoHead doHead = new DoHead(webdavStore, null, null,
-				new ResourceLocks(), mimeTyper, 0, 0);
+				new ResourceLocks(), mimeTyper, 0);
 		doHead.execute(request, response);
 		// TODO should this return something to the browser ?
 		mockery.assertIsSatisfied();
@@ -87,12 +88,14 @@ public class DoHeadTest extends MockObjectTestCase {
 				eq("/index.html")).will(returnValue("text/foo"));
 
 		DoHead doHead = new DoHead((WebdavStore) mockStore.proxy(), null, null,
-				new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0, 0);
+				new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
 
 		mockReq.expects(once()).method("getAttribute").with(
 				eq("javax.servlet.include.request_uri"))
 				.will(returnValue(null));
-
+		
+		mockReq.expects(once()).method("getMethod").withNoArguments();
+		
 		mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
 				returnValue("/index.html"));
 
@@ -113,7 +116,7 @@ public class DoHeadTest extends MockObjectTestCase {
 
 		DoHead doHead = new DoHead((WebdavStore) mockStore.proxy(), "/yeehaaa",
 				null, new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(),
-				0, 0);
+				0);
 
 		mockReq.expects(once()).method("getAttribute").with(
 				eq("javax.servlet.include.request_uri"))
@@ -123,6 +126,7 @@ public class DoHeadTest extends MockObjectTestCase {
 				returnValue("/foo/"));
 		mockReq.expects(once()).method("getRequestURI").withNoArguments().will(
 				returnValue("/foo"));
+		mockReq.expects(once()).method("getMethod").withNoArguments();
 
 		mockRes.expects(once()).method("encodeRedirectURL").with(
 				eq("/foo/yeehaaa"));

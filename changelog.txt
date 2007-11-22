@@ -3,3 +3,4 @@
 + add jmock 2.1 dependency
 + fix bug [ 1496904 ] Creating new directory does not work!
 + fix bug [ 1814092 ] Fix lock/unlock on Propfind
++ add improvement [ 1810254 ] Add slf4j logging, including adding slf4j

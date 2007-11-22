@@ -27,20 +27,19 @@ import java.io.IOException;
 
 public class DoOptions extends DeterminableMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     private WebdavStore store;
     private ResourceLocks resLocks;
-    private int debug;
 
-    public DoOptions(WebdavStore store, ResourceLocks resLocks, int debug) {
+    public DoOptions(WebdavStore store, ResourceLocks resLocks) {
         this.store = store;
         this.resLocks = resLocks;
-        this.debug = debug;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-        if (debug == 1)
-            System.err.println("-- doOptions");
+        log.trace("-- " + this.getClass().getName() );
 
         String lockOwner = "doOptions" + System.currentTimeMillis()
                 + req.toString();

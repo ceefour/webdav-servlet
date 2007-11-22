@@ -44,7 +44,7 @@ public class DoOptionsTest extends MockObjectTestCase {
 
         mockRes.expects(once()).method("addHeader").with(eq("MS-Author-Via"), eq("DAV"));
 
-        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks(), 0);
+        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks());
         doOptions.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
     }
 
@@ -68,7 +68,7 @@ public class DoOptionsTest extends MockObjectTestCase {
 
         mockRes.expects(once()).method("addHeader").with(eq("MS-Author-Via"), eq("DAV"));
 
-        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks(), 0);
+        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks());
         doOptions.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
     }
 

@@ -26,10 +26,11 @@ import java.util.HashMap;
 
 public class WebDavServletBean extends HttpServlet {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( WebDavServletBean.class );
+
     private static final boolean readOnly = false;
     private ResourceLocks resLocks;
     private WebdavStore store;
-    private int debug = -1;
     private HashMap methodMap = new HashMap();
 
     public WebDavServletBean() {
@@ -43,10 +44,9 @@ public class WebDavServletBean extends HttpServlet {
 
     public void init(WebdavStore store, String dftIndexFile,
             String insteadOf404, int nocontentLenghHeaders,
-            boolean lazyFolderCreationOnPut, int debug) throws ServletException {
+            boolean lazyFolderCreationOnPut) throws ServletException {
 
         this.store = store;
-        this.debug = debug;
 
         MimeTyper mimeTyper = new MimeTyper() {
             public String getMimeType(String path) {
@@ -54,17 +54,17 @@ public class WebDavServletBean extends HttpServlet {
             }
         };
 
-        register("GET", new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug));
-        register("HEAD", new DoHead(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders, debug));
-        DoDelete doDelete = (DoDelete) register("DELETE", new DoDelete(store, resLocks, readOnly, debug));
-        DoCopy doCopy = (DoCopy) register("COPY", new DoCopy(store, resLocks, doDelete, readOnly, debug));
-        register("MOVE", new DoMove(resLocks, doDelete, doCopy, readOnly, debug));
-        register("MKCOL", new DoMkcol(store, resLocks, readOnly, debug));
-        register("OPTIONS", new DoOptions(store, resLocks, debug));
-        register("PUT", new DoPut(store, resLocks, readOnly, debug, lazyFolderCreationOnPut));
-        register("PROPFIND", new DoPropfind(store, resLocks, readOnly, mimeTyper, debug));
-        register("PROPPATCH", new DoNotImplemented(readOnly, debug));
-        register("*NO*IMPL*", new DoNotImplemented(readOnly, debug));
+        register("GET", new DoGet(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders));
+        register("HEAD", new DoHead(store, dftIndexFile, insteadOf404, resLocks, mimeTyper, nocontentLenghHeaders));
+        DoDelete doDelete = (DoDelete) register("DELETE", new DoDelete(store, resLocks, readOnly));
+        DoCopy doCopy = (DoCopy) register("COPY", new DoCopy(store, resLocks, doDelete, readOnly));
+        register("MOVE", new DoMove(resLocks, doDelete, doCopy, readOnly));
+        register("MKCOL", new DoMkcol(store, resLocks, readOnly));
+        register("OPTIONS", new DoOptions(store, resLocks));
+        register("PUT", new DoPut(store, resLocks, readOnly, lazyFolderCreationOnPut));
+        register("PROPFIND", new DoPropfind(store, resLocks, readOnly, mimeTyper));
+        register("PROPPATCH", new DoNotImplemented(readOnly));
+        register("*NO*IMPL*", new DoNotImplemented(readOnly));
     }
 
     private MethodExecutor register(String methodName, MethodExecutor method) {
@@ -80,9 +80,7 @@ public class WebDavServletBean extends HttpServlet {
 
         String methodName = req.getMethod();
 
-        if (debug == 1) {
-            debugRequest(methodName, req);
-        }
+        debugRequest(methodName, req);
 
         try {
             store.begin(req.getUserPrincipal());
@@ -113,26 +111,26 @@ public class WebDavServletBean extends HttpServlet {
     }
 
     private void debugRequest(String methodName, HttpServletRequest req) {
-        System.out.println("-----------");
-        System.out.println("WebdavServlet\n request: methodName = " + methodName);
-        System.out.println("time: " + System.currentTimeMillis());
-        System.out.println("path: " + req.getRequestURI() );
-        System.out.println("-----------");
+        log.trace("-----------");
+        log.trace("WebdavServlet\n request: methodName = " + methodName);
+        log.trace("time: " + System.currentTimeMillis());
+        log.trace("path: " + req.getRequestURI() );
+        log.trace("-----------");
         Enumeration e = req.getHeaderNames();
         while (e.hasMoreElements()) {
             String s = (String) e.nextElement();
-            System.out.println("header: " + s + " " + req.getHeader(s));
+            log.trace("header: " + s + " " + req.getHeader(s));
         }
         e = req.getAttributeNames();
         while (e.hasMoreElements()) {
             String s = (String) e.nextElement();
-            System.out.println("attribute: " + s + " "
+            log.trace("attribute: " + s + " "
                     + req.getAttribute(s));
         }
         e = req.getParameterNames();
         while (e.hasMoreElements()) {
             String s = (String) e.nextElement();
-            System.out.println("parameter: " + s + " "
+            log.trace("parameter: " + s + " "
                     + req.getParameter(s));
         }
     }

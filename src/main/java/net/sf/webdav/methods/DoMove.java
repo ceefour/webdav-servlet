@@ -29,26 +29,25 @@ import java.io.IOException;
 
 public class DoMove extends ReportingMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     private ResourceLocks resourceLocks;
     private DoDelete doDelete;
     private DoCopy doCopy;
     private boolean readOnly;
-    private int debug;
 
 
-    public DoMove(ResourceLocks resourceLocks, DoDelete doDelete, DoCopy doCopy, boolean readOnly, int debug) {
+    public DoMove(ResourceLocks resourceLocks, DoDelete doDelete, DoCopy doCopy, boolean readOnly) {
         this.resourceLocks = resourceLocks;
         this.doDelete = doDelete;
         this.doCopy = doCopy;
         this.readOnly = readOnly;
-        this.debug = debug;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         if (!readOnly) {
 
-            if (debug == 1)
-                System.err.println("-- doMove");
+            log.trace("-- " + this.getClass().getName() );
 
             String path = getRelativePath(req);
             String lockOwner = "doMove" + System.currentTimeMillis()

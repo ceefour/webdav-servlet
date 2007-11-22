@@ -31,24 +31,23 @@ import java.util.Hashtable;
 
 public class DoCopy extends ReportingMethod {
 
+    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+
     private WebdavStore store;
     private ResourceLocks resourceLocks;
     private DoDelete doDelete;
     private boolean readOnly;
-    private int debug;
 
 
-    public DoCopy(WebdavStore store, ResourceLocks resourceLocks, DoDelete doDelete, boolean readOnly, int debug) {
+    public DoCopy(WebdavStore store, ResourceLocks resourceLocks, DoDelete doDelete, boolean readOnly) {
         this.store = store;
         this.resourceLocks = resourceLocks;
         this.doDelete = doDelete;
         this.readOnly = readOnly;
-        this.debug = debug;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (debug == 1)
-            System.err.println("-- doCopy");
+        log.trace("-- " + this.getClass().getName() );
 
         String path = getRelativePath(req);
         if (!readOnly) {
