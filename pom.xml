@@ -107,6 +107,10 @@
 			<artifactId>maven-javadoc-plugin</artifactId>
 			<version>2.0-beta-3</version>
 		</plugin>
+		<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+ 				<artifactId>cobertura-maven-plugin</artifactId>
+ 		</plugin>
 	</plugins> 
 </reporting>
 <build>
@@ -135,7 +139,22 @@
                <scanIntervalSeconds>2</scanIntervalSeconds>
             </configuration>
          </plugin>
-      </plugins>
+         <plugin>
+ 			<groupId>org.codehaus.mojo</groupId>
+ 			<artifactId>cobertura-maven-plugin</artifactId>
+ 			<configuration>
+ 			<instrumentation>
+ 			</instrumentation>
+ 			</configuration>
+ 			<executions>
+ 			<execution>
+ 			<goals>
+ 				<goal>clean</goal>
+ 			</goals>
+ 			</execution>
+ 			</executions>
+ 			</plugin>
+         </plugins>
 </build>
 
 </project>
