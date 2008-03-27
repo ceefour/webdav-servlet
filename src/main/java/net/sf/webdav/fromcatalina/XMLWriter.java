@@ -235,6 +235,7 @@ public class XMLWriter {
         throws IOException {
         if (writer != null) {
             writer.write(buffer.toString());
+            writer.flush();
             buffer = new StringBuffer();
         }
     }
