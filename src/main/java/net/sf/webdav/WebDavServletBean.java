@@ -96,7 +96,10 @@ public class WebDavServletBean extends HttpServlet {
 
                 store.commit();
             } catch (IOException e) {
-                e.printStackTrace();
+                java.io.StringWriter sw = new java.io.StringWriter();
+                java.io.PrintWriter pw = new java.io.PrintWriter( sw );
+                e.printStackTrace( pw );
+                log.error( "IOException: " + sw.toString() );
                 resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                 store.rollback();
                 throw new ServletException(e);
@@ -105,9 +108,18 @@ public class WebDavServletBean extends HttpServlet {
         } catch (UnauthenticatedException e) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
         } catch (WebdavException e) {
-            e.printStackTrace();
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter( sw );
+            e.printStackTrace( pw );
+            log.error( "WebdavException: " + sw.toString() );
             throw new ServletException(e);
+        } catch ( Exception e ) {
+            java.io.StringWriter sw = new java.io.StringWriter();
+            java.io.PrintWriter pw = new java.io.PrintWriter( sw );
+            e.printStackTrace( pw );
+            log.error( "Exception: " + sw.toString() );
         }
+    
     }
 
     private void debugRequest(String methodName, HttpServletRequest req) {
