@@ -15,29 +15,26 @@
  */
 package net.sf.webdav.methods;
 
-import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
-import net.sf.webdav.exceptions.AccessDeniedException;
-import net.sf.webdav.exceptions.WebdavException;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import net.sf.webdav.ResourceLocks;
+import net.sf.webdav.WebdavStore;
 
 public class DoLock extends DeterminableMethod {
 
     private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
 
-    private WebdavStore store;
-    private ResourceLocks resourceLocks;
-    private boolean readOnly;
+    private WebdavStore _store;
+    private ResourceLocks _resourceLocks;
+    private boolean _readOnly;
 
     public DoLock(WebdavStore store, ResourceLocks resourceLocks, boolean readOnly) {
-        this.store = store;
-        this.resourceLocks = resourceLocks;
-        this.readOnly = readOnly;
+        _store = store;
+        _resourceLocks = resourceLocks;
+        _readOnly = readOnly;
     }
 
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
