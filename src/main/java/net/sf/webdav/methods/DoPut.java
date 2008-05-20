@@ -56,16 +56,27 @@ public class DoPut extends AbstractMethod {
                             && lazyFolderCreationOnPut) {
                         store.createFolder(parentPath);
                     }
-                    if (!store.isFolder(path)) {
-                        if (!store.objectExists(path)) {
-                            store.createResource(path);
-                            resp.setStatus(HttpServletResponse.SC_CREATED);
-                        } else {
-                            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                        }
-                        store.setResourceContent(path, req.getInputStream(), null, null);
-                        resp.setContentLength((int) store.getResourceLength(path));
-                    }
+    		    if (!store.isFolder(path)) {
+    				if (!store.objectExists(path)) {
+    				    store.createResource(path);
+    				    resp.setStatus(HttpServletResponse.SC_CREATED);
+    				} else {
+    				    String userAgent = req.getHeader("User-Agent");
+    				    if (userAgent.contains("WebDAVFS/1.5")) {
+    					log
+    						.trace("DoPut.execute() : do workaround for user agent '"
+    							+ userAgent + "'");
+    					resp.setStatus(HttpServletResponse.SC_CREATED);
+    				    } else {
+    					resp
+    						.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    				    }
+    				}
+    				store.setResourceContent(path, req.getInputStream(),
+    					null, null);
+    				resp.setContentLength((int) store
+    					.getResourceLength(path));
+    			    }
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);
                 } catch (WebdavException e) {
