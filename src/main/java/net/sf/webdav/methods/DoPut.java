@@ -62,7 +62,7 @@ public class DoPut extends AbstractMethod {
     				    resp.setStatus(HttpServletResponse.SC_CREATED);
     				} else {
     				    String userAgent = req.getHeader("User-Agent");
-    				    if (userAgent.contains("WebDAVFS/1.5")) {
+    				    if (-1 != userAgent.indexOf("WebDAVFS/1.5")) {
     					log
     						.trace("DoPut.execute() : do workaround for user agent '"
     							+ userAgent + "'");
