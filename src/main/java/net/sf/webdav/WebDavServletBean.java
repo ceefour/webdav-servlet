@@ -127,9 +127,6 @@ public class WebDavServletBean extends HttpServlet {
 
                 methodExecutor.execute(transaction, req, resp);
 
-                // TODO remove
-                LOG.trace("\nResponse:\n" + resp.toString());
-
                 _store.commit(transaction);
                 needRollback = false;
             } catch (IOException e) {
