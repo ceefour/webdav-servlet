@@ -16,20 +16,20 @@
 
 package net.sf.webdav.exceptions;
 
-public class UnauthenticatedException extends WebdavException { 
-    
-    public UnauthenticatedException(){
+public class UnauthenticatedException extends WebdavException {
+
+    public UnauthenticatedException() {
         super();
     }
-    
+
     public UnauthenticatedException(String message) {
         super(message);
-        }
-    
+    }
+
     public UnauthenticatedException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
     public UnauthenticatedException(Throwable cause) {
         super(cause);
     }

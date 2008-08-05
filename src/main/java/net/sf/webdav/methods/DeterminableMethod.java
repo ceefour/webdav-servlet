@@ -15,38 +15,44 @@
  */
 package net.sf.webdav.methods;
 
+import net.sf.webdav.StoredObject;
+
 public abstract class DeterminableMethod extends AbstractMethod {
+
+    private static final String NULL_RESOURCE_METHODS_ALLOWED = "OPTIONS, MKCOL, PUT, PROPFIND, LOCK, UNLOCK";
+
+    private static final String RESOURCE_METHODS_ALLOWED = "OPTIONS, GET, HEAD, POST, DELETE, TRACE"
+            + ", PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND";
+
+    private static final String FOLDER_METHOD_ALLOWED = ", PUT";
+
+    private static final String LESS_ALLOWED_METHODS = "OPTIONS, MKCOL, PUT";
 
     /**
      * Determines the methods normally allowed for the resource.
-     *
-     * @param exists
-     *            does the resource exist?
-     * @param isFolder
-     *            is the resource a folder?
+     * 
+     * @param so
+     *      StoredObject representing the resource
      * @return all allowed methods, separated by commas
      */
-    protected String determineMethodsAllowed(boolean exists, boolean isFolder) {
-        StringBuffer methodsAllowed = new StringBuffer();
+    protected static String determineMethodsAllowed(StoredObject so) {
+
         try {
-            if (exists) {
-                methodsAllowed
-                        .append("OPTIONS, GET, HEAD, POST, DELETE, TRACE");
-                methodsAllowed
-                        .append(", PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND");
-                if (isFolder) {
-                    methodsAllowed.append(", PUT");
+            if (so != null) {
+                if (so.isNullResource()) {
+
+                    return NULL_RESOURCE_METHODS_ALLOWED;
+
+                } else if (so.isFolder()) {
+                    return RESOURCE_METHODS_ALLOWED + FOLDER_METHOD_ALLOWED;
                 }
-                return methodsAllowed.toString();
+                // else resource
+                return RESOURCE_METHODS_ALLOWED;
             }
         } catch (Exception e) {
             // we do nothing, just return less allowed methods
-
         }
-        methodsAllowed.append("OPTIONS, MKCOL, PUT, LOCK");
-        return methodsAllowed.toString();
 
+        return LESS_ALLOWED_METHODS;
     }
-
-
 }

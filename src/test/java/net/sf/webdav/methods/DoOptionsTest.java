@@ -1,76 +1,105 @@
 package net.sf.webdav.methods;
 
-import org.jmock.Mock;
-import org.jmock.MockObjectTestCase;
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.MimeTyper;
-import net.sf.webdav.ResourceLocks;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-public class DoOptionsTest extends MockObjectTestCase {
+import net.sf.webdav.IMimeTyper;
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.exceptions.LockFailedException;
+import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.testutil.MockTest;
 
-    Mock mockStore;
-    Mock mockMimeTyper;
-    Mock mockReq;
-    Mock mockRes;
+import org.jmock.Expectations;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-    protected void setUp() throws Exception {
-        mockStore = mock(WebdavStore.class);
-        mockMimeTyper = mock(MimeTyper.class);
-        mockReq = mock(HttpServletRequest.class);
-        mockRes = mock(HttpServletResponse.class);
+public class DoOptionsTest extends MockTest {
+
+    static IWebdavStore mockStore;
+    static HttpServletRequest mockReq;
+    static HttpServletResponse mockRes;
+    static IMimeTyper mockMimeTyper;
+    static ITransaction mockTransaction;
+    static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
+            '/', '>' };
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        mockStore = _mockery.mock(IWebdavStore.class);
+        mockMimeTyper = _mockery.mock(IMimeTyper.class);
+        mockReq = _mockery.mock(HttpServletRequest.class);
+        mockRes = _mockery.mock(HttpServletResponse.class);
+        mockTransaction = _mockery.mock(ITransaction.class);
     }
 
-    public void testOptionsOnExistingNode() throws IOException {
+    @Test
+    public void testOptionsOnExistingNode() throws IOException,
+            LockFailedException {
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/index.html"));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        mockRes.expects(once()).method("addHeader").with(eq("DAV"), eq("1, 2"));
+                one(mockReq).getPathInfo();
+                will(returnValue("/index.html"));
 
-        mockStore.expects(once()).method("objectExists").with(
-                eq("/index.html")).will(returnValue(true));
+                one(mockRes).addHeader("DAV", "1, 2");
 
-        mockStore.expects(once()).method("isFolder").with(
-                eq("/index.html")).will(returnValue(false));
-        
-        mockRes.expects(once()).method("addHeader").with(eq("Allow"), eq("OPTIONS, GET, HEAD, POST, DELETE, TRACE, PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND"));
+                StoredObject indexSo = initFileStoredObject(resourceContent);
 
-        mockRes.expects(once()).method("addHeader").with(eq("MS-Author-Via"), eq("DAV"));
+                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                will(returnValue(indexSo));
 
-        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks());
-        doOptions.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
+                one(mockRes).addHeader(
+                        "Allow",
+                        "OPTIONS, GET, HEAD, POST, DELETE, "
+                                + "TRACE, PROPPATCH, COPY, "
+                                + "MOVE, LOCK, UNLOCK, PROPFIND");
+
+                one(mockRes).addHeader("MS-Author-Via", "DAV");
+            }
+        });
+
+        DoOptions doOptions = new DoOptions(mockStore, new ResourceLocks());
+        doOptions.execute(mockTransaction, mockReq, mockRes);
+
+        _mockery.assertIsSatisfied();
     }
 
-    public void testOptionsOnNonExistingNode() throws IOException {
+    @Test
+    public void testOptionsOnNonExistingNode() throws IOException,
+            LockFailedException {
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/index.html"));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        mockRes.expects(once()).method("addHeader").with(eq("DAV"), eq("1, 2"));
+                one(mockReq).getPathInfo();
+                will(returnValue("/index.html"));
 
-        mockStore.expects(once()).method("objectExists").with(
-                eq("/index.html")).will(returnValue(false));
+                one(mockRes).addHeader("DAV", "1, 2");
 
-        mockStore.expects(once()).method("isFolder").with(
-                eq("/index.html")).will(returnValue(false));
+                StoredObject indexSo = null;
 
-        mockRes.expects(once()).method("addHeader").with(eq("Allow"), eq("OPTIONS, MKCOL, PUT, LOCK"));
+                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                will(returnValue(indexSo));
 
-        mockRes.expects(once()).method("addHeader").with(eq("MS-Author-Via"), eq("DAV"));
+                one(mockRes).addHeader("Allow", "OPTIONS, MKCOL, PUT");
 
-        DoOptions doOptions = new DoOptions((WebdavStore) mockStore.proxy(), new ResourceLocks());
-        doOptions.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
+                one(mockRes).addHeader("MS-Author-Via", "DAV");
+            }
+        });
+
+        DoOptions doOptions = new DoOptions(mockStore, new ResourceLocks());
+        doOptions.execute(mockTransaction, mockReq, mockRes);
+
+        _mockery.assertIsSatisfied();
     }
-
 
 }

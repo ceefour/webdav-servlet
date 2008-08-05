@@ -1,9 +1,13 @@
 package net.sf.webdav.methods;
 
-import javax.servlet.ServletOutputStream;
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
+import javax.servlet.ServletOutputStream;
+
+import org.junit.Ignore;
+
+@Ignore
 public class TestingOutputStream extends ServletOutputStream {
 
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();

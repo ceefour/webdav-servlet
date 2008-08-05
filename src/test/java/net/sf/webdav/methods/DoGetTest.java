@@ -1,209 +1,273 @@
 package net.sf.webdav.methods;
 
 import java.io.ByteArrayInputStream;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.webdav.MimeTyper;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.WebdavStore;
+import net.sf.webdav.IMimeTyper;
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.testutil.MockTest;
 
-import org.jmock.Mock;
-import org.jmock.MockObjectTestCase;
+import org.jmock.Expectations;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.mock.web.DelegatingServletInputStream;
 
-public class DoGetTest extends MockObjectTestCase {
+public class DoGetTest extends MockTest {
 
-    Mock mockStore;
-    Mock mockMimeTyper;
-    Mock mockReq;
-    Mock mockRes;
+    static IWebdavStore mockStore;
+    static IMimeTyper mockMimeTyper;
+    static HttpServletRequest mockReq;
+    static HttpServletResponse mockRes;
+    static ITransaction mockTransaction;
+    static TestingOutputStream tos = new TestingOutputStream();;
+    static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
+            '/', '>' };
+    static ByteArrayInputStream bais = new ByteArrayInputStream(resourceContent);
+    static DelegatingServletInputStream dsis = new DelegatingServletInputStream(
+            bais);
 
-    protected void setUp() throws Exception {
-        mockStore = mock(WebdavStore.class);
-        mockMimeTyper = mock(MimeTyper.class);
-        mockReq = mock(HttpServletRequest.class);
-        mockRes = mock(HttpServletResponse.class);
+    @BeforeClass
+    public static void setUp() throws Exception {
+        mockStore = _mockery.mock(IWebdavStore.class);
+        mockMimeTyper = _mockery.mock(IMimeTyper.class);
+        mockReq = _mockery.mock(HttpServletRequest.class);
+        mockRes = _mockery.mock(HttpServletResponse.class);
+        mockTransaction = _mockery.mock(ITransaction.class);
     }
 
+    @Test
     public void testAccessOfaMissingPageResultsIn404() throws Exception {
 
-        mockStore.expects(exactly(2)).method("isFolder").with(
-                eq("/index.html")).will(returnValue(false));
-        mockStore.expects(exactly(2)).method("objectExists").with(
-                eq("/index.html")).will(returnValue(false));
-        mockStore.expects(once()).method("isResource").with(eq("/index.html"))
-                .will(returnValue(false));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
+                one(mockReq).getPathInfo();
+                will(returnValue("/index.html"));
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
+                StoredObject indexSo = null;
 
-        mockReq.expects(once()).method("getMethod").withNoArguments();
-        
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/index.html"));
-        mockReq.expects(once()).method("getRequestURI").withNoArguments().will(
-                returnValue("/index.html"));
+                exactly(2).of(mockStore).getStoredObject(mockTransaction,
+                        "/index.html");
+                will(returnValue(indexSo));
 
-        mockRes.expects(once()).method("sendError").with(eq(404),
-                eq("/index.html"));
-        mockRes.expects(once()).method("setStatus").with(eq(404));
-        doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy());
+                one(mockReq).getRequestURI();
+                will(returnValue("/index.html"));
 
+                one(mockRes)
+                        .sendError(WebdavStatus.SC_NOT_FOUND, "/index.html");
+
+                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+            }
+        });
+
+        DoGet doGet = new DoGet(mockStore, null, null, new ResourceLocks(),
+                mockMimeTyper, 0);
+
+        doGet.execute(mockTransaction, mockReq, mockRes);
+
+        _mockery.assertIsSatisfied();
     }
 
-
+    @Test
     public void testAccessOfaPageResultsInPage() throws Exception {
 
-        mockStore.expects(once()).method("isFolder").with(
-                eq("/index.html")).will(returnValue(false));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        // there is something extraneous about this objectExists() invocation. Whether true or
-        // false it does not affect the outcome
+                one(mockReq).getPathInfo();
+                will(returnValue("/index.html"));
 
-        mockStore.expects(once()).method("objectExists").with(
-                eq("/index.html")).will(returnValue(true));
-        mockStore.expects(once()).method("isResource").with(eq("/index.html"))
-                .will(returnValue(true));
-        Date now = new Date(System.currentTimeMillis());
-        mockStore.expects(once()).method("getLastModified").with(eq("/index.html"))
-                .will(returnValue(now));
-        mockStore.expects(once()).method("getResourceLength").with(eq("/index.html"))
-                .will(returnValue(8L));
-        ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] {'<','h','e','l','l','o','/','>'});
-        mockStore.expects(once()).method("getResourceContent").with(eq("/index.html"))
-                .will(returnValue(bais));
+                StoredObject indexSo = initFileStoredObject(resourceContent);
 
-        mockMimeTyper.expects(once()).method("getMimeType").with(eq("/index.html")).will(returnValue("text/foo"));
+                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                will(returnValue(indexSo));
 
-        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(),0);
+                one(mockReq).getHeader("If-None-Match");
+                will(returnValue(null));
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
+                one(mockRes).setDateHeader("last-modified",
+                        indexSo.getLastModified().getTime());
 
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/index.html"));
-        mockReq.expects(once()).method("getMethod").withNoArguments();
-        mockRes.expects(once()).method("setDateHeader").with(eq("last-modified"), eq(now.getTime()));
-        mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
-        TestingOutputStream tos = new TestingOutputStream();
-        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
+                one(mockRes).addHeader(with(any(String.class)),
+                        with(any(String.class)));
 
-        doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy());
+                one(mockMimeTyper).getMimeType("/index.html");
+                will(returnValue("text/foo"));
+
+                one(mockRes).setContentType("text/foo");
+
+                StoredObject so = initFileStoredObject(resourceContent);
+
+                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                will(returnValue(so));
+
+                one(mockRes).getOutputStream();
+                will(returnValue(tos));
+
+                one(mockStore).getResourceContent(mockTransaction,
+                        "/index.html");
+                will(returnValue(dsis));
+            }
+        });
+
+        DoGet doGet = new DoGet(mockStore, null, null, new ResourceLocks(),
+                mockMimeTyper, 0);
+
+        doGet.execute(mockTransaction, mockReq, mockRes);
 
         assertEquals("<hello/>", tos.toString());
 
+        _mockery.assertIsSatisfied();
     }
 
+    @Test
+    public void testAccessOfaDirectoryResultsInRudimentaryChildList()
+            throws Exception {
 
-    public void testAccessOfaDirectoryResultsInRudimentaryChildList() throws Exception {
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        mockStore.expects(exactly(2)).method("isFolder").with(
-                eq("/foo/")).will(returnValue(true));
-        mockStore.expects(once()).method("objectExists").with(
-                eq("/foo/")).will(returnValue(false));
-        mockStore.expects(once()).method("isResource").with(eq("/foo/"))
-                .will(returnValue(false));
-        mockStore.expects(once()).method("getChildrenNames").with(eq("/foo/"))
-                .will(returnValue(new String[] {"AAA","BBB"}));
+                one(mockReq).getPathInfo();
+                will(returnValue("/foo/"));
 
-        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
+                StoredObject fooSo = initFolderStoredObject();
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
+                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                will(returnValue(fooSo));
 
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/foo/"));
+                one(mockReq).getHeader("If-None-Match");
+                will(returnValue(null));
 
-        TestingOutputStream tos = new TestingOutputStream();
-        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
-        mockReq.expects(once()).method("getMethod").withNoArguments();
-        
-        doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy());
+                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                will(returnValue(fooSo));
+
+                tos = new TestingOutputStream();
+
+                one(mockRes).getOutputStream();
+                will(returnValue(tos));
+
+                one(mockStore).getChildrenNames(mockTransaction, "/foo/");
+                will(returnValue(new String[] { "AAA", "BBB" }));
+            }
+        });
+
+        DoGet doGet = new DoGet(mockStore, null, null, new ResourceLocks(),
+                mockMimeTyper, 0);
+
+        doGet.execute(mockTransaction, mockReq, mockRes);
 
         assertEquals("Contents of this Folder:\nAAA\nBBB\n", tos.toString());
 
+        _mockery.assertIsSatisfied();
     }
 
-    public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent() throws Exception {
+    @Test
+    public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent()
+            throws Exception {
 
-        mockStore.expects(once()).method("isFolder").with(
-                eq("/foo/")).will(returnValue(true));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), "/yeehaaa", null,
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
+                one(mockReq).getPathInfo();
+                will(returnValue("/foo/"));
 
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
+                StoredObject fooSo = initFolderStoredObject();
 
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/foo/"));
-        mockReq.expects(once()).method("getRequestURI").withNoArguments().will(
-                returnValue("/foo"));
+                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                will(returnValue(fooSo));
 
-        mockRes.expects(once()).method("encodeRedirectURL").with(eq("/foo/yeehaaa"));
-        mockRes.expects(once()).method("sendRedirect").with(eq(null));
-        mockReq.expects(once()).method("getMethod").withNoArguments();
+                one(mockReq).getRequestURI();
+                will(returnValue("/foo/"));
 
-        doGet.execute((HttpServletRequest) mockReq.proxy(),
-                (HttpServletResponse) mockRes.proxy());
+                one(mockRes).encodeRedirectURL("/foo//indexFile");
 
+                one(mockRes).sendRedirect("");
+            }
+        });
 
+        DoGet doGet = new DoGet(mockStore, "/indexFile", null,
+                new ResourceLocks(), mockMimeTyper, 0);
+
+        doGet.execute(mockTransaction, mockReq, mockRes);
+
+        _mockery.assertIsSatisfied();
     }
 
-    public void testAccessOfaMissingPageResultsInPossibleAlternatveTo404() throws Exception {
+    @Test
+    public void testAccessOfaMissingPageResultsInPossibleAlternatveTo404()
+            throws Exception {
 
-        mockStore.expects(once()).method("isFolder").with(
-                eq("/index.html")).will(returnValue(false));
-        mockStore.expects(once()).method("objectExists").with(
-                eq("/index.html")).will(returnValue(false));
-        mockStore.expects(once()).method("isResource").with(eq("/yeehaaa"))
-                .will(returnValue(true));
-        Date now = new Date(System.currentTimeMillis());
-        mockStore.expects(once()).method("getLastModified").with(eq("/yeehaaa"))
-                .will(returnValue(now));
-        mockStore.expects(once()).method("getResourceLength").with(eq("/yeehaaa"))
-                .will(returnValue(8L));
-        ByteArrayInputStream bais = new ByteArrayInputStream(new byte[] {'<','h','e','l','l','o','/','>'});
-        mockStore.expects(once()).method("getResourceContent").with(eq("/yeehaaa"))
-                .will(returnValue(bais));
+        _mockery.checking(new Expectations() {
+            {
+                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                will(returnValue(null));
 
-        mockMimeTyper.expects(once()).method("getMimeType").with(eq("/yeehaaa")).will(returnValue("text/foo"));
+                one(mockReq).getPathInfo();
+                will(returnValue("/index.html"));
 
-        DoGet doGet = new DoGet((WebdavStore) mockStore.proxy(), null, "/yeehaaa",
-                new ResourceLocks(), (MimeTyper) mockMimeTyper.proxy(), 0);
-        
-        mockReq.expects(once()).method("getMethod").withNoArguments();
-        mockReq.expects(once()).method("getAttribute").with(
-                eq("javax.servlet.include.request_uri"))
-                .will(returnValue(null));
+                StoredObject indexSo = null;
 
-        mockReq.expects(once()).method("getPathInfo").withNoArguments().will(
-                returnValue("/index.html"));
+                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                will(returnValue(indexSo));
 
-        mockRes.expects(once()).method("setDateHeader").with(eq("last-modified"), eq(now.getTime()));
-        mockRes.expects(once()).method("setContentType").with(eq("text/foo"));
-        TestingOutputStream tos = new TestingOutputStream();
-        mockRes.expects(once()).method("getOutputStream").withNoArguments().will(returnValue(tos));
-        mockRes.expects(once()).method("setStatus").with(eq(404));
-        doGet.execute((HttpServletRequest) mockReq.proxy(), (HttpServletResponse) mockRes.proxy());
+                StoredObject alternativeSo = initFileStoredObject(resourceContent);
+
+                one(mockStore).getStoredObject(mockTransaction, "/alternative");
+                will(returnValue(alternativeSo));
+
+                one(mockReq).getHeader("If-None-Match");
+                will(returnValue(null));
+
+                one(mockRes).setDateHeader("last-modified",
+                        alternativeSo.getLastModified().getTime());
+
+                one(mockRes).addHeader(with(any(String.class)),
+                        with(any(String.class)));
+
+                one(mockMimeTyper).getMimeType("/alternative");
+                will(returnValue("text/foo"));
+
+                one(mockRes).setContentType("text/foo");
+
+                one(mockStore).getStoredObject(mockTransaction, "/alternative");
+                will(returnValue(alternativeSo));
+
+                tos = new TestingOutputStream();
+                tos.write(resourceContent);
+
+                one(mockRes).getOutputStream();
+                will(returnValue(tos));
+
+                one(mockStore).getResourceContent(mockTransaction,
+                        "/alternative");
+                will(returnValue(dsis));
+
+                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+            }
+        });
+
+        DoGet doGet = new DoGet(mockStore, null, "/alternative",
+                new ResourceLocks(), mockMimeTyper, 0);
+
+        doGet.execute(mockTransaction, mockReq, mockRes);
 
         assertEquals("<hello/>", tos.toString());
 
+        _mockery.assertIsSatisfied();
     }
-
 
 }

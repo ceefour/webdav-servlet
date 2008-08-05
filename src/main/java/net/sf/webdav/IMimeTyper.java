@@ -1,6 +1,6 @@
 package net.sf.webdav;
 
-public interface MimeTyper {
+public interface IMimeTyper {
 
     String getMimeType(String path);
 }

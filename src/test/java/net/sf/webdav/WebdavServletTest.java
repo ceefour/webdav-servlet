@@ -1,101 +1,161 @@
 package net.sf.webdav;
 
-import java.util.Enumeration;
-
 import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletContext;
 
-import org.jmock.Mock;
-import org.jmock.MockObjectTestCase;
+import net.sf.webdav.testutil.MockPrincipal;
+import net.sf.webdav.testutil.MockTest;
 
-public class WebdavServletTest extends MockObjectTestCase {
+import org.jmock.Expectations;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.mock.web.MockServletConfig;
+import org.springframework.mock.web.MockServletContext;
 
-    
-    public void testname() throws Exception {
-    assertTrue(true);
+public class WebdavServletTest extends MockTest {
+
+    // private static WebdavServlet _servlet = new WebdavServlet();
+    static ServletConfig servletConfig;
+    static ServletContext servletContext;
+    // static HttpServletRequest mockeryReq;
+    // static HttpServletResponse mockRes;
+    static IWebdavStore mockStore;
+
+    static MockServletConfig mockServletConfig;
+    static MockServletContext mockServletContext;
+    static MockHttpServletRequest mockReq;
+    static MockHttpServletResponse mockRes;
+    static MockHttpSession mockHttpSession;
+    static MockPrincipal mockPrincipal;
+    static ITransaction mockTransaction;
+
+    static boolean readOnly = true;
+    static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
+            '/', '>' };
+    static String dftIndexFile = "/index.html";
+    static String insteadOf404 = "/insteadOf404";
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        servletConfig = _mockery.mock(ServletConfig.class);
+        servletContext = _mockery.mock(ServletContext.class);
+        mockStore = _mockery.mock(IWebdavStore.class);
+
+        mockServletConfig = new MockServletConfig(mockServletContext);
+        mockHttpSession = new MockHttpSession(mockServletContext);
+        mockServletContext = new MockServletContext();
+        mockReq = new MockHttpServletRequest(mockServletContext);
+        mockRes = new MockHttpServletResponse();
+
+        mockPrincipal = new MockPrincipal("Admin", new String[] { "Admin",
+                "Manager" });
+
+        mockTransaction = _mockery.mock(ITransaction.class);
     }
-//	private WebDavServletBean _servlet;
-//
-//	protected void setUp() throws Exception {
-//		_servlet = new WebdavServlet();
-//		Mock servletConfigMock = mock(ServletConfig.class);
-//
-//		// we should have a resource Handler Factory
-//		servletConfigMock.stubs().method("getInitParameter").with(
-//				eq("ResourceHandlerImplementation")).will(
-//				returnValue("net.sf.webdav.LocalFileSystemStorage"));
-//
-//		servletConfigMock.stubs().method("getInitParameter").with(
-//				eq("rootpath")).will(returnValue("./target/tmpTestData/"));
-//
-//		// init parameter names
-//		Mock enumarationMock = mock(Enumeration.class);
-//		enumarationMock.stubs().method("hasMoreElements").withNoArguments()
-//				.will(returnValue(false));
-//		// the very first time we return true
-//		enumarationMock.expects(exactly(1)).method("hasMoreElements")
-//				.withNoArguments().will(returnValue(true));
-//
-//		enumarationMock.stubs().method("nextElement").withNoArguments().will(
-//				returnValue("rootpath"));
-//
-//		Enumeration proxy = (Enumeration) enumarationMock.proxy();
-//		servletConfigMock.stubs().method("getInitParameterNames")
-//				.withAnyArguments().will(returnValue(proxy));
-//
-//		ServletConfig servletConfig = (ServletConfig) servletConfigMock.proxy();
-//		_servlet.init(servletConfig);
-//	}
-//
-//	public void testPropFind() throws Exception {
-//		Mock requestMock = mock(HttpServletRequest.class);
-//		Mock responseMock = mock(HttpServletResponse.class);
-//		_servlet.doPut((HttpServletRequest) requestMock.proxy(),
-//				(HttpServletResponse) responseMock.proxy());
-//	}
-//
-//	public void testPropPatch() throws Exception {
-//	}
-//
-//	public void testMkCol() throws Exception {
-//
-//	}
-//
-//	public void testGet() throws Exception {
-//
-//	}
-//
-//	public void testHead() throws Exception {
-//
-//	}
-//
-//	public void testPost() throws Exception {
-//
-//	}
-//
-//	public void testDelete() throws Exception {
-//
-//	}
-//
-//	public void testPut() throws Exception {
-//
-//	}
-//
-//	public void testCopy() throws Exception {
-//
-//	}
-//
-//	public void testMove() throws Exception {
-//
-//	}
-//
-//	public void testLock() throws Exception {
-//
-//	}
-//
-//	public void testUnlock() throws Exception {
-//
-//	}
 
+    @Test
+    public void testInit() throws Exception {
+
+        _mockery.checking(new Expectations() {
+        });
+
+        WebDavServletBean servlet = new WebdavServlet();
+        servlet.init(mockStore, dftIndexFile, insteadOf404, 1, true);
+
+        _mockery.assertIsSatisfied();
+    }
+
+    // Test successes in eclipse, but fails in "mvn test"
+    // first three expectations aren't successful with "mvn test"
+    @Test
+    public void testInitGenericServlet() throws Exception {
+
+        _mockery.checking(new Expectations() {
+            {
+                allowing(servletConfig).getServletContext();
+                will(returnValue(mockServletContext));
+
+                allowing(servletConfig).getServletName();
+                will(returnValue("webdav-servlet"));
+
+                allowing(servletContext).log("webdav-servlet: init");
+
+                one(servletConfig).getInitParameter(
+                        "ResourceHandlerImplementation");
+                will(returnValue(""));
+
+                one(servletConfig).getInitParameter("rootpath");
+                will(returnValue("./target/tmpTestData/"));
+
+                exactly(2).of(servletConfig).getInitParameter(
+                        "lazyFolderCreationOnPut");
+                will(returnValue("1"));
+
+                one(servletConfig).getInitParameter("default-index-file");
+                will(returnValue("index.html"));
+
+                one(servletConfig).getInitParameter("instead-of-404");
+                will(returnValue(""));
+
+                exactly(2).of(servletConfig).getInitParameter(
+                        "no-content-length-headers");
+                will(returnValue("0"));
+            }
+        });
+
+        WebDavServletBean servlet = new WebdavServlet();
+
+        servlet.init(servletConfig);
+
+        _mockery.assertIsSatisfied();
+    }
+
+    @Test
+    public void testService() throws Exception {
+
+        mockServletConfig.addInitParameter("ResourceHandlerImplementation", "");
+        mockServletConfig.addInitParameter("rootpath", "./target/tmpTestData");
+        mockServletConfig.addInitParameter("lazyFolderCreationOnPut", "1");
+        mockServletConfig.addInitParameter("default-index-file", dftIndexFile);
+        mockServletConfig.addInitParameter("instead-of-404", insteadOf404);
+        mockServletConfig.addInitParameter("no-content-length-headers", "0");
+
+        // StringTokenizer headers = new StringTokenizer(
+        // "Host Depth Content-Type Content-Length");
+        mockReq.setMethod("PUT");
+        mockReq.setAttribute("javax.servlet.include.request_uri", null);
+        mockReq.setPathInfo("/aPath/toAFile");
+        mockReq.setRequestURI("/aPath/toAFile");
+        mockReq.addHeader("Host", "www.foo.bar");
+        mockReq.addHeader("Depth", "0");
+        mockReq.addHeader("Content-Type", "text/xml");
+        mockReq.addHeader("Content-Length", "1234");
+        mockReq.addHeader("User-Agent", "...some Client with WebDAVFS...");
+
+        mockReq.setSession(mockHttpSession);
+        mockPrincipal = new MockPrincipal("Admin", new String[] { "Admin",
+                "Manager" });
+        mockReq.setUserPrincipal(mockPrincipal);
+        mockReq.addUserRole("Admin");
+        mockReq.addUserRole("Manager");
+
+        mockReq.setContent(resourceContent);
+
+        _mockery.checking(new Expectations() {
+            {
+
+            }
+        });
+
+        WebDavServletBean servlet = new WebdavServlet();
+
+        servlet.init(mockServletConfig);
+
+        servlet.service(mockReq, mockRes);
+
+        _mockery.assertIsSatisfied();
+    }
 }

@@ -17,19 +17,19 @@
 package net.sf.webdav.exceptions;
 
 public class ObjectAlreadyExistsException extends WebdavException {
-    
-    public ObjectAlreadyExistsException(){
+
+    public ObjectAlreadyExistsException() {
         super();
     }
-    
+
     public ObjectAlreadyExistsException(String message) {
         super(message);
-        }
-    
+    }
+
     public ObjectAlreadyExistsException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
     public ObjectAlreadyExistsException(Throwable cause) {
         super(cause);
     }

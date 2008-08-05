@@ -15,82 +15,169 @@
  */
 package net.sf.webdav.methods;
 
-import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
-import net.sf.webdav.exceptions.AccessDeniedException;
-import net.sf.webdav.exceptions.WebdavException;
+import java.io.IOException;
+import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-public class DoMkcol extends DeterminableMethod {
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.exceptions.AccessDeniedException;
+import net.sf.webdav.exceptions.LockFailedException;
+import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.locking.IResourceLocks;
+import net.sf.webdav.locking.LockedObject;
 
-    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+public class DoMkcol extends AbstractMethod {
 
-    private WebdavStore store;
-    private ResourceLocks resourceLocks;
-    private boolean readOnly;
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(DoMkcol.class);
 
-    public DoMkcol(WebdavStore store, ResourceLocks resourceLocks, boolean readOnly) {
-        this.store = store;
-        this.resourceLocks = resourceLocks;
-        this.readOnly = readOnly;
+    private IWebdavStore _store;
+    private IResourceLocks _resourceLocks;
+    private boolean _readOnly;
+
+    public DoMkcol(IWebdavStore store, IResourceLocks resourceLocks,
+            boolean readOnly) {
+        _store = store;
+        _resourceLocks = resourceLocks;
+        _readOnly = readOnly;
     }
 
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        log.trace("-- " + this.getClass().getName() );
+    public void execute(ITransaction transaction, HttpServletRequest req,
+            HttpServletResponse resp) throws IOException, LockFailedException {
+        LOG.trace("-- " + this.getClass().getName());
 
-        if (req.getContentLength() != 0) {
-            resp.sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
-        } else {
+        if (!_readOnly) {
+            String path = getRelativePath(req);
+            String parentPath = getParentPath(getCleanPath(path));
 
-            if (!readOnly) {
-                // not readonly
-                String path = getRelativePath(req);
-                String parentPath = getParentPath(path);
-                String lockOwner = "doMkcol" + System.currentTimeMillis()
-                        + req.toString();
-                if (resourceLocks.lock(path, lockOwner, true, 0)) {
-                    try {
-                        if (parentPath != null && store.isFolder(parentPath)) {
-                            boolean isFolder = store.isFolder(path);
-                            if (!store.objectExists(path)) {
-                                try {
-                                    store.createFolder(path);
-                                } catch (ObjectAlreadyExistsException e) {
-                                    String methodsAllowed = determineMethodsAllowed(
-                                            true, isFolder);
-                                    resp.addHeader("Allow", methodsAllowed);
+            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+
+            if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
+                // TODO remove
+                LOG
+                        .trace("MkCol on locked resource (parentPath) not executable!"
+                                + "\n Sending SC_FORBIDDEN (403) error response!");
+
+                resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                return;
+            }
+
+            String tempLockOwner = "doMkcol" + System.currentTimeMillis()
+                    + req.toString();
+
+            if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
+                    TEMP_TIMEOUT, TEMPORARY)) {
+                StoredObject parentSo, so = null;
+                try {
+                    parentSo = _store.getStoredObject(transaction, parentPath);
+                    if (parentPath != null && parentSo != null
+                            && parentSo.isFolder()) {
+                        so = _store.getStoredObject(transaction, path);
+                        if (so == null) {
+                            _store.createFolder(transaction, path);
+                            resp.setStatus(WebdavStatus.SC_CREATED);
+                        } else {
+                            // object already exists
+                            if (so.isNullResource()) {
+
+                                LockedObject nullResourceLo = _resourceLocks
+                                        .getLockedObjectByPath(transaction,
+                                                path);
+                                if (nullResourceLo == null) {
                                     resp
-                                            .sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                                            .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                    return;
                                 }
+                                String nullResourceLockToken = nullResourceLo
+                                        .getID();
+                                String[] lockTokens = getLockIdFromIfHeader(req);
+                                String lockToken = null;
+                                if (lockTokens != null)
+                                    lockToken = lockTokens[0];
+                                else {
+                                    resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                                    return;
+                                }
+                                if (lockToken.equals(nullResourceLockToken)) {
+                                    so.setNullResource(false);
+                                    so.setFolder(true);
+
+                                    String[] nullResourceLockOwners = nullResourceLo
+                                            .getOwner();
+                                    String owner = null;
+                                    if (nullResourceLockOwners != null)
+                                        owner = nullResourceLockOwners[0];
+
+                                    if (_resourceLocks.unlock(transaction,
+                                            lockToken, owner)) {
+                                        resp.setStatus(WebdavStatus.SC_CREATED);
+                                    } else {
+                                        resp
+                                                .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                    }
+
+                                } else {
+                                    // TODO remove
+                                    LOG
+                                            .trace("MkCol on lock-null-resource with wrong lock-token!"
+                                                    + "\n Sending multistatus error report!");
+
+                                    errorList.put(path, WebdavStatus.SC_LOCKED);
+                                    sendReport(req, resp, errorList);
+                                }
+
                             } else {
-                                // object already exists
-                                String methodsAllowed = determineMethodsAllowed(
-                                        true, isFolder);
+                                String methodsAllowed = DeterminableMethod
+                                        .determineMethodsAllowed(so);
                                 resp.addHeader("Allow", methodsAllowed);
                                 resp
                                         .sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
                             }
-                        } else {
-                            resp.sendError(WebdavStatus.SC_CONFLICT);
                         }
-                    } catch (AccessDeniedException e) {
+
+                    } else if (parentPath != null && parentSo != null
+                            && parentSo.isResource()) {
+                        // TODO remove
+                        LOG
+                                .trace("MkCol on resource is not executable"
+                                        + "\n Sending SC_METHOD_NOT_ALLOWED (405) error response!");
+
+                        String methodsAllowed = DeterminableMethod
+                                .determineMethodsAllowed(parentSo);
+                        resp.addHeader("Allow", methodsAllowed);
+                        resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+
+                    } else if (parentPath != null && parentSo == null) {
+                        // TODO remove
+                        LOG
+                                .trace("MkCol on non-existing resource is not executable"
+                                        + "\n Sending SC_NOT_FOUND (404) error response!");
+
+                        errorList.put(parentPath, WebdavStatus.SC_NOT_FOUND);
+                        sendReport(req, resp, errorList);
+                    } else {
                         resp.sendError(WebdavStatus.SC_FORBIDDEN);
-                    } catch (WebdavException e) {
-                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-                    } finally {
-                        resourceLocks.unlock(path, lockOwner);
                     }
-                } else {
+                } catch (AccessDeniedException e) {
+                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                } catch (WebdavException e) {
                     resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                } finally {
+                    _resourceLocks.unlockTemporaryLockedObjects(transaction,
+                            path, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             }
+
+        } else {
+            resp.sendError(WebdavStatus.SC_FORBIDDEN);
         }
     }
+
 }

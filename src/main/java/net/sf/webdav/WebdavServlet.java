@@ -39,14 +39,15 @@ public class WebdavServlet extends WebDavServletBean {
     public void init() throws ServletException {
 
         // Parameters from web.xml
-        String clazzName = getServletConfig().getInitParameter("ResourceHandlerImplementation");
+        String clazzName = getServletConfig().getInitParameter(
+                "ResourceHandlerImplementation");
         if (clazzName == null || clazzName.equals("")) {
             clazzName = LocalFileSystemStore.class.getName();
         }
 
         File root = getFileRoot();
 
-        WebdavStore webdavStore = constructStore(clazzName, root);
+        IWebdavStore webdavStore = constructStore(clazzName, root);
 
         boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
                 && getInitParameter("lazyFolderCreationOnPut").equals("1");
@@ -61,22 +62,21 @@ public class WebdavServlet extends WebDavServletBean {
     }
 
     private int getIntInitParameter(String key) {
-        return getInitParameter(key) != null ? -1 : Integer
+        return getInitParameter(key) == null ? -1 : Integer
                 .parseInt(getInitParameter(key));
-
     }
 
-    protected WebdavStore constructStore(String clazzName, File root) {
-        WebdavStore webdavStore;
+    protected IWebdavStore constructStore(String clazzName, File root) {
+        IWebdavStore webdavStore;
         try {
-            Class clazz = WebdavServlet.class.getClassLoader().loadClass(
+            Class<?> clazz = WebdavServlet.class.getClassLoader().loadClass(
                     clazzName);
 
-            Constructor ctor = clazz.getConstructor(new Class[] {
-                    File.class });
+            Constructor<?> ctor = clazz
+                    .getConstructor(new Class[] { File.class });
 
-            webdavStore = (WebdavStore) ctor.newInstance(new Object[] {
-                    root });
+            webdavStore = (IWebdavStore) ctor
+                    .newInstance(new Object[] { root });
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("some problem making store component", e);

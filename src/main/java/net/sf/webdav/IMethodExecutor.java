@@ -15,12 +15,16 @@
  */
 package net.sf.webdav;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public interface MethodExecutor {
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-    void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException;
+import net.sf.webdav.exceptions.LockFailedException;
+
+public interface IMethodExecutor {
+
+    void execute(ITransaction transaction, HttpServletRequest req,
+            HttpServletResponse resp) throws IOException, LockFailedException;
 
 }

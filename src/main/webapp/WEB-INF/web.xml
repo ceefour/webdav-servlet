@@ -27,7 +27,7 @@
 		</init-param>
 		<init-param>
 			<param-name>rootpath</param-name>
-			<param-value>/tmp/</param-value>
+			<param-value>/tmp/webdav</param-value>
 			<description>
 				place where to store the webdavcontent on the filesystem
 			</description>
@@ -41,7 +41,7 @@
                 created, can be created too if they do not exist.
 	        </description>
 	    </init-param>
-	            <init-param>
+	    <init-param>
             <param-name>no-content-length-headers</param-name>
             <param-value>0</param-value>
             <description>
@@ -55,6 +55,11 @@
         <init-param>
             <param-name>instead-of-404</param-name>
             <param-value></param-value>
+        </init-param>
+        <init-param>
+        	<param-name>maxUploadSize</param-name>
+        	<param-value>2000000000</param-value>
+        	<!-- set to 2G -->
         </init-param>
 
     </servlet>

@@ -15,56 +15,83 @@
  */
 package net.sf.webdav.methods;
 
-import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.exceptions.AccessDeniedException;
-import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
-import net.sf.webdav.exceptions.WebdavException;
+import java.io.IOException;
+import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Hashtable;
-import java.io.IOException;
 
-public class DoMove extends ReportingMethod {
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.exceptions.AccessDeniedException;
+import net.sf.webdav.exceptions.LockFailedException;
+import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
+import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.locking.ResourceLocks;
 
-    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+public class DoMove extends AbstractMethod {
 
-    private ResourceLocks resourceLocks;
-    private DoDelete doDelete;
-    private DoCopy doCopy;
-    private boolean readOnly;
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(DoMove.class);
 
+    private ResourceLocks _resourceLocks;
+    private DoDelete _doDelete;
+    private DoCopy _doCopy;
+    private boolean _readOnly;
 
-    public DoMove(ResourceLocks resourceLocks, DoDelete doDelete, DoCopy doCopy, boolean readOnly) {
-        this.resourceLocks = resourceLocks;
-        this.doDelete = doDelete;
-        this.doCopy = doCopy;
-        this.readOnly = readOnly;
+    public DoMove(ResourceLocks resourceLocks, DoDelete doDelete,
+            DoCopy doCopy, boolean readOnly) {
+        _resourceLocks = resourceLocks;
+        _doDelete = doDelete;
+        _doCopy = doCopy;
+        _readOnly = readOnly;
     }
 
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        if (!readOnly) {
+    public void execute(ITransaction transaction, HttpServletRequest req,
+            HttpServletResponse resp) throws IOException, LockFailedException {
 
-            log.trace("-- " + this.getClass().getName() );
+        if (!_readOnly) {
+            LOG.trace("-- " + this.getClass().getName());
 
-            String path = getRelativePath(req);
-            String lockOwner = "doMove" + System.currentTimeMillis()
+            String sourcePath = getRelativePath(req);
+            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+
+            if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
+                errorList.put(sourcePath, WebdavStatus.SC_LOCKED);
+                sendReport(req, resp, errorList);
+                return;
+            }
+
+            String destinationPath = req.getHeader("Destination");
+            if (destinationPath == null) {
+                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                return;
+            }
+
+            if (!checkLocks(transaction, req, resp, _resourceLocks,
+                    destinationPath)) {
+                errorList.put(destinationPath, WebdavStatus.SC_LOCKED);
+                sendReport(req, resp, errorList);
+                return;
+            }
+
+            String tempLockOwner = "doMove" + System.currentTimeMillis()
                     + req.toString();
-            if (resourceLocks.lock(path, lockOwner, false, -1)) {
-                try {
-                    if (doCopy.copyResource(req, resp)) {
 
-                        Hashtable errorList = new Hashtable();
-                        doDelete.deleteResource(path, errorList, req, resp);
+            if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner,
+                    false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+                try {
+
+                    if (_doCopy.copyResource(transaction, req, resp)) {
+
+                        errorList = new Hashtable<String, Integer>();
+                        _doDelete.deleteResource(transaction, sourcePath,
+                                errorList, req, resp);
                         if (!errorList.isEmpty()) {
                             sendReport(req, resp, errorList);
                         }
-
-                    } else {
-                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                     }
+
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
@@ -73,10 +100,13 @@ public class DoMove extends ReportingMethod {
                 } catch (WebdavException e) {
                     resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
-                    resourceLocks.unlock(path, lockOwner);
+                    _resourceLocks.unlockTemporaryLockedObjects(transaction,
+                            sourcePath, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                errorList.put(req.getHeader("Destination"),
+                        WebdavStatus.SC_LOCKED);
+                sendReport(req, resp, errorList);
             }
         } else {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
@@ -84,4 +114,5 @@ public class DoMove extends ReportingMethod {
         }
 
     }
+
 }

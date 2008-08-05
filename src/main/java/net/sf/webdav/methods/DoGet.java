@@ -15,61 +15,98 @@
  */
 package net.sf.webdav.methods;
 
-import net.sf.webdav.MimeTyper;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.WebdavStore;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.webdav.IMimeTyper;
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.locking.ResourceLocks;
+
 public class DoGet extends DoHead {
 
-    public DoGet(WebdavStore store, String dftIndexFile, String insteadOf404,
-            ResourceLocks resourceLocks, MimeTyper mimeTyper,int contentLengthHeader) {
-        super(store, dftIndexFile, insteadOf404, resourceLocks, mimeTyper, contentLengthHeader);
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(DoGet.class);
+
+    public DoGet(IWebdavStore store, String dftIndexFile, String insteadOf404,
+            ResourceLocks resourceLocks, IMimeTyper mimeTyper,
+            int contentLengthHeader) {
+        super(store, dftIndexFile, insteadOf404, resourceLocks, mimeTyper,
+                contentLengthHeader);
 
     }
 
-    protected void doBody(HttpServletResponse resp, String path) throws IOException {
-        OutputStream out = resp.getOutputStream();
-        InputStream in = store.getResourceContent(path);
-        try {
-            int read = -1;
-            byte[] copyBuffer = new byte[BUF_SIZE];
+    protected void doBody(ITransaction transaction, HttpServletResponse resp,
+            String path) {
 
-            while ((read = in.read(copyBuffer, 0,
-                    copyBuffer.length)) != -1) {
-                out.write(copyBuffer, 0, read);
+        try {
+            StoredObject so = _store.getStoredObject(transaction, path);
+            if (so.isNullResource()) {
+                String methodsAllowed = DeterminableMethod
+                        .determineMethodsAllowed(so);
+                resp.addHeader("Allow", methodsAllowed);
+                resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                return;
             }
-        } finally {
-            in.close();
-            out.flush();
-            out.close();
+
+            OutputStream out = resp.getOutputStream();
+            InputStream in = _store.getResourceContent(transaction, path);
+            try {
+                int read = -1;
+                byte[] copyBuffer = new byte[BUF_SIZE];
+
+                while ((read = in.read(copyBuffer, 0, copyBuffer.length)) != -1) {
+                    out.write(copyBuffer, 0, read);
+                }
+            } finally {
+                // flushing causes a IOE if a file is opened on the webserver
+                // client disconnected before server finished sending response
+                out.flush();
+                in.close();
+                out.close();
+            }
+        } catch (IOException e) {
+            LOG.trace(e.toString());
         }
     }
 
-    protected void folderBody(String path, HttpServletResponse resp, HttpServletRequest req) throws IOException {
-        if (store.isFolder(path)) {
-            // TODO some folder response (for browsers, DAV tools
-            // use propfind) in html?
-            OutputStream out = resp.getOutputStream();
-            String[] children = store.getChildrenNames(path);
-            StringBuffer childrenTemp = new StringBuffer();
-            childrenTemp.append("Contents of this Folder:\n");
-            for (int i = 0; i < children.length; i++) {
-                childrenTemp.append(children[i]);
-                childrenTemp.append("\n");
-            }
-            out.write(childrenTemp.toString().getBytes());
+    protected void folderBody(ITransaction transaction, String path,
+            HttpServletResponse resp, HttpServletRequest req)
+            throws IOException {
+
+        StoredObject so = _store.getStoredObject(transaction, path);
+        if (so == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, req
+                    .getRequestURI());
         } else {
-            if (!store.objectExists(path)) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        req.getRequestURI());
+
+            if (so.isNullResource()) {
+                String methodsAllowed = DeterminableMethod
+                        .determineMethodsAllowed(so);
+                resp.addHeader("Allow", methodsAllowed);
+                resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                return;
             }
 
+            if (so.isFolder()) {
+                // TODO some folder response (for browsers, DAV tools
+                // use propfind) in html?
+                OutputStream out = resp.getOutputStream();
+                String[] children = _store.getChildrenNames(transaction, path);
+                StringBuffer childrenTemp = new StringBuffer();
+                childrenTemp.append("Contents of this Folder:\n");
+                for (String child : children) {
+                    childrenTemp.append(child);
+                    childrenTemp.append("\n");
+                }
+                out.write(childrenTemp.toString().getBytes());
+            }
         }
     }
 

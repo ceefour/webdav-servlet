@@ -6,7 +6,7 @@ What is it?
   (IWebdavStorage) has to be implemented, an example (LocalFileSystemStorage)
   which uses the local filesystem, is provided.
   Unlike large systems (like slide), this servlet only supports the most basic
-  data access options. locking, versioning or user management are not supported
+  data access options. versioning or user management are not supported
 
   
 REQUIREMENTS
@@ -36,7 +36,7 @@ INSTALLATION & CONFIGURATION
 		</init-param>
 		<init-param>
 			<param-name>rootpath</param-name>
-			<param-value>/tmp/</pawebdav://localhost:8088ram-value>
+			<param-value>/tmp/webdav</param-value>
 			<description>
 				folder where webdavcontent on the local filesystem is stored
 			</description>

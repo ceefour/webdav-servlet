@@ -15,53 +15,45 @@
  */
 package net.sf.webdav.methods;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Vector;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.util.*;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 
+import net.sf.webdav.IMimeTyper;
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.MimeTyper;
 import net.sf.webdav.exceptions.AccessDeniedException;
+import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
-import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.fromcatalina.URLEncoder;
+import net.sf.webdav.fromcatalina.XMLHelper;
+import net.sf.webdav.fromcatalina.XMLWriter;
+import net.sf.webdav.locking.LockedObject;
+import net.sf.webdav.locking.ResourceLocks;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 public class DoPropfind extends AbstractMethod {
 
-    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(DoPropfind.class);
 
     /**
      * Array containing the safe characters set.
      */
-    protected static URLEncoder urlEncoder;
-
-
-    /**
-     * Simple date format for the creation date ISO representation (partial).
-     */
-    protected static final SimpleDateFormat creationDateFormat = new SimpleDateFormat(
-            "yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-
-    /**
-     * Default depth is infite.
-     */
-    private static final int INFINITY = 3;
+    protected static URLEncoder URL_ENCODER;
 
     /**
      * PROPFIND - Specify a property mask.
@@ -78,301 +70,211 @@ public class DoPropfind extends AbstractMethod {
      */
     private static final int FIND_PROPERTY_NAMES = 2;
 
+    private IWebdavStore _store;
+    private ResourceLocks _resourceLocks;
+    private IMimeTyper _mimeTyper;
 
-    private WebdavStore store;
-    private ResourceLocks resLocks;
-    private boolean readOnly;
-    private MimeTyper mimeTyper;
+    private int _depth;
 
-    static {
-        creationDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        /**
-         * GMT timezone - all HTTP dates are on GMT
-         */
-        urlEncoder = new URLEncoder();
-        urlEncoder.addSafeCharacter('-');
-        urlEncoder.addSafeCharacter('_');
-        urlEncoder.addSafeCharacter('.');
-        urlEncoder.addSafeCharacter('*');
-        urlEncoder.addSafeCharacter('/');
+    public DoPropfind(IWebdavStore store, ResourceLocks resLocks,
+            IMimeTyper mimeTyper) {
+        _store = store;
+        _resourceLocks = resLocks;
+        _mimeTyper = mimeTyper;
     }
 
-
-    public DoPropfind(WebdavStore store, ResourceLocks resLocks, boolean readOnly, MimeTyper mimeTyper) {
-        this.store = store;
-        this.resLocks = resLocks;
-        this.readOnly = readOnly;
-        this.mimeTyper = mimeTyper;
-    }
-
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        log.trace("-- " + this.getClass().getName() );
+    public void execute(ITransaction transaction, HttpServletRequest req,
+            HttpServletResponse resp) throws IOException, LockFailedException {
+        LOG.trace("-- " + this.getClass().getName());
 
         // Retrieve the resources
-        String lockOwner = "doPropfind" + System.currentTimeMillis()
-                + req.toString();
         String path = getCleanPath(getRelativePath(req));
-        int depth = getDepth(req);
-        if (resLocks.lock(path, lockOwner, false, depth)) {
+        String tempLockOwner = "doPropfind" + System.currentTimeMillis()
+                + req.toString();
+        _depth = getDepth(req);
+
+        if (_resourceLocks.lock(transaction, path, tempLockOwner, false,
+                _depth, TEMP_TIMEOUT, TEMPORARY)) {
+
+            StoredObject so = null;
             try {
-                if (!store.objectExists(path)) {
-                    resp
-                            .sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                so = _store.getStoredObject(transaction, path);
+                if (so == null) {
+                    resp.setContentType("text/xml; charset=UTF-8");
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, req
+                            .getRequestURI());
                     return;
-                    // we do not to continue since there is no root
-                    // resource
                 }
 
-                Vector properties = null;
+                Vector<String> properties = null;
+                path = getCleanPath(getRelativePath(req));
 
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;
-                getPropertyNodeAndType(propNode, propertyFindType, req);
+
+                if (req.getContentLength() != 0) {
+                    DocumentBuilder documentBuilder = getDocumentBuilder();
+                    try {
+                        Document document = documentBuilder
+                                .parse(new InputSource(req.getInputStream()));
+                        // Get the root element of the document
+                        Element rootElement = document.getDocumentElement();
+
+                        propNode = XMLHelper
+                                .findSubElement(rootElement, "prop");
+                        if (propNode != null) {
+                            propertyFindType = FIND_BY_PROPERTY;
+                        } else if (XMLHelper.findSubElement(rootElement,
+                                "propname") != null) {
+                            propertyFindType = FIND_PROPERTY_NAMES;
+                        } else if (XMLHelper.findSubElement(rootElement,
+                                "allprop") != null) {
+                            propertyFindType = FIND_ALL_PROP;
+                        }
+                    } catch (Exception e) {
+                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                        return;
+                    }
+                } else {
+                    // no content, which means it is a allprop request
+                    propertyFindType = FIND_ALL_PROP;
+                }
+
+                HashMap<String, String> namespaces = new HashMap<String, String>();
+                namespaces.put("DAV:", "D");
 
                 if (propertyFindType == FIND_BY_PROPERTY) {
-                    properties = getPropertiesFromXML(propNode);
+                    propertyFindType = 0;
+                    properties = XMLHelper.getPropertiesFromXML(propNode);
                 }
 
                 resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
                 resp.setContentType("text/xml; charset=UTF-8");
 
                 // Create multistatus object
-                XMLWriter generatedXML = new XMLWriter(resp.getWriter());
+                XMLWriter generatedXML = new XMLWriter(resp.getWriter(),
+                        namespaces);
                 generatedXML.writeXMLHeader();
-                generatedXML.writeElement(null, "multistatus xmlns=\"DAV:\"", XMLWriter.OPENING);
-                if (depth == 0) {
-                    parseProperties(req, generatedXML, path, propertyFindType,
-                            properties, mimeTyper.getMimeType(path));
+                generatedXML
+                        .writeElement("DAV::multistatus", XMLWriter.OPENING);
+                if (_depth == 0) {
+                    parseProperties(transaction, req, generatedXML, path,
+                            propertyFindType, properties, _mimeTyper
+                                    .getMimeType(path));
                 } else {
-                    recursiveParseProperties(path, req, generatedXML,
-                            propertyFindType, properties, depth, mimeTyper.getMimeType(path));
+                    recursiveParseProperties(transaction, path, req,
+                            generatedXML, propertyFindType, properties, _depth,
+                            _mimeTyper.getMimeType(path));
                 }
-                generatedXML.writeElement(null, "multistatus",
-                        XMLWriter.CLOSING);
+                generatedXML
+                        .writeElement("DAV::multistatus", XMLWriter.CLOSING);
+
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {
                 resp.sendError(WebdavStatus.SC_FORBIDDEN);
             } catch (WebdavException e) {
+                LOG.warn("Sending internal error!");
                 resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             } catch (ServletException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace(); // To change body of catch statement use
+                // File | Settings | File Templates.
             } finally {
-                resLocks.unlock(path, lockOwner);
+                _resourceLocks.unlockTemporaryLockedObjects(transaction, path,
+                        tempLockOwner);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            errorList.put(path, WebdavStatus.SC_LOCKED);
+            sendReport(req, resp, errorList);
         }
-    }
-
-    /**
-     * reads the depth header from the request and returns it as a int
-     *
-     * @param req
-     * @return the depth from the depth header
-     */
-    private int getDepth(HttpServletRequest req) {
-        int depth = INFINITY;
-        String depthStr = req.getHeader("Depth");
-        if (depthStr != null) {
-            if (depthStr.equals("0")) {
-                depth = 0;
-            } else if (depthStr.equals("1")) {
-                depth = 1;
-            } else if (depthStr.equals("infinity")) {
-                depth = INFINITY;
-            }
-        }
-        return depth;
-    }
-
-    /**
-     * removes a / at the end of the path string, if present
-     *
-     * @param path
-     *            the path
-     * @return the path without trailing /
-     */
-    private String getCleanPath(String path) {
-
-        if (path.endsWith("/") && path.length() > 1)
-            path = path.substring(0, path.length() - 1);
-        return path;
-    }
-
-    /**
-     * overwrites propNode and type, parsed from xml input stream
-     *
-     * @param propNode
-     * @param type
-     * @param req
-     *            HttpServletRequest
-     * @throws javax.servlet.ServletException
-     */
-    private void getPropertyNodeAndType(Node propNode, int type,
-            ServletRequest req) throws ServletException {
-        if (req.getContentLength() != 0) {
-            DocumentBuilder documentBuilder = getDocumentBuilder();
-            try {
-                Document document = documentBuilder.parse(new InputSource(req
-                        .getInputStream()));
-                // Get the root element of the document
-                Element rootElement = document.getDocumentElement();
-                NodeList childList = rootElement.getChildNodes();
-
-                for (int i = 0; i < childList.getLength(); i++) {
-                    Node currentNode = childList.item(i);
-                    switch (currentNode.getNodeType()) {
-                    case Node.TEXT_NODE:
-                        break;
-                    case Node.ELEMENT_NODE:
-                        if (currentNode.getNodeName().endsWith("prop")) {
-                            type = FIND_BY_PROPERTY;
-                            propNode = currentNode;
-                        }
-                        if (currentNode.getNodeName().endsWith("propname")) {
-                            type = FIND_PROPERTY_NAMES;
-                        }
-                        if (currentNode.getNodeName().endsWith("allprop")) {
-                            type = FIND_ALL_PROP;
-                        }
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-
-            }
-        } else {
-            // no content, which means it is a allprop request
-            type = FIND_ALL_PROP;
-        }
-    }
-
-    /**
-     * Return JAXP document builder instance.
-     */
-    private DocumentBuilder getDocumentBuilder() throws ServletException {
-        DocumentBuilder documentBuilder = null;
-        DocumentBuilderFactory documentBuilderFactory = null;
-        try {
-            documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new ServletException("jaxp failed");
-        }
-        return documentBuilder;
-    }
-
-    private Vector getPropertiesFromXML(Node propNode) {
-        Vector properties;
-        properties = new Vector();
-        NodeList childList = propNode.getChildNodes();
-
-        for (int i = 0; i < childList.getLength(); i++) {
-            Node currentNode = childList.item(i);
-            switch (currentNode.getNodeType()) {
-            case Node.TEXT_NODE:
-                break;
-            case Node.ELEMENT_NODE:
-                String nodeName = currentNode.getNodeName();
-                String propertyName = null;
-                if (nodeName.indexOf(':') != -1) {
-                    propertyName = nodeName
-                            .substring(nodeName.indexOf(':') + 1);
-                } else {
-                    propertyName = nodeName;
-                }
-                // href is a live property which is handled differently
-                properties.addElement(propertyName);
-                break;
-            }
-        }
-        return properties;
     }
 
     /**
      * goes recursive through all folders. used by propfind
-     *
+     * 
      * @param currentPath
-     *            the current path
+     *      the current path
      * @param req
-     *            HttpServletRequest
+     *      HttpServletRequest
      * @param generatedXML
      * @param propertyFindType
      * @param properties
      * @param depth
-     *            depth of the propfind
+     *      depth of the propfind
      * @throws IOException
-     *             if an error in the underlying store occurs
+     *      if an error in the underlying store occurs
      */
-    private void recursiveParseProperties(String currentPath,
-            HttpServletRequest req, XMLWriter generatedXML,
-            int propertyFindType, Vector properties, int depth, String mimeType)
-            throws WebdavException {
+    private void recursiveParseProperties(ITransaction transaction,
+            String currentPath, HttpServletRequest req, XMLWriter generatedXML,
+            int propertyFindType, Vector<String> properties, int depth,
+            String mimeType) throws WebdavException {
 
-        parseProperties(req, generatedXML, currentPath, propertyFindType,
-                properties, mimeType);
-        String[] names = store.getChildrenNames(currentPath);
-        if ((names != null) && (depth > 0)) {
+        parseProperties(transaction, req, generatedXML, currentPath,
+                propertyFindType, properties, mimeType);
 
-            for (int i = 0; i < names.length; i++) {
-                String name = names[i];
-                String newPath = currentPath;
+        if (depth > 0) {
+            // no need to get name if depth is already zero
+            String[] names = _store.getChildrenNames(transaction, currentPath);
+            String newPath = null;
+
+            for (String name : names) {
+                newPath = currentPath;
                 if (!(newPath.endsWith("/"))) {
                     newPath += "/";
                 }
                 newPath += name;
-                recursiveParseProperties(newPath, req, generatedXML,
-                        propertyFindType, properties, depth - 1, mimeType);
+                recursiveParseProperties(transaction, newPath, req,
+                        generatedXML, propertyFindType, properties, depth - 1,
+                        mimeType);
             }
         }
     }
 
     /**
      * Propfind helper method.
-     *
+     * 
      * @param req
-     *            The servlet request
+     *      The servlet request
      * @param generatedXML
-     *            XML response to the Propfind request
+     *      XML response to the Propfind request
      * @param path
-     *            Path of the current resource
+     *      Path of the current resource
      * @param type
-     *            Propfind type
+     *      Propfind type
      * @param propertiesVector
-     *            If the propfind type is find properties by name, then this
-     *            Vector contains those properties
+     *      If the propfind type is find properties by name, then this Vector
+     *      contains those properties
      */
-    private void parseProperties(HttpServletRequest req,
-            XMLWriter generatedXML, String path, int type,
-            Vector propertiesVector, String mimeType) throws WebdavException {
+    private void parseProperties(ITransaction transaction,
+            HttpServletRequest req, XMLWriter generatedXML, String path,
+            int type, Vector<String> propertiesVector, String mimeType)
+            throws WebdavException {
 
-        String creationdate = getISOCreationDate(store.getCreationDate(path)
-                .getTime());
-        boolean isFolder = store.isFolder(path);
-        SimpleDateFormat formatter = new SimpleDateFormat(
-                "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String lastModified = formatter.format(store.getLastModified(path));
-        String resourceLength = String.valueOf(store.getResourceLength(path));
+        StoredObject so = _store.getStoredObject(transaction, path);
+
+        boolean isFolder = so.isFolder();
+        String creationdate = CREATION_DATE_FORMAT.format(so.getCreationDate());
+        String lastModified = LAST_MODIFIED_DATE_FORMAT.format(so
+                .getLastModified());
+        String resourceLength = String.valueOf(so.getResourceLength());
 
         // ResourceInfo resourceInfo = new ResourceInfo(path, resources);
 
-        generatedXML.writeElement(null, "response", XMLWriter.OPENING);
+        generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
         String status = new String("HTTP/1.1 " + WebdavStatus.SC_OK + " "
                 + WebdavStatus.getStatusText(WebdavStatus.SC_OK));
 
         // Generating href element
-        generatedXML.writeElement(null, "href", XMLWriter.OPENING);
+        generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
 
         String href = req.getContextPath();
         String servletPath = req.getServletPath();
-		if (servletPath != null) {
-			if ((href.endsWith("/")) && (servletPath.startsWith("/")))
-				href += servletPath.substring(1);
-			else
-				href += servletPath;
-		}
+        if (servletPath != null) {
+            if ((href.endsWith("/")) && (servletPath.startsWith("/")))
+                href += servletPath.substring(1);
+            else
+                href += servletPath;
+        }
         if ((href.endsWith("/")) && (path.startsWith("/")))
             href += path.substring(1);
         else
@@ -382,7 +284,7 @@ public class DoPropfind extends AbstractMethod {
 
         generatedXML.writeText(rewriteUrl(href));
 
-        generatedXML.writeElement(null, "href", XMLWriter.CLOSING);
+        generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
 
         String resourceName = path;
         int lastSlash = path.lastIndexOf('/');
@@ -393,166 +295,175 @@ public class DoPropfind extends AbstractMethod {
 
         case FIND_ALL_PROP:
 
-            generatedXML.writeElement(null, "propstat", XMLWriter.OPENING);
-            generatedXML.writeElement(null, "prop", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
-            generatedXML.writeProperty(null, "creationdate", creationdate);
-            generatedXML.writeElement(null, "displayname", XMLWriter.OPENING);
+            generatedXML.writeProperty("DAV::creationdate", creationdate);
+            generatedXML.writeElement("DAV::displayname", XMLWriter.OPENING);
             generatedXML.writeData(resourceName);
-            generatedXML.writeElement(null, "displayname", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::displayname", XMLWriter.CLOSING);
             if (!isFolder) {
-                generatedXML.writeProperty(null, "getlastmodified",
-                        lastModified);
-                generatedXML.writeProperty(null, "getcontentlength",
+                generatedXML
+                        .writeProperty("DAV::getlastmodified", lastModified);
+                generatedXML.writeProperty("DAV::getcontentlength",
                         resourceLength);
                 String contentType = mimeType;
                 if (contentType != null) {
-                    generatedXML.writeProperty(null, "getcontenttype",
+                    generatedXML.writeProperty("DAV::getcontenttype",
                             contentType);
                 }
-                generatedXML.writeProperty(null, "getetag", getETag(path,
-                        resourceLength, lastModified));
-                generatedXML.writeElement(null, "resourcetype",
+                generatedXML.writeProperty("DAV::getetag", getETag(so));
+                generatedXML.writeElement("DAV::resourcetype",
                         XMLWriter.NO_CONTENT);
             } else {
-                generatedXML.writeElement(null, "resourcetype",
+                generatedXML.writeElement("DAV::resourcetype",
                         XMLWriter.OPENING);
-                generatedXML.writeElement(null, "collection",
+                generatedXML.writeElement("DAV::collection",
                         XMLWriter.NO_CONTENT);
-                generatedXML.writeElement(null, "resourcetype",
+                generatedXML.writeElement("DAV::resourcetype",
                         XMLWriter.CLOSING);
             }
 
-            generatedXML.writeProperty(null, "source", "");
-            generatedXML.writeElement(null, "prop", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "status", XMLWriter.OPENING);
+            writeSupportedLockElements(transaction, generatedXML, path);
+
+            writeLockDiscoveryElements(transaction, generatedXML, path);
+
+            generatedXML.writeProperty("DAV::source", "");
+            generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
             generatedXML.writeText(status);
-            generatedXML.writeElement(null, "status", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "propstat", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
 
             break;
 
         case FIND_PROPERTY_NAMES:
 
-            generatedXML.writeElement(null, "propstat", XMLWriter.OPENING);
-            generatedXML.writeElement(null, "prop", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
-            generatedXML.writeElement(null, "creationdate",
-                    XMLWriter.NO_CONTENT);
             generatedXML
-                    .writeElement(null, "displayname", XMLWriter.NO_CONTENT);
+                    .writeElement("DAV::creationdate", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::displayname", XMLWriter.NO_CONTENT);
             if (!isFolder) {
-                generatedXML.writeElement(null, "getcontentlanguage",
+                generatedXML.writeElement("DAV::getcontentlanguage",
                         XMLWriter.NO_CONTENT);
-                generatedXML.writeElement(null, "getcontentlength",
+                generatedXML.writeElement("DAV::getcontentlength",
                         XMLWriter.NO_CONTENT);
-                generatedXML.writeElement(null, "getcontenttype",
+                generatedXML.writeElement("DAV::getcontenttype",
                         XMLWriter.NO_CONTENT);
-                generatedXML
-                        .writeElement(null, "getetag", XMLWriter.NO_CONTENT);
-                generatedXML.writeElement(null, "getlastmodified",
+                generatedXML.writeElement("DAV::getetag", XMLWriter.NO_CONTENT);
+                generatedXML.writeElement("DAV::getlastmodified",
                         XMLWriter.NO_CONTENT);
             }
-            generatedXML.writeElement(null, "resourcetype",
+            generatedXML
+                    .writeElement("DAV::resourcetype", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::supportedlock",
                     XMLWriter.NO_CONTENT);
-            generatedXML.writeElement(null, "source", XMLWriter.NO_CONTENT);
-            generatedXML.writeElement(null, "lockdiscovery",
-                    XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::source", XMLWriter.NO_CONTENT);
 
-            generatedXML.writeElement(null, "prop", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "status", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
             generatedXML.writeText(status);
-            generatedXML.writeElement(null, "status", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "propstat", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
 
             break;
 
         case FIND_BY_PROPERTY:
 
-            Vector propertiesNotFound = new Vector();
+            Vector<String> propertiesNotFound = new Vector<String>();
 
             // Parse the list of properties
 
-            generatedXML.writeElement(null, "propstat", XMLWriter.OPENING);
-            generatedXML.writeElement(null, "prop", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
-            Enumeration properties = propertiesVector.elements();
+            Enumeration<String> properties = propertiesVector.elements();
 
             while (properties.hasMoreElements()) {
 
                 String property = (String) properties.nextElement();
 
-                if (property.equals("creationdate")) {
-                    generatedXML.writeProperty(null, "creationdate",
+                if (property.equals("DAV::creationdate")) {
+                    generatedXML.writeProperty("DAV::creationdate",
                             creationdate);
-                } else if (property.equals("displayname")) {
-                    generatedXML.writeElement(null, "displayname",
+                } else if (property.equals("DAV::displayname")) {
+                    generatedXML.writeElement("DAV::displayname",
                             XMLWriter.OPENING);
                     generatedXML.writeData(resourceName);
-                    generatedXML.writeElement(null, "displayname",
+                    generatedXML.writeElement("DAV::displayname",
                             XMLWriter.CLOSING);
-                } else if (property.equals("getcontentlanguage")) {
+                } else if (property.equals("DAV::getcontentlanguage")) {
                     if (isFolder) {
                         propertiesNotFound.addElement(property);
                     } else {
-                        generatedXML.writeElement(null, "getcontentlanguage",
+                        generatedXML.writeElement("DAV::getcontentlanguage",
                                 XMLWriter.NO_CONTENT);
                     }
-                } else if (property.equals("getcontentlength")) {
+                } else if (property.equals("DAV::getcontentlength")) {
                     if (isFolder) {
                         propertiesNotFound.addElement(property);
                     } else {
-                        generatedXML.writeProperty(null, "getcontentlength",
+                        generatedXML.writeProperty("DAV::getcontentlength",
                                 resourceLength);
                     }
-                } else if (property.equals("getcontenttype")) {
+                } else if (property.equals("DAV::getcontenttype")) {
                     if (isFolder) {
                         propertiesNotFound.addElement(property);
                     } else {
-                        generatedXML.writeProperty(null, "getcontenttype",
+                        generatedXML.writeProperty("DAV::getcontenttype",
                                 mimeType);
                     }
-                } else if (property.equals("getetag")) {
-                    if (isFolder) {
+                } else if (property.equals("DAV::getetag")) {
+                    if (isFolder || so.isNullResource()) {
                         propertiesNotFound.addElement(property);
                     } else {
-                        generatedXML.writeProperty(null, "getetag", getETag(
-                                path, resourceLength, lastModified));
+                        generatedXML.writeProperty("DAV::getetag", getETag(so));
                     }
-                } else if (property.equals("getlastmodified")) {
+                } else if (property.equals("DAV::getlastmodified")) {
                     if (isFolder) {
                         propertiesNotFound.addElement(property);
                     } else {
-                        generatedXML.writeProperty(null, "getlastmodified",
+                        generatedXML.writeProperty("DAV::getlastmodified",
                                 lastModified);
                     }
-                } else if (property.equals("resourcetype")) {
+                } else if (property.equals("DAV::resourcetype")) {
                     if (isFolder) {
-                        generatedXML.writeElement(null, "resourcetype",
+                        generatedXML.writeElement("DAV::resourcetype",
                                 XMLWriter.OPENING);
-                        generatedXML.writeElement(null, "collection",
+                        generatedXML.writeElement("DAV::collection",
                                 XMLWriter.NO_CONTENT);
-                        generatedXML.writeElement(null, "resourcetype",
+                        generatedXML.writeElement("DAV::resourcetype",
                                 XMLWriter.CLOSING);
                     } else {
-                        generatedXML.writeElement(null, "resourcetype",
+                        generatedXML.writeElement("DAV::resourcetype",
                                 XMLWriter.NO_CONTENT);
                     }
-                } else if (property.equals("source")) {
-                    generatedXML.writeProperty(null, "source", "");
+                } else if (property.equals("DAV::source")) {
+                    generatedXML.writeProperty("DAV::source", "");
+                } else if (property.equals("DAV::supportedlock")) {
+
+                    writeSupportedLockElements(transaction, generatedXML, path);
+
+                } else if (property.equals("DAV::lockdiscovery")) {
+
+                    writeLockDiscoveryElements(transaction, generatedXML, path);
+
                 } else {
                     propertiesNotFound.addElement(property);
                 }
 
             }
 
-            generatedXML.writeElement(null, "prop", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "status", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
             generatedXML.writeText(status);
-            generatedXML.writeElement(null, "status", XMLWriter.CLOSING);
-            generatedXML.writeElement(null, "propstat", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
 
-            Enumeration propertiesNotFoundList = propertiesNotFound.elements();
+            Enumeration<String> propertiesNotFoundList = propertiesNotFound
+                    .elements();
 
             if (propertiesNotFoundList.hasMoreElements()) {
 
@@ -560,20 +471,19 @@ public class DoPropfind extends AbstractMethod {
                         + " "
                         + WebdavStatus.getStatusText(WebdavStatus.SC_NOT_FOUND));
 
-                generatedXML.writeElement(null, "propstat", XMLWriter.OPENING);
-                generatedXML.writeElement(null, "prop", XMLWriter.OPENING);
+                generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
+                generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
                 while (propertiesNotFoundList.hasMoreElements()) {
-                    generatedXML.writeElement(null,
-                            (String) propertiesNotFoundList.nextElement(),
-                            XMLWriter.NO_CONTENT);
+                    generatedXML.writeElement((String) propertiesNotFoundList
+                            .nextElement(), XMLWriter.NO_CONTENT);
                 }
 
-                generatedXML.writeElement(null, "prop", XMLWriter.CLOSING);
-                generatedXML.writeElement(null, "status", XMLWriter.OPENING);
+                generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+                generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
                 generatedXML.writeText(status);
-                generatedXML.writeElement(null, "status", XMLWriter.CLOSING);
-                generatedXML.writeElement(null, "propstat", XMLWriter.CLOSING);
+                generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+                generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
 
             }
 
@@ -581,60 +491,137 @@ public class DoPropfind extends AbstractMethod {
 
         }
 
-        generatedXML.writeElement(null, "response", XMLWriter.CLOSING);
+        generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
 
+        so = null;
     }
 
-    /**
-     * Get creation date in ISO format.
-     *
-     * @param creationDate
-     *            the date in milliseconds
-     * @return the Date in ISO format
-     */
-    private String getISOCreationDate(long creationDate) {
-        StringBuffer creationDateValue = new StringBuffer(creationDateFormat
-                .format(new Date(creationDate)));
-        /*
-         * int offset = Calendar.getInstance().getTimeZone().getRawOffset() /
-         * 3600000; // FIXME ? if (offset < 0) { creationDateValue.append("-");
-         * offset = -offset; } else if (offset > 0) {
-         * creationDateValue.append("+"); } if (offset != 0) { if (offset < 10)
-         * creationDateValue.append("0"); creationDateValue.append(offset +
-         * ":00"); } else { creationDateValue.append("Z"); }
-         */
-        return creationDateValue.toString();
+    private void writeSupportedLockElements(ITransaction transaction,
+            XMLWriter generatedXML, String path) {
+
+        LockedObject lo = _resourceLocks.getLockedObjectByPath(transaction,
+                path);
+
+        generatedXML.writeElement("DAV::supportedlock", XMLWriter.OPENING);
+
+        if (lo == null) {
+            // both locks (shared/exclusive) can be granted
+            generatedXML.writeElement("DAV::lockentry", XMLWriter.OPENING);
+
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::exclusive", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::locktype", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::write", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::locktype", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::lockentry", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::lockentry", XMLWriter.OPENING);
+
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::shared", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::locktype", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::write", XMLWriter.NO_CONTENT);
+            generatedXML.writeElement("DAV::locktype", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::lockentry", XMLWriter.CLOSING);
+
+        } else {
+            // LockObject exists, checking lock state
+            // if an exclusive lock exists, no further lock is possible
+            if (lo.isShared()) {
+
+                generatedXML.writeElement("DAV::lockentry", XMLWriter.OPENING);
+
+                generatedXML.writeElement("DAV::lockscope", XMLWriter.OPENING);
+                generatedXML.writeElement("DAV::shared", XMLWriter.NO_CONTENT);
+                generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
+
+                generatedXML.writeElement("DAV::locktype", XMLWriter.OPENING);
+                generatedXML.writeElement("DAV::" + lo.getType(),
+                        XMLWriter.NO_CONTENT);
+                generatedXML.writeElement("DAV::locktype", XMLWriter.CLOSING);
+
+                generatedXML.writeElement("DAV::lockentry", XMLWriter.CLOSING);
+            }
+        }
+
+        generatedXML.writeElement("DAV::supportedlock", XMLWriter.CLOSING);
+
+        lo = null;
     }
 
-    /**
-     * Get the ETag associated with a file.
-     *
-     * @param path
-     *            path to the resource
-     * @param resourceLength
-     *            filesize
-     * @param lastModified
-     *            last-modified date
-     * @return the ETag
-     */
-    protected String getETag(String path, String resourceLength,
-            String lastModified) {
-        // TODO create a real (?) ETag
-        // parameter "path" is not used at the monent
-        return "W/\"" + resourceLength + "-" + lastModified + "\"";
+    private void writeLockDiscoveryElements(ITransaction transaction,
+            XMLWriter generatedXML, String path) {
 
+        LockedObject lo = _resourceLocks.getLockedObjectByPath(transaction,
+                path);
+
+        if (lo != null && !lo.hasExpired()) {
+
+            generatedXML.writeElement("DAV::lockdiscovery", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::activelock", XMLWriter.OPENING);
+
+            generatedXML.writeElement("DAV::locktype", XMLWriter.OPENING);
+            generatedXML.writeProperty("DAV::" + lo.getType());
+            generatedXML.writeElement("DAV::locktype", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.OPENING);
+            if (lo.isExclusive()) {
+                generatedXML.writeProperty("DAV::exclusive");
+            } else {
+                generatedXML.writeProperty("DAV::shared");
+            }
+            generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::depth", XMLWriter.OPENING);
+            if (_depth == INFINITY) {
+                generatedXML.writeText("Infinity");
+            } else {
+                generatedXML.writeText(String.valueOf(_depth));
+            }
+            generatedXML.writeElement("DAV::depth", XMLWriter.CLOSING);
+
+            String[] owners = lo.getOwner();
+            if (owners != null) {
+                for (int i = 0; i < owners.length; i++) {
+                    generatedXML.writeElement("DAV::owner", XMLWriter.OPENING);
+                    generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+                    generatedXML.writeText(owners[i]);
+                    generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
+                    generatedXML.writeElement("DAV::owner", XMLWriter.CLOSING);
+                }
+            } else {
+                generatedXML.writeElement("DAV::owner", XMLWriter.NO_CONTENT);
+            }
+
+            int timeout = (int) (lo.getTimeoutMillis() / 1000);
+            String timeoutStr = new Integer(timeout).toString();
+            generatedXML.writeElement("DAV::timeout", XMLWriter.OPENING);
+            generatedXML.writeText("Second-" + timeoutStr);
+            generatedXML.writeElement("DAV::timeout", XMLWriter.CLOSING);
+
+            String lockToken = lo.getID();
+
+            generatedXML.writeElement("DAV::locktoken", XMLWriter.OPENING);
+            generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+            generatedXML.writeText("opaquelocktoken:" + lockToken);
+            generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::locktoken", XMLWriter.CLOSING);
+
+            generatedXML.writeElement("DAV::activelock", XMLWriter.CLOSING);
+            generatedXML.writeElement("DAV::lockdiscovery", XMLWriter.CLOSING);
+
+        } else {
+            generatedXML.writeElement("DAV::lockdiscovery",
+                    XMLWriter.NO_CONTENT);
+        }
+
+        lo = null;
     }
-
-    /**
-     * URL rewriter.
-     *
-     * @param path
-     *            Path which has to be rewiten
-     * @return the rewritten path
-     */
-    protected String rewriteUrl(String path) {
-        return urlEncoder.encode(path);
-    }
-
 
 }

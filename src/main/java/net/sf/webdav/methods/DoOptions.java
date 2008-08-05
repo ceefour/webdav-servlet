@@ -15,41 +15,49 @@
  */
 package net.sf.webdav.methods;
 
-import net.sf.webdav.WebdavStore;
-import net.sf.webdav.ResourceLocks;
-import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.exceptions.AccessDeniedException;
-import net.sf.webdav.exceptions.WebdavException;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.ITransaction;
+import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.exceptions.AccessDeniedException;
+import net.sf.webdav.exceptions.LockFailedException;
+import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.locking.ResourceLocks;
 
 public class DoOptions extends DeterminableMethod {
 
-    private static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger( "net.sf.webdav.methods" );
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(DoOptions.class);
 
-    private WebdavStore store;
-    private ResourceLocks resLocks;
+    private IWebdavStore _store;
+    private ResourceLocks _resourceLocks;
 
-    public DoOptions(WebdavStore store, ResourceLocks resLocks) {
-        this.store = store;
-        this.resLocks = resLocks;
+    public DoOptions(IWebdavStore store, ResourceLocks resLocks) {
+        _store = store;
+        _resourceLocks = resLocks;
     }
 
-    public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public void execute(ITransaction transaction, HttpServletRequest req,
+            HttpServletResponse resp) throws IOException, LockFailedException {
 
-        log.trace("-- " + this.getClass().getName() );
+        LOG.trace("-- " + this.getClass().getName());
 
-        String lockOwner = "doOptions" + System.currentTimeMillis()
+        String tempLockOwner = "doOptions" + System.currentTimeMillis()
                 + req.toString();
         String path = getRelativePath(req);
-        if (resLocks.lock(path, lockOwner, false, 0)) {
+        if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
+                TEMP_TIMEOUT, TEMPORARY)) {
+            StoredObject so = null;
             try {
                 resp.addHeader("DAV", "1, 2");
 
-                String methodsAllowed = determineMethodsAllowed(store
-                        .objectExists(path), store.isFolder(path));
+                so = _store.getStoredObject(transaction, path);
+                String methodsAllowed = determineMethodsAllowed(so);
                 resp.addHeader("Allow", methodsAllowed);
                 resp.addHeader("MS-Author-Via", "DAV");
             } catch (AccessDeniedException e) {
@@ -57,9 +65,11 @@ public class DoOptions extends DeterminableMethod {
             } catch (WebdavException e) {
                 resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             } finally {
-                resLocks.unlock(path, lockOwner);
+                _resourceLocks.unlockTemporaryLockedObjects(transaction, path,
+                        tempLockOwner);
             }
         } else {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-        }    }
+        }
+    }
 }
