@@ -54,7 +54,6 @@ public class DoGet extends DoHead {
                 resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
                 return;
             }
-
             OutputStream out = resp.getOutputStream();
             InputStream in = _store.getResourceContent(transaction, path);
             try {
@@ -67,11 +66,21 @@ public class DoGet extends DoHead {
             } finally {
                 // flushing causes a IOE if a file is opened on the webserver
                 // client disconnected before server finished sending response
-                out.flush();
-                in.close();
-                out.close();
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    LOG.warn("Closing InputStream causes Exception!\n"
+                            + e.toString());
+                }
+                try {
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    LOG.warn("Flushing OutputStream causes Exception!\n"
+                            + e.toString());
+                }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.trace(e.toString());
         }
     }
