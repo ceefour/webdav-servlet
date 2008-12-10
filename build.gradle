@@ -16,7 +16,7 @@
  
 archivesBaseName = 'webdav-servlet'
 project.group = 'net.sf.webdav-servlet'
-project.version = '2.0-dev'
+project.version = '2.0.0-rc-1'
 
 usePlugin('war')
 usePlugin('jetty')
