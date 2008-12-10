@@ -1,0 +1,82 @@
+/*
+ * Copyright 1999,2004 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+archivesBaseName = 'webdav-servlet'
+project.group = 'net.sf.webdav-servlet'
+project.version = '2.0'
+
+usePlugin('war')
+usePlugin('jetty')
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+dependencies {
+    addMavenRepo()
+
+    providedCompile "javax.servlet:servlet-api:2.4"
+
+    compile "org.slf4j:slf4j-api:1.4.3"
+    compile "org.slf4j:slf4j-log4j12:1.4.3"
+    compile "log4j:log4j:1.2.12"
+    testCompile "junit:junit:4.4"
+    testCompile "org.jmock:jmock:2.4.0"
+    testCompile "org.springframework:spring-webmvc:2.5.2"
+    testCompile "org.springframework:spring-mock:2.0.7"
+    
+    addConfiguration("jettyRuntime")
+    jettyRuntime "org.mortbay.jetty:jsp-2.1:6.1.14", "org.mortbay.jetty:jetty-annotations:6.1.14"
+}
+
+defaultTasks "help"
+
+createTask ('help') {
+  println " "
+  println "available goals:"
+  println "  clean \t\tcleans the build folder"
+  println "  test \t\t\truns the test suite"
+  println "  eclipse \t\tcreates eclipse project files"
+  println "  jettyRun \t\tstarts with jetty webserver"
+  println " "
+  println "useful flags :"
+  println "  -Dskip.test \t\t\tskip execution of tests"
+  println " "
+  println "examples"
+  println "  TODO"
+}
+
+createTask('wrapper', type: Wrapper).configure {
+  urlRoot = 'http://dist.codehaus.org/gradle/'
+  gradleVersion = '0.5'
+  jarPath = 'build-libs'
+}
+
+test {
+  include '**/*Test.class'
+  exclude '**/net/sf/webdav/testutil/**/*Test.class'  
+}
+
+jettyRun {
+    contextPath = '/'
+    scanIntervalSeconds = 2
+    useTestClasspath = true
+    connectors = configure(new org.mortbay.jetty.nio.SelectChannelConnector()) {
+    port = 8088
+    maxIdleTime = 60000
+}
+}.doFirst { jettyRun ->
+    jettyRun.additionalRuntimeJars = dependencies.jettyRuntime.resolve() as List
+}
