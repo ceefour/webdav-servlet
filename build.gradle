@@ -52,10 +52,10 @@ createTask ('help') {
   println "  jettyRun \t\tstarts with jetty webserver"
   println " "
   println "useful flags :"
-  println "  -Dskip.test \t\t\tskip execution of tests"
+  println "  -Dskip.test \t\tskip execution of tests"
   println " "
   println "examples"
-  println "  TODO"
+  println "  ./gradlew clean dists -Dskip.test \tbuilds the distribution and skip the tests"
 }
 
 createTask('wrapper', type: Wrapper).configure {
@@ -68,6 +68,39 @@ test {
   include '**/*Test.class'
   exclude '**/net/sf/webdav/testutil/**/*Test.class'  
 }
+
+String jettyArtifactVersion = 'jetty-6.1.14'
+File jettyDistribution = new File(buildDir, jettyArtifactVersion)
+
+dists {
+	zip() {
+		String zipRoot = "$archivesBaseName-${project.version}"
+		zipFileSet(dir: new File(buildDir, jettyArtifactVersion), prefix: zipRoot)
+	}
+}
+
+archive_zip.doFirst() {
+	ant.unzip(src: new File("build-libs", jettyArtifactVersion+".zip"), dest: buildDir)
+	
+	ant.delete(dir: new File(jettyDistribution, 'patches'))
+	ant.delete(dir: new File(jettyDistribution, 'modules'))
+	ant.delete(dir: new File(jettyDistribution, 'jxr'))
+	ant.delete(dir: new File(jettyDistribution, 'javadoc'))
+	ant.delete(dir: new File(jettyDistribution, 'extras'))
+	ant.delete(dir: new File(jettyDistribution, 'distribution'))
+	ant.delete(dir: new File(jettyDistribution, 'contrib'))
+	ant.delete(dir: new File(jettyDistribution, 'examples'))
+	ant.delete(dir: new File(jettyDistribution, 'contexts'))
+	ant.delete(dir: new File(jettyDistribution, 'webapps'))
+	
+	ant.mkdir(dir: new File(jettyDistribution, 'contexts'))
+	ant.mkdir(dir: new File(jettyDistribution, 'webapps'))
+	
+	ant.unzip(src: archive_war.archivePath, dest: new File(jettyDistribution, 'webapps/ROOT'))
+	
+	ant.copy(file: 'src/main/scripts/start.sh', todir: jettyDistribution)
+}
+
 
 jettyRun {
     contextPath = '/'
