@@ -92,6 +92,9 @@ archive_zip.doFirst() {
 	ant.delete(dir: new File(jettyDistribution, 'examples'))
 	ant.delete(dir: new File(jettyDistribution, 'contexts'))
 	ant.delete(dir: new File(jettyDistribution, 'webapps'))
+	ant.delete(file: new File(jettyDistribution, 'pom.xml'))
+	ant.delete(file: new File(jettyDistribution, 'README.txt'))
+	ant.delete(file: new File(jettyDistribution, 'VERSION.txt'))
 	
 	ant.mkdir(dir: new File(jettyDistribution, 'contexts'))
 	ant.mkdir(dir: new File(jettyDistribution, 'webapps'))
