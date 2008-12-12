@@ -72,6 +72,20 @@ test {
 String jettyArtifactVersion = 'jetty-6.1.14'
 File jettyDistribution = new File(buildDir, jettyArtifactVersion)
 
+libs {
+	archive_jar.enabled=true
+	
+	jar(classifier: 'sources') {
+		fileSet(dir: 'src/main/java')
+	}
+	
+	jar(classifier: 'javadoc') {
+		fileSet(dir: new File(buildDir, "docs/javadoc"))
+	}
+}
+
+archive_javadoc_jar.dependsOn('javadoc')
+
 dists {
 	zip() {
 		String zipRoot = "$archivesBaseName-${project.version}"
