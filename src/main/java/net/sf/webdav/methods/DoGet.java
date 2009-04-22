@@ -108,6 +108,7 @@ public class DoGet extends DoHead {
                 // use propfind) in html?
                 OutputStream out = resp.getOutputStream();
                 String[] children = _store.getChildrenNames(transaction, path);
+                children = children == null ? new String[] {} : children;
                 StringBuffer childrenTemp = new StringBuffer();
                 childrenTemp.append("Contents of this Folder:\n");
                 for (String child : children) {
