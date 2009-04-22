@@ -301,6 +301,7 @@ public class DoCopy extends AbstractMethod {
         if (infiniteDepth) {
             String[] children = _store
                     .getChildrenNames(transaction, sourcePath);
+            children = children == null ? new String[] {} : children;
 
             StoredObject childSo;
             for (int i = children.length - 1; i >= 0; i--) {

@@ -174,6 +174,7 @@ public class DoDelete extends AbstractMethod {
             HttpServletResponse resp) throws WebdavException {
 
         String[] children = _store.getChildrenNames(transaction, path);
+        children = children == null ? new String[] {} : children;
         StoredObject so = null;
         for (int i = children.length - 1; i >= 0; i--) {
             children[i] = "/" + children[i];

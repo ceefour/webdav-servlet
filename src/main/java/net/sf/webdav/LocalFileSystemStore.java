@@ -146,9 +146,8 @@ public class LocalFileSystemStore implements IWebdavStore {
             throws WebdavException {
         LOG.trace("LocalFileSystemStore.getChildrenNames(" + uri + ")");
         File file = new File(_root, uri);
-        String[] childrenNames = new String[] {};
+        String[] childrenNames = null;
         if (file.isDirectory()) {
-
             File[] children = file.listFiles();
             List<String> childList = new ArrayList<String>();
             String name = null;
@@ -159,11 +158,8 @@ public class LocalFileSystemStore implements IWebdavStore {
             }
             childrenNames = new String[childList.size()];
             childrenNames = (String[]) childList.toArray(childrenNames);
-            return childrenNames;
-        } else {
-            return childrenNames;
         }
-
+        return childrenNames;
     }
 
     public void removeObject(ITransaction transaction, String uri)

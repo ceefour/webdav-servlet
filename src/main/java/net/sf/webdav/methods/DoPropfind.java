@@ -215,6 +215,7 @@ public class DoPropfind extends AbstractMethod {
         if (depth > 0) {
             // no need to get name if depth is already zero
             String[] names = _store.getChildrenNames(transaction, currentPath);
+            names = names == null ? new String[] {} : names;
             String newPath = null;
 
             for (String name : names) {
