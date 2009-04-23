@@ -158,17 +158,6 @@ public class DoPut extends AbstractMethod {
                         so.setResourceLength(resourceLength);
                     // Now lets report back what was actually saved
 
-                    // Webdav Client Goliath executes 2 PUTs with the same
-                    // resource when contentLength is added to response
-                    if (_userAgent != null
-                            && _userAgent.indexOf("Goliath") != -1) {
-                        LOG
-                                .trace("DoPut.execute() : do workaround for user agent '"
-                                        + _userAgent + "'");
-                    } else {
-                        resp.setContentLength((int) resourceLength);
-                    }
-
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);
                 } catch (WebdavException e) {
