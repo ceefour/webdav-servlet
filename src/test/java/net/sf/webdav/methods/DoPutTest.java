@@ -188,8 +188,6 @@ public class DoPutTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(fileSo));
 
-                one(mockRes).setContentLength(8);
-
             }
         });
 
@@ -405,8 +403,6 @@ public class DoPutTest extends MockTest {
 
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(newResourceSo));
-
-                one(mockRes).setContentLength(8);
 
                 one(mockResourceLocks).unlockTemporaryLockedObjects(
                         with(any(ITransaction.class)), with(any(String.class)),
