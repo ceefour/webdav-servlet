@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -106,18 +109,182 @@ public class DoGet extends DoHead {
             if (so.isFolder()) {
                 // TODO some folder response (for browsers, DAV tools
                 // use propfind) in html?
+                DateFormat shortDF= getDateTimeFormat(req.getLocale());
+                resp.setContentType("text/html");
+                resp.setCharacterEncoding("UTF8");
                 OutputStream out = resp.getOutputStream();
                 String[] children = _store.getChildrenNames(transaction, path);
                 children = children == null ? new String[] {} : children;
                 StringBuffer childrenTemp = new StringBuffer();
-                childrenTemp.append("Contents of this Folder:\n");
+                childrenTemp.append("<html><head><title>Content of folder");
+                childrenTemp.append(path);
+                childrenTemp.append("</title><style type=\"text/css\">");
+                childrenTemp.append(getCSS());
+                childrenTemp.append("</style></head>");
+                childrenTemp.append("<body>");
+                childrenTemp.append(getHeader(transaction, path, resp, req));
+                childrenTemp.append("<table>");
+                childrenTemp.append("<tr><th>Name</th><th>Size</th><th>Created</th><th>Modified</th></tr>");
+                childrenTemp.append("<tr>");
+                childrenTemp.append("<td colspan=\"4\"><a href=\"../\">Parent</a></td></tr>");
+                boolean isEven= false;
                 for (String child : children) {
+                    isEven= !isEven;
+                    childrenTemp.append("<tr class=\"");
+                    childrenTemp.append(isEven ? "even" : "odd");
+                    childrenTemp.append("\">");
+                    childrenTemp.append("<td>");
+                    childrenTemp.append("<a href=\"");
                     childrenTemp.append(child);
-                    childrenTemp.append("\n");
+                    StoredObject obj= _store.getStoredObject(transaction, path+"/"+child);
+                    if (obj.isFolder())
+                    {
+                        childrenTemp.append("/");
                 }
-                out.write(childrenTemp.toString().getBytes());
+                    childrenTemp.append("\">");
+                    childrenTemp.append(child);
+                    childrenTemp.append("</a></td>");
+                    if (obj.isFolder())
+                    {
+                        childrenTemp.append("<td>Folder</td>");
+            }
+                    else
+                    {
+                        childrenTemp.append("<td>");
+                        childrenTemp.append(obj.getResourceLength());
+                        childrenTemp.append(" Bytes</td>");
+        }
+                    if (obj.getCreationDate() != null)
+                    {
+                        childrenTemp.append("<td>");
+                        childrenTemp.append(shortDF.format(obj.getCreationDate()));
+                        childrenTemp.append("</td>");
+    }
+                    else
+                    {
+                        childrenTemp.append("<td></td>");
+                    }
+                    if (obj.getLastModified() != null)
+                    {
+                        childrenTemp.append("<td>");
+                        childrenTemp.append(shortDF.format(obj.getLastModified()));
+                        childrenTemp.append("</td>");
+                    }
+                    else
+                    {
+                        childrenTemp.append("<td></td>");
+                    }
+                    childrenTemp.append("</tr>");
+                }
+                childrenTemp.append("</table>");
+                childrenTemp.append(getFooter(transaction, path, resp, req));
+                childrenTemp.append("</body></html>");
+                out.write(childrenTemp.toString().getBytes("UTF-8"));
             }
         }
     }
 
+    /**
+     * Return the CSS styles used to display the HTML representation
+     * of the webdav content.
+     * 
+     * @return
+     */
+    protected String getCSS()
+    {
+        // The default styles to use
+       String retVal= "body {\n"+
+                "	font-family: Arial, Helvetica, sans-serif;\n"+
+                "}\n"+
+                "h1 {\n"+
+                "	font-size: 1.5em;\n"+
+                "}\n"+
+                "th {\n"+
+                "	background-color: #9DACBF;\n"+
+                "}\n"+
+                "table {\n"+
+                "	border-top-style: solid;\n"+
+                "	border-right-style: solid;\n"+
+                "	border-bottom-style: solid;\n"+
+                "	border-left-style: solid;\n"+
+                "}\n"+
+                "td {\n"+
+                "	margin: 0px;\n"+
+                "	padding-top: 2px;\n"+
+                "	padding-right: 5px;\n"+
+                "	padding-bottom: 2px;\n"+
+                "	padding-left: 5px;\n"+
+                "}\n"+
+                "tr.even {\n"+
+                "	background-color: #CCCCCC;\n"+
+                "}\n"+
+                "tr.odd {\n"+
+                "	background-color: #FFFFFF;\n"+
+                "}\n"+
+                "";
+        try
+        {
+            // Try loading one via class loader and use that one instead
+            ClassLoader cl = getClass().getClassLoader();
+            InputStream iStream = cl.getResourceAsStream("webdav.css");
+            if(iStream != null)
+            {
+                // Found css via class loader, use that one
+                StringBuffer out = new StringBuffer();
+                byte[] b = new byte[4096];
+                for (int n; (n = iStream.read(b)) != -1;)
+                {
+                    out.append(new String(b, 0, n));
+}
+                retVal= out.toString();
+            }
+        }
+        catch (Exception ex)
+        {
+            LOG.error("Error in reading webdav.css", ex);
+        }
+
+        return retVal;
+    }
+
+    /**
+     * Return this as the Date/Time format for displaying Creation + Modification dates
+     * 
+     * @param browserLocale
+     * @return
+     */
+    protected DateFormat getDateTimeFormat(Locale browserLocale)
+    {
+        return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.MEDIUM, browserLocale);
+    }
+
+    /**
+     * Return the header to be displayed in front of the folder content
+     * 
+     * @param transaction
+     * @param path
+     * @param resp
+     * @param req
+     * @return
+     */
+    protected String getHeader(ITransaction transaction, String path,
+            HttpServletResponse resp, HttpServletRequest req)
+    {
+        return "<h1>Content of folder "+path+"</h1>";
+    }
+
+    /**
+     * Return the footer to be displayed after the folder content
+     * 
+     * @param transaction
+     * @param path
+     * @param resp
+     * @param req
+     * @return
+     */
+    protected String getFooter(ITransaction transaction, String path,
+            HttpServletResponse resp, HttpServletRequest req)
+    {
+        return "";
+    }
 }
