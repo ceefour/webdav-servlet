@@ -59,9 +59,6 @@ public class WebdavServletTest extends MockTest {
     @Test
     public void testInit() throws Exception {
     	
-    	// ci notification test
-		fail();
-
         _mockery.checking(new Expectations() {
         });
 
