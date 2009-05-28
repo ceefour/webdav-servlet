@@ -18,10 +18,10 @@ package net.sf.webdav.methods;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -109,7 +109,8 @@ public class DoGet extends DoHead {
             if (so.isFolder()) {
                 // TODO some folder response (for browsers, DAV tools
                 // use propfind) in html?
-                DateFormat shortDF= getDateTimeFormat(req.getLocale());
+				Locale locale = req.getLocale();
+				DateFormat shortDF = getDateTimeFormat(locale);
                 resp.setContentType("text/html");
                 resp.setCharacterEncoding("UTF8");
                 OutputStream out = resp.getOutputStream();
@@ -129,53 +130,46 @@ public class DoGet extends DoHead {
                 childrenTemp.append("<td colspan=\"4\"><a href=\"../\">Parent</a></td></tr>");
                 boolean isEven= false;
                 for (String child : children) {
-                    isEven= !isEven;
-                    childrenTemp.append("<tr class=\"");
-                    childrenTemp.append(isEven ? "even" : "odd");
-                    childrenTemp.append("\">");
-                    childrenTemp.append("<td>");
-                    childrenTemp.append("<a href=\"");
-                    childrenTemp.append(child);
-                    StoredObject obj= _store.getStoredObject(transaction, path+"/"+child);
-                    if (obj.isFolder())
-                    {
-                        childrenTemp.append("/");
-                }
-                    childrenTemp.append("\">");
-                    childrenTemp.append(child);
-                    childrenTemp.append("</a></td>");
-                    if (obj.isFolder())
-                    {
-                        childrenTemp.append("<td>Folder</td>");
-            }
-                    else
-                    {
-                        childrenTemp.append("<td>");
-                        childrenTemp.append(obj.getResourceLength());
-                        childrenTemp.append(" Bytes</td>");
-        }
-                    if (obj.getCreationDate() != null)
-                    {
-                        childrenTemp.append("<td>");
-                        childrenTemp.append(shortDF.format(obj.getCreationDate()));
-                        childrenTemp.append("</td>");
-    }
-                    else
-                    {
-                        childrenTemp.append("<td></td>");
-                    }
-                    if (obj.getLastModified() != null)
-                    {
-                        childrenTemp.append("<td>");
-                        childrenTemp.append(shortDF.format(obj.getLastModified()));
-                        childrenTemp.append("</td>");
-                    }
-                    else
-                    {
-                        childrenTemp.append("<td></td>");
-                    }
-                    childrenTemp.append("</tr>");
-                }
+					isEven = !isEven;
+					childrenTemp.append("<tr class=\"");
+					childrenTemp.append(isEven ? "even" : "odd");
+					childrenTemp.append("\">");
+					childrenTemp.append("<td>");
+					childrenTemp.append("<a href=\"");
+					childrenTemp.append(child);
+					StoredObject obj = _store.getStoredObject(transaction, path
+							+ "/" + child);
+					if (obj.isFolder()) {
+						childrenTemp.append("/");
+					}
+					childrenTemp.append("\">");
+					childrenTemp.append(child);
+					childrenTemp.append("</a></td>");
+					if (obj.isFolder()) {
+						childrenTemp.append("<td>Folder</td>");
+					} else {
+						childrenTemp.append("<td>");
+						childrenTemp.append(obj.getResourceLength());
+						childrenTemp.append(" Bytes</td>");
+					}
+					if (obj.getCreationDate() != null) {
+						childrenTemp.append("<td>");
+						childrenTemp.append(shortDF.format(obj
+								.getCreationDate()));
+						childrenTemp.append("</td>");
+					} else {
+						childrenTemp.append("<td></td>");
+					}
+					if (obj.getLastModified() != null) {
+						childrenTemp.append("<td>");
+						childrenTemp.append(shortDF.format(obj
+								.getLastModified()));
+						childrenTemp.append("</td>");
+					} else {
+						childrenTemp.append("<td></td>");
+					}
+					childrenTemp.append("</tr>");
+				}
                 childrenTemp.append("</table>");
                 childrenTemp.append(getFooter(transaction, path, resp, req));
                 childrenTemp.append("</body></html>");
