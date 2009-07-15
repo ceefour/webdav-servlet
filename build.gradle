@@ -130,3 +130,40 @@ jettyRun {
 }.doFirst { jettyRun ->
     jettyRun.additionalRuntimeJars = dependencies.jettyRuntime.resolve() as List
 }
+
+
+createTask('android-webapp', dependsOn:'compile') {
+	File generatedClasses = new File(buildDir, 'generated-classes')
+	def webappClassPath = dependencies.resolve("compile");
+	def excludeArtifacts = ['servlet-api'];
+	webappClassPath.each {jarFile ->
+		excludeArtifacts.each {excludeArtifact ->
+	    	if (jarFile.toString().indexOf(excludeArtifact) == -1) {
+	        	ant.unzip(src: jarFile, dest: generatedClasses)
+	      	}
+		}
+	}
+	String dxPath = System.getProperty("dxTool");
+	String argument1 = '--dex'
+	String argument2 = '--core-library'
+	String argument3 = '--output='+new File(buildDir, "classes.dex").getAbsolutePath();
+	String argument4 = '--positions=lines'
+	String argument5 = new File(buildDir, "classes").getAbsolutePath();
+	String argument6 = new File(buildDir, "generated-classes").getAbsolutePath();
+	
+	def command = """${dxPath} ${argument1} ${argument2} ${argument3} ${argument4} ${argument5} ${argument6}"""// Create the String
+	println command
+	def proc = command.execute()
+	proc.waitFor()
+	
+	File androidWebapp = new File(buildDir, 'android-webapp/exploded')
+	androidWebapp.mkdirs();
+	File androidWebAppLib = new File(androidWebapp, "WEB-INF/lib");
+	androidWebAppLib.mkdirs();
+	
+	ant.jar(destfile: new File(androidWebAppLib, "classes.zip"), basedir: buildDir, includes: 'classes.dex')
+	//ant.copy(file: 'src/main/webapp/WEB-INF/web.xml', todir: new File(androidWebapp, "WEB-INF"))
+	ant.war(destfile: new File(buildDir, "android-webapp/webdav-servlet.war"), basedir: androidWebapp, webxml: 'src/main/webapp/WEB-INF/web.xml')
+	
+		
+}
