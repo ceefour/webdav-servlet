@@ -143,10 +143,16 @@ createTask('android-webapp', dependsOn:'compile') {
 	      	}
 		}
 	}
+	
+	File androidWebapp = new File(buildDir, 'android-webapp/exploded')
+	androidWebapp.mkdirs();
+	File androidWebAppLib = new File(androidWebapp, "WEB-INF/lib");
+	androidWebAppLib.mkdirs();
+	
 	String dxPath = System.getProperty("dxTool");
 	String argument1 = '--dex'
 	String argument2 = '--core-library'
-	String argument3 = '--output='+new File(buildDir, "classes.dex").getAbsolutePath();
+	String argument3 = '--output='+new File(androidWebAppLib, "classes.zip").getAbsolutePath();
 	String argument4 = '--positions=lines'
 	String argument5 = new File(buildDir, "classes").getAbsolutePath();
 	String argument6 = new File(buildDir, "generated-classes").getAbsolutePath();
@@ -156,13 +162,7 @@ createTask('android-webapp', dependsOn:'compile') {
 	def proc = command.execute()
 	proc.waitFor()
 	
-	File androidWebapp = new File(buildDir, 'android-webapp/exploded')
-	androidWebapp.mkdirs();
-	File androidWebAppLib = new File(androidWebapp, "WEB-INF/lib");
-	androidWebAppLib.mkdirs();
-	
-	ant.jar(destfile: new File(androidWebAppLib, "classes.zip"), basedir: buildDir, includes: 'classes.dex')
-	//ant.copy(file: 'src/main/webapp/WEB-INF/web.xml', todir: new File(androidWebapp, "WEB-INF"))
+	ant.copy(file: 'src/main/webapp/WEB-INF/web.xml', todir: new File(androidWebapp, "WEB-INF"))
 	ant.war(destfile: new File(buildDir, "android-webapp/webdav-servlet.war"), basedir: androidWebapp, webxml: 'src/main/webapp/WEB-INF/web.xml')
 	
 		
