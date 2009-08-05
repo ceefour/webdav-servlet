@@ -417,7 +417,8 @@ public class DoLock extends AbstractMethod {
                         currentNode = childList.item(i);
 
                         if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-                            _lockOwner = currentNode.getNodeValue();
+							_lockOwner = currentNode.getFirstChild()
+									.getNodeValue();
                         }
                     }
                 }
