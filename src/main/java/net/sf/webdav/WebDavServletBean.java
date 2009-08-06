@@ -46,8 +46,8 @@ public class WebDavServletBean extends HttpServlet {
     protected static final MD5Encoder MD5_ENCODER = new MD5Encoder();
 
     private static final boolean READ_ONLY = false;
-    private ResourceLocks _resLocks;
-    private IWebdavStore _store;
+	protected ResourceLocks _resLocks;
+	protected IWebdavStore _store;
     private HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
 
     public WebDavServletBean() {
@@ -92,7 +92,7 @@ public class WebDavServletBean extends HttpServlet {
         register("*NO*IMPL*", new DoNotImplemented(READ_ONLY));
     }
 
-    private IMethodExecutor register(String methodName, IMethodExecutor method) {
+	protected IMethodExecutor register(String methodName, IMethodExecutor method) {
         _methodMap.put(methodName, method);
         return method;
     }
