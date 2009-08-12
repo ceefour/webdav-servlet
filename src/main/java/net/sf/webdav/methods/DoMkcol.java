@@ -75,8 +75,12 @@ public class DoMkcol extends AbstractMethod {
                 StoredObject parentSo, so = null;
                 try {
                     parentSo = _store.getStoredObject(transaction, parentPath);
-                    if (parentPath != null && parentSo != null
-                            && parentSo.isFolder()) {
+					if (parentSo == null) {
+						// parent not exists
+						resp.sendError(WebdavStatus.SC_CONFLICT);
+						return;
+					}
+					if (parentPath != null && parentSo.isFolder()) {
                         so = _store.getStoredObject(transaction, path);
                         if (so == null) {
                             _store.createFolder(transaction, path);
@@ -140,8 +144,7 @@ public class DoMkcol extends AbstractMethod {
                             }
                         }
 
-                    } else if (parentPath != null && parentSo != null
-                            && parentSo.isResource()) {
+					} else if (parentPath != null && parentSo.isResource()) {
                         // TODO remove
                         LOG
                                 .trace("MkCol on resource is not executable"
@@ -152,14 +155,6 @@ public class DoMkcol extends AbstractMethod {
                         resp.addHeader("Allow", methodsAllowed);
                         resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
 
-                    } else if (parentPath != null && parentSo == null) {
-                        // TODO remove
-                        LOG
-                                .trace("MkCol on non-existing resource is not executable"
-                                        + "\n Sending SC_NOT_FOUND (404) error response!");
-
-                        errorList.put(parentPath, WebdavStatus.SC_NOT_FOUND);
-                        sendReport(req, resp, errorList);
                     } else {
                         resp.sendError(WebdavStatus.SC_FORBIDDEN);
                     }
