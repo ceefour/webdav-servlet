@@ -63,7 +63,7 @@ public class DoPropfindTest extends MockTest {
                 will(returnValue(path));
 
                 one(mockReq).getContentLength();
-                will(returnValue(0));
+				will(returnValue(-1));
                 // no content, which means it is a allprop request
 
                 one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
@@ -154,7 +154,7 @@ public class DoPropfindTest extends MockTest {
                 will(returnValue(path));
 
                 one(mockReq).getContentLength();
-                will(returnValue(0));
+				will(returnValue(-1));
                 // no content, which means it is a allprop request
 
                 one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);

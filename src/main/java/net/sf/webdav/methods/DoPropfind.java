@@ -112,7 +112,7 @@ public class DoPropfind extends AbstractMethod {
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;
 
-                if (req.getContentLength() != 0) {
+				if (req.getContentLength() > -1) {
                     DocumentBuilder documentBuilder = getDocumentBuilder();
                     try {
                         Document document = documentBuilder
