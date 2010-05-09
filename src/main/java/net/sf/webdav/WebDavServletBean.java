@@ -92,7 +92,13 @@ public class WebDavServletBean extends HttpServlet {
         register("*NO*IMPL*", new DoNotImplemented(READ_ONLY));
     }
 
-	protected IMethodExecutor register(String methodName, IMethodExecutor method) {
+    public void destroy() {
+        if(_store != null)
+            _store.destroy();
+        super.destroy();
+    }
+
+    protected IMethodExecutor register(String methodName, IMethodExecutor method) {
         _methodMap.put(methodName, method);
         return method;
     }

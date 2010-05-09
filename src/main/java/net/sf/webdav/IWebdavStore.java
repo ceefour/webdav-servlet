@@ -38,6 +38,11 @@ import net.sf.webdav.exceptions.WebdavException;
 public interface IWebdavStore {
 
     /**
+     * Life cycle method, called by WebdavServlet's destroy() method. Should be used to clean up resources.
+     */
+    void destroy();
+
+    /**
      * Indicates that a new request or transaction with this store involved has
      * been started. The request will be terminated by either {@link #commit()}
      * or {@link #rollback()}. If only non-read methods have been called, the
