@@ -122,8 +122,9 @@ public class LockedObject {
                     // check every owner if it is the requested one
                     if (_owner[i].equals(owner)) {
                         // remove the owner
-                        String[] newLockedObjectOwner = new String[size - 1];
-                        for (int j = 0; j < (size - 1); j++) {
+                    	size -= 1;
+                        String[] newLockedObjectOwner = new String[size];
+                        for (int j = 0; j < size; j++) {
                             if (j < i) {
                                 newLockedObjectOwner[j] = _owner[j];
                             } else {
