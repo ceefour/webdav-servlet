@@ -18,8 +18,6 @@ package net.sf.webdav.methods;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -110,8 +108,8 @@ public class DoGet extends DoHead {
                 // TODO some folder response (for browsers, DAV tools
                 // use propfind) in html?
 				Locale locale = req.getLocale();
-				DateFormat shortDF = getDateTimeFormat(locale);
-                resp.setContentType("text/html");
+
+				resp.setContentType("text/html");
                 resp.setCharacterEncoding("UTF8");
                 OutputStream out = resp.getOutputStream();
                 String[] children = _store.getChildrenNames(transaction, path);
@@ -154,16 +152,16 @@ public class DoGet extends DoHead {
 					}
 					if (obj.getCreationDate() != null) {
 						childrenTemp.append("<td>");
-						childrenTemp.append(shortDF.format(obj
-								.getCreationDate()));
+						childrenTemp.append( getLocalDateFormat(obj.getCreationDate(), locale) );
+
 						childrenTemp.append("</td>");
 					} else {
 						childrenTemp.append("<td></td>");
 					}
 					if (obj.getLastModified() != null) {
 						childrenTemp.append("<td>");
-						childrenTemp.append(shortDF.format(obj
-								.getLastModified()));
+						childrenTemp.append(getLocalDateFormat(obj.getLastModified(), locale));
+
 						childrenTemp.append("</td>");
 					} else {
 						childrenTemp.append("<td></td>");
@@ -239,17 +237,6 @@ public class DoGet extends DoHead {
         }
 
         return retVal;
-    }
-
-    /**
-     * Return this as the Date/Time format for displaying Creation + Modification dates
-     * 
-     * @param browserLocale
-     * @return
-     */
-    protected DateFormat getDateTimeFormat(Locale browserLocale)
-    {
-        return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.MEDIUM, browserLocale);
     }
 
     /**

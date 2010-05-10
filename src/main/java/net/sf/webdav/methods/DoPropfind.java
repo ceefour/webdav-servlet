@@ -254,9 +254,8 @@ public class DoPropfind extends AbstractMethod {
         StoredObject so = _store.getStoredObject(transaction, path);
 
         boolean isFolder = so.isFolder();
-        String creationdate = CREATION_DATE_FORMAT.format(so.getCreationDate());
-        String lastModified = LAST_MODIFIED_DATE_FORMAT.format(so
-                .getLastModified());
+        final String creationdate = creationDateFormat(so.getCreationDate());
+        final String lastModified = lastModifiedDateFormat(so.getLastModified());
         String resourceLength = String.valueOf(so.getResourceLength());
 
         // ResourceInfo resourceInfo = new ResourceInfo(path, resources);
