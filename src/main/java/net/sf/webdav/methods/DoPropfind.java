@@ -112,7 +112,9 @@ public class DoPropfind extends AbstractMethod {
                 int propertyFindType = FIND_ALL_PROP;
                 Node propNode = null;
 
-				if (req.getContentLength() > -1) {
+                // Windows 7 does a propfind with content length 0
+                if (req.getContentLength() > 0)
+                {
                     DocumentBuilder documentBuilder = getDocumentBuilder();
                     try {
                         Document document = documentBuilder
