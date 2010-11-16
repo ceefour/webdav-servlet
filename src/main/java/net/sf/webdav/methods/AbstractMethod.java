@@ -218,7 +218,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
     /**
      * Get the ETag associated with a file.
      * 
-     * @param StoredObject
+     * @param so
      *      StoredObject to get resourceLength, lastModified and a hashCode of
      *      StoredObject
      * @return the ETag
@@ -295,8 +295,6 @@ public abstract class AbstractMethod implements IMethodExecutor {
      * @param resourceLocks
      * @param path
      *      path to the resource
-     * @param errorList
-     *      List of error to be displayed
      * @return true if no lock on a resource with the given path exists or if
      *  the If-Header corresponds to the locked resource
      * @throws IOException

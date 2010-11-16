@@ -91,6 +91,7 @@ public class XMLWriter {
      * 
      * @return String containing the generated XML
      */
+    @Override
     public String toString() {
         return _buffer.toString();
     }
@@ -161,14 +162,22 @@ public class XMLWriter {
 
         switch (type) {
         case OPENING:
-            _buffer.append("<" + name + nsdecl + ">");
+            _buffer.append("<");
+            _buffer.append(name);
+            _buffer.append( nsdecl);
+            _buffer.append( ">");
             break;
         case CLOSING:
-            _buffer.append("</" + name + ">\n");
+            _buffer.append("</");
+            _buffer.append( name);
+            _buffer.append( ">\n");
             break;
         case NO_CONTENT:
         default:
-            _buffer.append("<" + name + nsdecl + "/>");
+            _buffer.append("<");
+            _buffer.append( name);
+            _buffer.append( nsdecl);
+            _buffer.append( "/>");
             break;
         }
     }
@@ -190,7 +199,9 @@ public class XMLWriter {
      *      Data to append
      */
     public void writeData(String data) {
-        _buffer.append("<![CDATA[" + data + "]]>");
+        _buffer.append("<![CDATA[");
+        _buffer.append( data);
+        _buffer.append( "]]>");
     }
 
     /**

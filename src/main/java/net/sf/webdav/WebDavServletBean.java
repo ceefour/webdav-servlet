@@ -100,6 +100,7 @@ public class WebDavServletBean extends HttpServlet {
     /**
      * Handles the special WebDAV methods.
      */
+    @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

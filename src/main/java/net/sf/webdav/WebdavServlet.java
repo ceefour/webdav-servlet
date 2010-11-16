@@ -36,6 +36,7 @@ public class WebdavServlet extends WebDavServletBean {
 
     private static final String ROOTPATH_PARAMETER = "rootpath";
 
+    @Override
     public void init() throws ServletException {
 
         // Parameters from web.xml

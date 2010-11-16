@@ -16,10 +16,12 @@
 package net.sf.webdav.methods;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Vector;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -49,11 +51,6 @@ public class DoPropfind extends AbstractMethod {
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoPropfind.class);
-
-    /**
-     * Array containing the safe characters set.
-     */
-    protected static URLEncoder URL_ENCODER;
 
     /**
      * PROPFIND - Specify a property mask.
@@ -106,7 +103,7 @@ public class DoPropfind extends AbstractMethod {
                     return;
                 }
 
-                Vector<String> properties = null;
+                List<String> properties = null;
                 path = getCleanPath(getRelativePath(req));
 
                 int propertyFindType = FIND_ALL_PROP;
@@ -208,7 +205,7 @@ public class DoPropfind extends AbstractMethod {
      */
     private void recursiveParseProperties(ITransaction transaction,
             String currentPath, HttpServletRequest req, XMLWriter generatedXML,
-            int propertyFindType, Vector<String> properties, int depth,
+            int propertyFindType, List<String> properties, int depth,
             String mimeType) throws WebdavException {
 
         parseProperties(transaction, req, generatedXML, currentPath,
@@ -250,7 +247,7 @@ public class DoPropfind extends AbstractMethod {
      */
     private void parseProperties(ITransaction transaction,
             HttpServletRequest req, XMLWriter generatedXML, String path,
-            int type, Vector<String> propertiesVector, String mimeType)
+            int type, List<String> propertiesVector, String mimeType)
             throws WebdavException {
 
         StoredObject so = _store.getStoredObject(transaction, path);
@@ -375,18 +372,18 @@ public class DoPropfind extends AbstractMethod {
 
         case FIND_BY_PROPERTY:
 
-            Vector<String> propertiesNotFound = new Vector<String>();
+            List<String> propertiesNotFound = new ArrayList<String>();
 
             // Parse the list of properties
 
             generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
             generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
-            Enumeration<String> properties = propertiesVector.elements();
+            Iterator<String> properties = propertiesVector.iterator();
 
-            while (properties.hasMoreElements()) {
+            while (properties.hasNext()) {
 
-                String property = (String) properties.nextElement();
+                String property = properties.next();
 
                 if (property.equals("DAV::creationdate")) {
                     generatedXML.writeProperty("DAV::creationdate",
@@ -399,34 +396,34 @@ public class DoPropfind extends AbstractMethod {
                             XMLWriter.CLOSING);
                 } else if (property.equals("DAV::getcontentlanguage")) {
                     if (isFolder) {
-                        propertiesNotFound.addElement(property);
+                        propertiesNotFound.add(property);
                     } else {
                         generatedXML.writeElement("DAV::getcontentlanguage",
                                 XMLWriter.NO_CONTENT);
                     }
                 } else if (property.equals("DAV::getcontentlength")) {
                     if (isFolder) {
-                        propertiesNotFound.addElement(property);
+                        propertiesNotFound.add(property);
                     } else {
                         generatedXML.writeProperty("DAV::getcontentlength",
                                 resourceLength);
                     }
                 } else if (property.equals("DAV::getcontenttype")) {
                     if (isFolder) {
-                        propertiesNotFound.addElement(property);
+                        propertiesNotFound.add(property);
                     } else {
                         generatedXML.writeProperty("DAV::getcontenttype",
                                 mimeType);
                     }
                 } else if (property.equals("DAV::getetag")) {
                     if (isFolder || so.isNullResource()) {
-                        propertiesNotFound.addElement(property);
+                        propertiesNotFound.add(property);
                     } else {
                         generatedXML.writeProperty("DAV::getetag", getETag(so));
                     }
                 } else if (property.equals("DAV::getlastmodified")) {
                     if (isFolder) {
-                        propertiesNotFound.addElement(property);
+                        propertiesNotFound.add(property);
                     } else {
                         generatedXML.writeProperty("DAV::getlastmodified",
                                 lastModified);
@@ -454,7 +451,7 @@ public class DoPropfind extends AbstractMethod {
                     writeLockDiscoveryElements(transaction, generatedXML, path);
 
                 } else {
-                    propertiesNotFound.addElement(property);
+                    propertiesNotFound.add(property);
                 }
 
             }
@@ -465,10 +462,10 @@ public class DoPropfind extends AbstractMethod {
             generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
             generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
 
-            Enumeration<String> propertiesNotFoundList = propertiesNotFound
-                    .elements();
+            Iterator<String> propertiesNotFoundList = propertiesNotFound
+                    .iterator();
 
-            if (propertiesNotFoundList.hasMoreElements()) {
+            if (propertiesNotFoundList.hasNext()) {
 
                 status = new String("HTTP/1.1 " + WebdavStatus.SC_NOT_FOUND
                         + " "
@@ -477,9 +474,9 @@ public class DoPropfind extends AbstractMethod {
                 generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
                 generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
 
-                while (propertiesNotFoundList.hasMoreElements()) {
+                while (propertiesNotFoundList.hasNext()) {
                     generatedXML.writeElement((String) propertiesNotFoundList
-                            .nextElement(), XMLWriter.NO_CONTENT);
+                            .next(), XMLWriter.NO_CONTENT);
                 }
 
                 generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);

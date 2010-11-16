@@ -45,21 +45,25 @@ public class ResourceLocks implements IResourceLocks {
 
     /**
      * keys: path value: LockedObject from that path
+     * Concurrent access can occur
      */
     protected Hashtable<String, LockedObject> _locks = new Hashtable<String, LockedObject>();
 
     /**
      * keys: id value: LockedObject from that id
+     * Concurrent access can occur
      */
     protected Hashtable<String, LockedObject> _locksByID = new Hashtable<String, LockedObject>();
 
     /**
      * keys: path value: Temporary LockedObject from that path
+     * Concurrent access can occur
      */
     protected Hashtable<String, LockedObject> _tempLocks = new Hashtable<String, LockedObject>();
 
     /**
      * keys: id value: Temporary LockedObject from that id
+     * Concurrent access can occur
      */
     protected Hashtable<String, LockedObject> _tempLocksByID = new Hashtable<String, LockedObject>();
 

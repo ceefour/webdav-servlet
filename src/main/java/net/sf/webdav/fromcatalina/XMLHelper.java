@@ -1,6 +1,7 @@
 package net.sf.webdav.fromcatalina;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -22,9 +23,9 @@ public class XMLHelper {
         return null;
     }
 
-    public static Vector<String> getPropertiesFromXML(Node propNode) {
-        Vector<String> properties;
-        properties = new Vector<String>();
+    public static List<String> getPropertiesFromXML(Node propNode) {
+        ArrayList<String> properties;
+        properties = new ArrayList<String>();
         NodeList childList = propNode.getChildNodes();
 
         for (int i = 0; i < childList.getLength(); i++) {
@@ -33,7 +34,7 @@ public class XMLHelper {
                 String nodeName = currentNode.getLocalName();
                 String namespace = currentNode.getNamespaceURI();
                 // href is a live property which is handled differently
-                properties.addElement(namespace + ":" + nodeName);
+                properties.add(namespace + ":" + nodeName);
             }
         }
         return properties;

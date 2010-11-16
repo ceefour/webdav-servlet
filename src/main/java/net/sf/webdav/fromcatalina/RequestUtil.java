@@ -54,7 +54,7 @@ public final class RequestUtil {
      */
     public static String encodeCookie(Cookie cookie) {
 
-        StringBuffer buf = new StringBuffer(cookie.getName());
+        StringBuilder buf = new StringBuilder(cookie.getName());
         buf.append("=");
         buf.append(cookie.getValue());
 
@@ -115,7 +115,7 @@ public final class RequestUtil {
 
         char content[] = new char[message.length()];
         message.getChars(0, message.length(), content, 0);
-        StringBuffer result = new StringBuffer(content.length + 50);
+        StringBuilder result = new StringBuilder(content.length + 50);
         for (int i = 0; i < content.length; i++) {
             switch (content[i]) {
             case '<':

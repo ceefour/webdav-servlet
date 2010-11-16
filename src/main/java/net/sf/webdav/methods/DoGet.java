@@ -45,6 +45,7 @@ public class DoGet extends DoHead {
 
     }
 
+    @Override
     protected void doBody(ITransaction transaction, HttpServletResponse resp,
             String path) {
 
@@ -88,6 +89,7 @@ public class DoGet extends DoHead {
         }
     }
 
+    @Override
     protected void folderBody(ITransaction transaction, String path,
             HttpServletResponse resp, HttpServletRequest req)
             throws IOException {
@@ -115,7 +117,7 @@ public class DoGet extends DoHead {
                 OutputStream out = resp.getOutputStream();
                 String[] children = _store.getChildrenNames(transaction, path);
                 children = children == null ? new String[] {} : children;
-                StringBuffer childrenTemp = new StringBuffer();
+                StringBuilder childrenTemp = new StringBuilder();
                 childrenTemp.append("<html><head><title>Content of folder");
                 childrenTemp.append(path);
                 childrenTemp.append("</title><style type=\"text/css\">");
@@ -188,7 +190,7 @@ public class DoGet extends DoHead {
      * Return the CSS styles used to display the HTML representation
      * of the webdav content.
      * 
-     * @return
+     * @return String returning the CSS style sheet used to display result in html format
      */
     protected String getCSS()
     {
@@ -230,7 +232,7 @@ public class DoGet extends DoHead {
             if(iStream != null)
             {
                 // Found css via class loader, use that one
-                StringBuffer out = new StringBuffer();
+                StringBuilder out = new StringBuilder();
                 byte[] b = new byte[4096];
                 for (int n; (n = iStream.read(b)) != -1;)
                 {
@@ -251,7 +253,7 @@ public class DoGet extends DoHead {
      * Return this as the Date/Time format for displaying Creation + Modification dates
      * 
      * @param browserLocale
-     * @return
+     * @return DateFormat used to display creation and modification dates
      */
     protected DateFormat getDateTimeFormat(Locale browserLocale)
     {
@@ -265,7 +267,7 @@ public class DoGet extends DoHead {
      * @param path
      * @param resp
      * @param req
-     * @return
+     * @return String representing the header to be display in front of the folder content
      */
     protected String getHeader(ITransaction transaction, String path,
             HttpServletResponse resp, HttpServletRequest req)
@@ -280,7 +282,7 @@ public class DoGet extends DoHead {
      * @param path
      * @param resp
      * @param req
-     * @return
+     * @return String representing the footer to be displayed after the folder content
      */
     protected String getFooter(ITransaction transaction, String path,
             HttpServletResponse resp, HttpServletRequest req)

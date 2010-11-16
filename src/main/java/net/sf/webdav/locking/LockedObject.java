@@ -53,7 +53,7 @@ public class LockedObject {
     protected String _type = null;
 
     /**
-     * @param _resourceLocks
+     * @param resLocks
      *      the resourceLocks where locks are stored
      * @param path
      *      the path to the locked object

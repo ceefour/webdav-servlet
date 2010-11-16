@@ -39,9 +39,11 @@ public interface IWebdavStore {
 
     /**
      * Indicates that a new request or transaction with this store involved has
-     * been started. The request will be terminated by either {@link #commit()}
-     * or {@link #rollback()}. If only non-read methods have been called, the
-     * request will be terminated by a {@link #commit()}. This method will be
+     * been started. The request will be terminated by either 
+     * {@link #commit(ITransaction transaction)} or
+     * {@link #rollback(ITransaction transaction)}. If only non-read methods
+     * have been called, the request will be terminated by a
+     * {@link #commit(ITransaction transaction)}. This method will be
      * called by (@link WebdavStoreAdapter} at the beginning of each request.
      * 
      * 
@@ -186,7 +188,7 @@ public interface IWebdavStore {
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    long getResourceLength(ITransaction transaction, String path);
+    long getResourceLength(ITransaction transaction, String resourceUri);
 
     /**
      * Removes the object specified by <code>uri</code>.
