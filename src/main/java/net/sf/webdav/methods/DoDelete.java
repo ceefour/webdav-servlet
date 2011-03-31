@@ -59,14 +59,12 @@ public class DoDelete extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-                errorList.put(parentPath, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return; // parent is locked
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-                errorList.put(path, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return; // resource is locked
             }
 

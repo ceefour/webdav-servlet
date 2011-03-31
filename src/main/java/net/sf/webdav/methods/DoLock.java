@@ -83,14 +83,12 @@ public class DoLock extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _path)) {
-                errorList.put(_path, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return; // resource is locked
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _parentPath)) {
-                errorList.put(_parentPath, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return; // parent is locked
             }
 
@@ -118,7 +116,7 @@ public class DoLock extends AbstractMethod {
                     }
                 } catch (LockFailedException e) {
                     resp.sendError(WebdavStatus.SC_LOCKED);
-                    e.printStackTrace();
+                    LOG.error("Lockfailed exception", e);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             _path, tempLockOwner);
@@ -221,10 +219,10 @@ public class DoLock extends AbstractMethod {
             sendLockFailError(transaction, req, resp);
         } catch (WebdavException e) {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-            e.printStackTrace();
+            LOG.error("Webdav exception", e);
         } catch (ServletException e) {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-            e.printStackTrace();
+            LOG.error("Servlet exception", e);
         } finally {
             parentSo = null;
             nullSo = null;
@@ -432,11 +430,11 @@ public class DoLock extends AbstractMethod {
 
         } catch (DOMException e) {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-            e.printStackTrace();
+            LOG.error("DOM exception", e);
             return false;
         } catch (SAXException e) {
             resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
-            e.printStackTrace();
+            LOG.error("SAX exception", e);
             return false;
         }
 

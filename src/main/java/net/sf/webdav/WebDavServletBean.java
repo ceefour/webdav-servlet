@@ -68,7 +68,11 @@ public class WebDavServletBean extends HttpServlet {
 
         IMimeTyper mimeTyper = new IMimeTyper() {
             public String getMimeType(String path) {
-                return getServletContext().getMimeType(path);
+                String retVal= _store.getStoredObject(null, path).getMimeType();
+                if ( retVal== null) {
+                    retVal= getServletContext().getMimeType(path);
+                }
+                return retVal;
             }
         };
 

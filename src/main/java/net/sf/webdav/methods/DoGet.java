@@ -18,6 +18,9 @@ package net.sf.webdav.methods;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
@@ -107,14 +110,17 @@ public class DoGet extends DoHead {
             if (so.isFolder()) {
                 // TODO some folder response (for browsers, DAV tools
                 // use propfind) in html?
-				Locale locale = req.getLocale();
-
-				resp.setContentType("text/html");
+                Locale locale = req.getLocale();
+                DateFormat shortDF= getDateTimeFormat(req.getLocale());
+                resp.setContentType("text/html");
                 resp.setCharacterEncoding("UTF8");
                 OutputStream out = resp.getOutputStream();
                 String[] children = _store.getChildrenNames(transaction, path);
+                // Make sure it's not null
                 children = children == null ? new String[] {} : children;
-                StringBuffer childrenTemp = new StringBuffer();
+                // Sort by name
+                Arrays.sort(children);
+                StringBuilder childrenTemp = new StringBuilder();
                 childrenTemp.append("<html><head><title>Content of folder");
                 childrenTemp.append(path);
                 childrenTemp.append("</title><style type=\"text/css\">");
@@ -127,47 +133,66 @@ public class DoGet extends DoHead {
                 childrenTemp.append("<tr>");
                 childrenTemp.append("<td colspan=\"4\"><a href=\"../\">Parent</a></td></tr>");
                 boolean isEven= false;
-                for (String child : children) {
-					isEven = !isEven;
-					childrenTemp.append("<tr class=\"");
-					childrenTemp.append(isEven ? "even" : "odd");
-					childrenTemp.append("\">");
-					childrenTemp.append("<td>");
-					childrenTemp.append("<a href=\"");
-					childrenTemp.append(child);
-					StoredObject obj = _store.getStoredObject(transaction, path
-							+ "/" + child);
-					if (obj.isFolder()) {
-						childrenTemp.append("/");
-					}
-					childrenTemp.append("\">");
-					childrenTemp.append(child);
-					childrenTemp.append("</a></td>");
-					if (obj.isFolder()) {
-						childrenTemp.append("<td>Folder</td>");
-					} else {
-						childrenTemp.append("<td>");
-						childrenTemp.append(obj.getResourceLength());
-						childrenTemp.append(" Bytes</td>");
-					}
-					if (obj.getCreationDate() != null) {
-						childrenTemp.append("<td>");
-						childrenTemp.append( getLocalDateFormat(obj.getCreationDate(), locale) );
-
-						childrenTemp.append("</td>");
-					} else {
-						childrenTemp.append("<td></td>");
-					}
-					if (obj.getLastModified() != null) {
-						childrenTemp.append("<td>");
-						childrenTemp.append(getLocalDateFormat(obj.getLastModified(), locale));
-
-						childrenTemp.append("</td>");
-					} else {
-						childrenTemp.append("<td></td>");
-					}
-					childrenTemp.append("</tr>");
-				}
+                for (String child : children)
+                {
+                    isEven= !isEven;
+                    childrenTemp.append("<tr class=\"");
+                    childrenTemp.append(isEven ? "even" : "odd");
+                    childrenTemp.append("\">");
+                    childrenTemp.append("<td>");
+                    childrenTemp.append("<a href=\"");
+                    childrenTemp.append(child);
+                    StoredObject obj= _store.getStoredObject(transaction, path+"/"+child);
+                    if (obj == null)
+                    {
+                        LOG.error("Should not return null for "+path+"/"+child);
+                    }
+                    if (obj != null && obj.isFolder())
+                    {
+                        childrenTemp.append("/");
+                    }
+                    childrenTemp.append("\">");
+                    childrenTemp.append(child);
+                    childrenTemp.append("</a></td>");
+                    if (obj != null && obj.isFolder())
+                    {
+                        childrenTemp.append("<td>Folder</td>");
+                    }
+                    else
+                    {
+                        childrenTemp.append("<td>");
+                        if (obj != null )
+                        {
+                            childrenTemp.append(obj.getResourceLength());
+                        }
+                        else
+                        {
+                            childrenTemp.append("Unknown");
+                        }
+                        childrenTemp.append(" Bytes</td>");
+                    }
+                    if (obj != null && obj.getCreationDate() != null)
+                    {
+                        childrenTemp.append("<td>");
+                        childrenTemp.append(shortDF.format(obj.getCreationDate()));
+                        childrenTemp.append("</td>");
+                    }
+                    else
+                    {
+                        childrenTemp.append("<td></td>");
+                    }
+                    if (obj != null  && obj.getLastModified() != null)
+                    {
+                        childrenTemp.append("<td>");
+                        childrenTemp.append(shortDF.format(obj.getLastModified()));
+                        childrenTemp.append("</td>");
+                    }
+                    else
+                    {
+                        childrenTemp.append("<td></td>");
+                    }
+                    childrenTemp.append("</tr>");
+                }
                 childrenTemp.append("</table>");
                 childrenTemp.append(getFooter(transaction, path, resp, req));
                 childrenTemp.append("</body></html>");
@@ -268,4 +293,15 @@ public class DoGet extends DoHead {
     {
         return "";
     }
-}
+
+    /**
+     * Return this as the Date/Time format for displaying Creation + Modification dates
+     *
+     * @param browserLocale
+     * @return DateFormat used to display creation and modification dates
+     */
+    protected DateFormat getDateTimeFormat(Locale browserLocale)
+    {
+        return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.MEDIUM, browserLocale);
+    }
+ }

@@ -32,7 +32,12 @@ import java.util.BitSet;
  * @author Craig R. McClanahan
  * @author Remy Maucherat
  */
-public class URLEncoder {
+public class URLEncoder
+{
+    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(URLEncoder.class);
+
+
     protected static final char[] HEXADECIMAL = { '0', '1', '2', '3', '4', '5',
             '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
@@ -49,6 +54,9 @@ public class URLEncoder {
         for (char i = '0'; i <= '9'; i++) {
             addSafeCharacter(i);
         }
+        for(char c : "$-_.+!*'(),".toCharArray()){
+             addSafeCharacter(c);
+        }
     }
 
     public void addSafeCharacter(char c) {
@@ -64,7 +72,7 @@ public class URLEncoder {
         try {
             writer = new OutputStreamWriter(buf, "UTF8");
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("Error in encode <"+path+">", e);
             writer = new OutputStreamWriter(buf);
         }
 

@@ -57,8 +57,7 @@ public class DoMove extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
-                errorList.put(sourcePath, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return;
             }
 
@@ -70,8 +69,7 @@ public class DoMove extends AbstractMethod {
 
             if (!checkLocks(transaction, req, resp, _resourceLocks,
                     destinationPath)) {
-                errorList.put(destinationPath, WebdavStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
+                resp.setStatus(WebdavStatus.SC_LOCKED);
                 return;
             }
 

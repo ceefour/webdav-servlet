@@ -27,6 +27,7 @@ public class StoredObject {
     private Date lastModified;
     private Date creationDate;
     private long contentLength;
+    private String  mimeType;
 
     private boolean isNullRessource;
 
@@ -137,6 +138,28 @@ public class StoredObject {
         this.lastModified = null;
         // this.content = null;
         this.contentLength = 0;
+        this.mimeType= null;
+    }
+
+    /**
+     * Retrieve the myme type from the store object.
+     * Can also return NULL if the store does not handle
+     * mime type stuff.
+     * In that case the mime type is determined by the servletcontext
+     *
+     * @return the mimeType
+     */
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    /**
+     * Set the mime type of this object
+     * 
+     * @param mimeType the mimeType to set
+     */
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 
 }

@@ -128,14 +128,12 @@ public class DoCopy extends AbstractMethod {
 
         if (!checkLocks(transaction, req, resp, _resourceLocks,
                 parentDestinationPath)) {
-            errorList.put(parentDestinationPath, WebdavStatus.SC_LOCKED);
-            sendReport(req, resp, errorList);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return false; // parentDestination is locked
         }
 
         if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
-            errorList.put(destinationPath, WebdavStatus.SC_LOCKED);
-            sendReport(req, resp, errorList);
+            resp.setStatus(WebdavStatus.SC_LOCKED);
             return false; // destination is locked
         }
 
