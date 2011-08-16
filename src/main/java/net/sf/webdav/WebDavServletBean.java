@@ -140,6 +140,18 @@ public class WebDavServletBean extends HttpServlet {
                 methodExecutor.execute(transaction, req, resp);
 
                 _store.commit(transaction);
+                /** Clear not consumed data
+                 *
+                 * Clear input stream if available otherwise later access
+                 * include current input.  These cases occure if the client
+                 * sends a request with body to an not existing resource.
+                 */
+                if (req.getContentLength() != 0 && req.getInputStream().available() > 0) {
+                    if (LOG.isTraceEnabled()) { LOG.trace("Clear not consumed data!"); }
+                    while (req.getInputStream().available() > 0) {
+                        req.getInputStream().read();
+                    }
+                }
                 needRollback = false;
             } catch (IOException e) {
                 java.io.StringWriter sw = new java.io.StringWriter();
