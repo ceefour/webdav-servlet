@@ -67,10 +67,10 @@ public class WebDavServletBean extends HttpServlet {
         _store = store;
 
         IMimeTyper mimeTyper = new IMimeTyper() {
-            public String getMimeType(String path) {
-                String retVal= _store.getStoredObject(null, path).getMimeType();
+            public String getMimeType(ITransaction transaction, String path) {
+                String retVal= _store.getStoredObject(transaction, path).getMimeType();
                 if ( retVal== null) {
-                    retVal= getServletContext().getMimeType(path);
+                    retVal= getServletContext().getMimeType( path);
                 }
                 return retVal;
             }
@@ -96,6 +96,7 @@ public class WebDavServletBean extends HttpServlet {
         register("*NO*IMPL*", new DoNotImplemented(READ_ONLY));
     }
 
+    @Override
     public void destroy() {
         if(_store != null)
             _store.destroy();
@@ -110,6 +111,7 @@ public class WebDavServletBean extends HttpServlet {
     /**
      * Handles the special WebDAV methods.
      */
+    @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 

@@ -160,11 +160,11 @@ public class DoPropfind extends AbstractMethod {
                 if (_depth == 0) {
                     parseProperties(transaction, req, generatedXML, path,
                             propertyFindType, properties, _mimeTyper
-                                    .getMimeType(path));
+                                    .getMimeType(transaction, path));
                 } else {
                     recursiveParseProperties(transaction, path, req,
                             generatedXML, propertyFindType, properties, _depth,
-                            _mimeTyper.getMimeType(path));
+                            _mimeTyper.getMimeType(transaction, path));
                 }
                 generatedXML
                         .writeElement("DAV::multistatus", XMLWriter.CLOSING);

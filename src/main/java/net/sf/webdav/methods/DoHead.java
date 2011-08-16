@@ -135,7 +135,7 @@ public class DoHead extends AbstractMethod {
                                 }
                             }
 
-                            String mimeType = _mimeTyper.getMimeType(path);
+                            String mimeType = _mimeTyper.getMimeType(transaction, path);
                             if (mimeType != null) {
                                 resp.setContentType(mimeType);
                             } else {
