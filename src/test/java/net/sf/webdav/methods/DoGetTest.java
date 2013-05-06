@@ -159,7 +159,7 @@ public class DoGetTest extends MockTest {
                 oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
                 will(returnValue(fooSo));
 
-                oneOf(mockReq).getLocale();
+                allowing(mockReq).getLocale();
                 will(returnValue(Locale.GERMAN));
                 
                 oneOf(mockRes).setContentType("text/html");
