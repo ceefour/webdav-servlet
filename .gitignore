@@ -1,0 +1,6 @@
+target
+build/classes
+build/test-classes
+.project
+.settings/
+.classpath
