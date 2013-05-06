@@ -53,7 +53,7 @@ public class DoLockTest extends MockTest {
 
         ResourceLocks resLocks = new ResourceLocks();
 
-        DoLock doLock = new DoLock(mockStore, resLocks, readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -110,7 +110,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -170,7 +170,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -230,7 +230,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -291,7 +291,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -351,7 +351,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, resLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -469,7 +469,7 @@ public class DoLockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, mockResourceLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, mockResourceLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();

@@ -63,7 +63,7 @@ public class WebdavServletTest extends MockTest {
         });
 
         WebDavServletBean servlet = new WebdavServlet();
-        servlet.init(mockStore, dftIndexFile, insteadOf404, 1, true);
+        servlet.init(mockStore, null, dftIndexFile, insteadOf404, 1, true);
 
         _mockery.assertIsSatisfied();
     }
@@ -85,6 +85,10 @@ public class WebdavServletTest extends MockTest {
 
                 oneOf(servletConfig).getInitParameter(
                         "ResourceHandlerImplementation");
+                will(returnValue(""));
+
+                oneOf(servletConfig).getInitParameter(
+                		"LockingListener");
                 will(returnValue(""));
 
                 oneOf(servletConfig).getInitParameter("rootpath");

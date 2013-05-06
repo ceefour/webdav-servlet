@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 
+import net.sf.webdav.ILockingListener;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
@@ -47,9 +48,10 @@ public class DoLock extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoLock.class);
 
-    private IWebdavStore _store;
-    private IResourceLocks _resourceLocks;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final ILockingListener _lockingListener;
+    private final IResourceLocks _resourceLocks;
+    private final boolean _readOnly;
 
     private boolean _macLockRequest = false;
 
@@ -62,14 +64,16 @@ public class DoLock extends AbstractMethod {
 
     private String _userAgent = null;
 
-    public DoLock(IWebdavStore store, IResourceLocks resourceLocks,
-            boolean readOnly) {
+    public DoLock(IWebdavStore store, ILockingListener lockingListener,
+            IResourceLocks resourceLocks, boolean readOnly) {
         _store = store;
+        _lockingListener = lockingListener;
         _resourceLocks = resourceLocks;
         _readOnly = readOnly;
     }
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
+    @Override
+	public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
 
@@ -296,6 +300,10 @@ public class DoLock extends AbstractMethod {
                             transaction, _path);
                     if (lo != null) {
                         generateXMLReport(transaction, resp, lo);
+                        
+                        if (_lockingListener != null) {
+                        	_lockingListener.onLockResource(transaction, _path);
+                        }
                     } else {
                         resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                     }

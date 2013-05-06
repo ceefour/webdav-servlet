@@ -48,7 +48,8 @@ public class WebDavServletBean extends HttpServlet {
     private static final boolean READ_ONLY = false;
 	protected ResourceLocks _resLocks;
 	protected IWebdavStore _store;
-    private HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
+	protected ILockingListener _lockingListener;
+    private final HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
 
     public WebDavServletBean() {
         _resLocks = new ResourceLocks();
@@ -60,14 +61,16 @@ public class WebDavServletBean extends HttpServlet {
         }
     }
 
-    public void init(IWebdavStore store, String dftIndexFile,
-            String insteadOf404, int nocontentLenghHeaders,
-            boolean lazyFolderCreationOnPut) throws ServletException {
+    public void init(IWebdavStore store, ILockingListener lockingListener,
+            String dftIndexFile, String insteadOf404,
+            int nocontentLenghHeaders, boolean lazyFolderCreationOnPut) throws ServletException {
 
         _store = store;
+        _lockingListener = lockingListener;
 
         IMimeTyper mimeTyper = new IMimeTyper() {
-            public String getMimeType(ITransaction transaction, String path) {
+            @Override
+			public String getMimeType(ITransaction transaction, String path) {
                 String retVal= _store.getStoredObject(transaction, path).getMimeType();
                 if ( retVal== null) {
                     retVal= getServletContext().getMimeType( path);
@@ -84,8 +87,8 @@ public class WebDavServletBean extends HttpServlet {
                 _resLocks, READ_ONLY));
         DoCopy doCopy = (DoCopy) register("COPY", new DoCopy(store, _resLocks,
                 doDelete, READ_ONLY));
-        register("LOCK", new DoLock(store, _resLocks, READ_ONLY));
-        register("UNLOCK", new DoUnlock(store, _resLocks, READ_ONLY));
+        register("LOCK", new DoLock(store, _lockingListener, _resLocks, READ_ONLY));
+        register("UNLOCK", new DoUnlock(store, _lockingListener, _resLocks, READ_ONLY));
         register("MOVE", new DoMove(_resLocks, doDelete, doCopy, READ_ONLY));
         register("MKCOL", new DoMkcol(store, _resLocks, READ_ONLY));
         register("OPTIONS", new DoOptions(store, _resLocks));
@@ -130,10 +133,10 @@ public class WebDavServletBean extends HttpServlet {
             resp.setStatus(WebdavStatus.SC_OK);
 
             try {
-                IMethodExecutor methodExecutor = (IMethodExecutor) _methodMap
+                IMethodExecutor methodExecutor = _methodMap
                         .get(methodName);
                 if (methodExecutor == null) {
-                    methodExecutor = (IMethodExecutor) _methodMap
+                    methodExecutor = _methodMap
                             .get("*NO*IMPL*");
                 }
 

@@ -48,8 +48,8 @@ public class DoUnlockTest extends MockTest {
             }
         });
 
-        DoUnlock doUnlock = new DoUnlock(mockStore, new ResourceLocks(),
-                readOnly);
+        DoUnlock doUnlock = new DoUnlock(mockStore, null,
+                new ResourceLocks(), readOnly);
 
         doUnlock.execute(mockTransaction, mockReq, mockRes);
 
@@ -92,7 +92,7 @@ public class DoUnlockTest extends MockTest {
             }
         });
 
-        DoUnlock doUnlock = new DoUnlock(mockStore, resLocks, !readOnly);
+        DoUnlock doUnlock = new DoUnlock(mockStore, null, resLocks, !readOnly);
 
         doUnlock.execute(mockTransaction, mockReq, mockRes);
 
@@ -131,7 +131,7 @@ public class DoUnlockTest extends MockTest {
             }
         });
 
-        DoUnlock doUnlock = new DoUnlock(mockStore, resLocks, !readOnly);
+        DoUnlock doUnlock = new DoUnlock(mockStore, null, resLocks, !readOnly);
         doUnlock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();
@@ -159,7 +159,7 @@ public class DoUnlockTest extends MockTest {
             }
         });
 
-        DoUnlock doUnlock = new DoUnlock(mockStore, resLocks, !readOnly);
+        DoUnlock doUnlock = new DoUnlock(mockStore, null, resLocks, !readOnly);
 
         doUnlock.execute(mockTransaction, mockReq, mockRes);
 
@@ -320,11 +320,11 @@ public class DoUnlockTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, mockResourceLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, mockResourceLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
-        DoUnlock doUnlock = new DoUnlock(mockStore, mockResourceLocks,
-                !readOnly);
+        DoUnlock doUnlock = new DoUnlock(mockStore, null,
+                mockResourceLocks, !readOnly);
         doUnlock.execute(mockTransaction, mockReq, mockRes);
 
         _mockery.assertIsSatisfied();

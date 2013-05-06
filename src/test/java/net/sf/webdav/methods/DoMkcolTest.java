@@ -397,7 +397,7 @@ public class DoMkcolTest extends MockTest {
             }
         });
 
-        DoLock doLock = new DoLock(mockStore, mockResourceLocks, !readOnly);
+        DoLock doLock = new DoLock(mockStore, null, mockResourceLocks, !readOnly);
         doLock.execute(mockTransaction, mockReq, mockRes);
 
         DoMkcol doMkcol = new DoMkcol(mockStore, mockResourceLocks, !readOnly);
