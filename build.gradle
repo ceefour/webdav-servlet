@@ -15,16 +15,20 @@
  */
  
 apply plugin: 'java'
-apply plugin: 'war'
 apply plugin: 'eclipse'
 apply plugin: 'java-library-distribution'
+apply plugin: 'maven'
  
 archivesBaseName = 'webdav-servlet'
 project.group = 'net.sf.webdav-servlet'
-project.version = '2.1-TOPICUS'
+project.version = '2.2-TOPICUS-SNAPSHOT'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
+
+configurations {
+	deployerJars
+}
 
 repositories {
 	mavenCentral()
@@ -37,11 +41,14 @@ dependencies {
 	testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.12'
 	testCompile group: 'junit', name: 'junit', version: '4.+'
 	testCompile group: 'org.jmock', name: 'jmock', version: '2.6.0'
+	testCompile group: 'org.jmock', name: 'jmock-junit4', version: '2.6.0'
 
 	testCompile group: 'org.springframework', name: 'spring-test', version: '3.2.2.RELEASE'
 	testCompile group: 'org.springframework', name: 'spring-core', version: '3.2.2.RELEASE'
 	
 	testRuntime group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.3'
+	
+	deployerJars 'org.apache.maven.wagon:wagon-http:2.2'
 }
 
 task wrapper(type: Wrapper) {
@@ -57,4 +64,36 @@ distributions {
     main{
         baseName = "$archivesBaseName-${project.version}"
     }
+}
+
+def getMavenSettingsCredentials = {
+    String userHome = System.getProperty( "user.home" );
+    File mavenSettings = new File(userHome, ".m2/settings.xml")
+    def xmlSlurper = new XmlSlurper()
+    def output = xmlSlurper.parse(mavenSettings)
+    return output."servers"."server"
+}
+
+def getCredentials = {
+    def entries = getMavenSettingsCredentials()
+    for (entry in entries) {
+        if ( entry."id".text() == "deployment.external" ) {
+            return [username: entry.username.text(), password: entry.password.text()]
+    }
+  }
+}
+
+uploadArchives {
+	def creds = getCredentials()
+	repositories {
+		repositories.mavenDeployer {
+			configuration = configurations.deployerJars
+			uniqueVersion = false
+			configureAuth = {
+				authentication(userName: creds["username"], password: creds["password"])
+			}
+			snapshotRepository(url: "http://vaatwasser:8081/nexus/content/repositories/external-snapshot/", configureAuth)
+			repository(url: "http://vaatwasser:8081/nexus/content/repositories/external-releases/", configureAuth)
+		}
+	}
 }
