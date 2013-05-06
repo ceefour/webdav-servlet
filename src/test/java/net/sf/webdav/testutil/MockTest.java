@@ -3,7 +3,6 @@ package net.sf.webdav.testutil;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 
-import junit.framework.Assert;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -11,13 +10,12 @@ import net.sf.webdav.methods.TestingOutputStream;
 
 import org.jmock.Mockery;
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
-public abstract class MockTest extends Assert {
+public abstract class MockTest {
 
-    protected static Mockery _mockery;
+    protected Mockery _mockery;
 
     protected static boolean readOnly = true;
 
@@ -78,14 +76,9 @@ public abstract class MockTest extends Assert {
         _mockery.assertIsSatisfied();
     }
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @Before
+    public void setUpBeforeClass() {
         _mockery = new Mockery();
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() {
-        _mockery = null;
     }
 
     public static StoredObject initFolderStoredObject() {

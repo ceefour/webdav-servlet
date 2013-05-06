@@ -19,7 +19,6 @@ package net.sf.webdav.fromcatalina;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.servlet.http.Cookie;
 
@@ -248,7 +247,7 @@ public final class RequestUtil {
             }
         }
 
-        return ((Cookie[]) cookies.toArray(new Cookie[cookies.size()]));
+        return (cookies.toArray(new Cookie[cookies.size()]));
 
     }
 
@@ -427,7 +426,7 @@ public final class RequestUtil {
     private static void putMapEntry(Map<String, String[]> map, String name,
             String value) {
         String[] newValues = null;
-        String[] oldValues = (String[]) map.get(name);
+        String[] oldValues = map.get(name);
         if (oldValues == null) {
             newValues = new String[1];
             newValues[0] = value;

@@ -15,24 +15,24 @@ import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoProppatchTest extends MockTest {
-    static IWebdavStore mockStore;
-    static IMimeTyper mockMimeTyper;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
+    IWebdavStore mockStore;
+    IMimeTyper mockMimeTyper;
+    HttpServletRequest mockReq;
+    HttpServletResponse mockRes;
+    ITransaction mockTransaction;
     static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
             '/', '>' };
     static ByteArrayInputStream bais = new ByteArrayInputStream(resourceContent);
     static DelegatingServletInputStream dsis = new DelegatingServletInputStream(
             bais);
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mockStore = _mockery.mock(IWebdavStore.class);
         mockMimeTyper = _mockery.mock(IMimeTyper.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
@@ -45,7 +45,7 @@ public class DoProppatchTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
             }
         });
 
@@ -64,18 +64,18 @@ public class DoProppatchTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
                 StoredObject notExistingSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, path);
+                oneOf(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(notExistingSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
+                oneOf(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
             }
         });
 
@@ -94,27 +94,27 @@ public class DoProppatchTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
                 StoredObject testFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, path);
+                oneOf(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(testFileSo));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
-                one(mockReq).getContentLength();
+                oneOf(mockReq).getContentLength();
                 will(returnValue(0));
 
-                one(mockRes).sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                oneOf(mockRes).sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
             }
         });
 
@@ -134,37 +134,37 @@ public class DoProppatchTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
                 StoredObject testFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, path);
+                oneOf(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(testFileSo));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
-                one(mockReq).getContentLength();
+                oneOf(mockReq).getContentLength();
                 will(returnValue(8));
 
-                one(mockReq).getInputStream();
+                oneOf(mockReq).getInputStream();
                 will(returnValue(dsis));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
 
-                one(mockRes).setContentType("text/xml; charset=UTF-8");
+                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                one(mockRes).getWriter();
+                oneOf(mockRes).getWriter();
                 will(returnValue(pw));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
             }
         });
