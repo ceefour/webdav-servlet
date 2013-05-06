@@ -1,7 +1,7 @@
 target
-build/classes
-build/test-classes
+build/
 .project
 .settings/
 .classpath
 .gradle/
+/bin
