@@ -109,9 +109,6 @@ public class DoPutTest extends MockTest {
 
     @Test
     public void testDoPutIfLazyFolderCreationOnPutIsFalse() throws Exception {
-
-        final PrintWriter pw = new PrintWriter("/tmp/XMLTestFile");
-
         _mockery.checking(new Expectations() {
             {
                 oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
@@ -128,14 +125,7 @@ public class DoPutTest extends MockTest {
                 oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
-                oneOf(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
-
-                oneOf(mockReq).getRequestURI();
-                will(returnValue("http://foo.bar".concat(path)));
-
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
-
+                oneOf(mockRes).sendError(WebdavStatus.SC_NOT_FOUND, WebdavStatus.getStatusText(WebdavStatus.SC_NOT_FOUND));
             }
         });
 
