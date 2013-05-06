@@ -22,7 +22,7 @@ public abstract class MockTest {
     protected static int TEMP_TIMEOUT = 10;
     protected static boolean TEMPORARY = true;
 
-    protected static TestingOutputStream tos = new TestingOutputStream();
+    protected TestingOutputStream tos = new TestingOutputStream();
     protected static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l',
             'l', 'o', '/', '>' };
     protected static ByteArrayInputStream bais = new ByteArrayInputStream(
@@ -39,9 +39,9 @@ public abstract class MockTest {
             + "</D:lockinfo>";
     protected static byte[] exclusiveLockRequestByteArray = exclusiveLockRequest
             .getBytes();
-    protected static ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
+    protected ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
             exclusiveLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
+    protected DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
             baisExclusive);
 
     protected static String sharedLockRequest = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
@@ -52,9 +52,9 @@ public abstract class MockTest {
             + "</D:lockinfo>";
     protected static byte[] sharedLockRequestByteArray = sharedLockRequest
             .getBytes();
-    protected static ByteArrayInputStream baisShared = new ByteArrayInputStream(
+    protected ByteArrayInputStream baisShared = new ByteArrayInputStream(
             sharedLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
+    protected DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
             baisShared);
 
     protected static String tmpFolder = "/tmp/tests";
