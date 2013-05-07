@@ -30,6 +30,7 @@ defaultTasks 'clean', 'build', 'sourcesJar', 'javadocJar', 'uploadArchives'
 
 configurations {
 	deployerJars
+	providedCompile
 }
 
 repositories {
@@ -37,7 +38,7 @@ repositories {
 }
 
 dependencies {
-	compile group: 'javax.servlet', name: 'servlet-api', version: '2.5'
+	providedCompile group: 'javax.servlet', name: 'servlet-api', version: '2.5'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 	
 	testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.12'
@@ -53,6 +54,12 @@ dependencies {
 	deployerJars 'org.apache.maven.wagon:wagon-http:2.2'
 }
 
+sourceSets {
+    main.compileClasspath += configurations.providedCompile
+    test.compileClasspath += configurations.providedCompile
+    test.runtimeClasspath += configurations.providedCompile
+}
+
 task wrapper(type: Wrapper) {
   gradleVersion = '1.5'
 }
@@ -62,7 +69,12 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+task myJavadocs(type: Javadoc) {
+  source = sourceSets.main.allJava
+  classpath = sourceSets.main.compileClasspath + configurations.providedCompile
+}
+
+task javadocJar(type: Jar, dependsOn: myJavadocs) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
