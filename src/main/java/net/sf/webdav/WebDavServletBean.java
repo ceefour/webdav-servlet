@@ -184,7 +184,8 @@ public class WebDavServletBean extends HttpServlet {
     }
 
     /**
-     * Method that permit to get the UserPrincipal without using JAAS
+     * Method that permit to customize the way 
+     * user information are extracted from the request, default use JAAS
      * @param req
      * @return
      */
