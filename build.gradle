@@ -21,7 +21,7 @@ apply plugin: 'maven'
  
 archivesBaseName = 'webdav-servlet'
 project.group = 'net.sf.webdav-servlet'
-project.version = '2.2-TOPICUS-SNAPSHOT'
+project.version = '2.2-TOPICUS'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
