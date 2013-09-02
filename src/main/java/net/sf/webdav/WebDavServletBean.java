@@ -175,10 +175,12 @@ public class WebDavServletBean extends HttpServlet {
             LOG.error("WebdavException: " + sw.toString());
             throw new ServletException(e);
         } catch (Exception e) {
-            java.io.StringWriter sw = new java.io.StringWriter();
-            java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-            e.printStackTrace(pw);
-            LOG.error("Exception: " + sw.toString());
+        	if (!(e instanceof NullPointerException)) {
+        		java.io.StringWriter sw = new java.io.StringWriter();
+        		java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        		e.printStackTrace(pw);
+        		LOG.error("Exception: " + sw.toString());
+        	}
         } finally {
             if (needRollback)
                 _store.rollback(transaction);
