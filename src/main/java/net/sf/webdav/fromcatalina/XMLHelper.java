@@ -13,8 +13,8 @@ public class XMLHelper {
         }
         Node child = parent.getFirstChild();
         while (child != null) {
-            if ((child.getNodeType() == Node.ELEMENT_NODE)
-                    && (child.getLocalName().equals(localName))) {
+            if (child.getNodeType() == Node.ELEMENT_NODE
+                    && child.getLocalName().equals(localName)) {
                 return child;
             }
             child = child.getNextSibling();
@@ -23,8 +23,7 @@ public class XMLHelper {
     }
 
     public static Vector<String> getPropertiesFromXML(Node propNode) {
-        Vector<String> properties;
-        properties = new Vector<String>();
+        Vector<String> properties = new Vector<>();
         NodeList childList = propNode.getChildNodes();
 
         for (int i = 0; i < childList.getLength(); i++) {

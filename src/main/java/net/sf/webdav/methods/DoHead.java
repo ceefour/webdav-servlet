@@ -22,10 +22,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.IMimeTyper;
-import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
@@ -55,6 +55,7 @@ public class DoHead extends AbstractMethod {
         _contentLength = contentLengthHeader;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
 
@@ -71,8 +72,9 @@ public class DoHead extends AbstractMethod {
                 path = this._insteadOf404;
                 so = _store.getStoredObject(transaction, this._insteadOf404);
             }
-        } else
+        } else {
             bUriExists = true;
+        }
 
         if (so != null) {
             if (so.isFolder()) {
@@ -107,7 +109,7 @@ public class DoHead extends AbstractMethod {
 
                     if (so.isResource()) {
                         // path points to a file but ends with / or \
-                        if (path.endsWith("/") || (path.endsWith("\\"))) {
+                        if (path.endsWith("/") || path.endsWith("\\")) {
                             resp.sendError(HttpServletResponse.SC_NOT_FOUND,
                                     req.getRequestURI());
                         } else {
@@ -125,7 +127,7 @@ public class DoHead extends AbstractMethod {
                                 if (resourceLength > 0) {
                                     if (resourceLength <= Integer.MAX_VALUE) {
                                         resp
-                                                .setContentLength((int) resourceLength);
+                                        .setContentLength((int) resourceLength);
                                     } else {
                                         resp.setHeader("content-length", ""
                                                 + resourceLength);
@@ -170,14 +172,15 @@ public class DoHead extends AbstractMethod {
             folderBody(transaction, path, resp, req);
         }
 
-        if (!bUriExists)
+        if (!bUriExists) {
             resp.setStatus(WebdavStatus.SC_NOT_FOUND);
+        }
 
     }
 
     protected void folderBody(ITransaction transaction, String path,
             HttpServletResponse resp, HttpServletRequest req)
-            throws IOException {
+                    throws IOException {
         // no body for HEAD
     }
 

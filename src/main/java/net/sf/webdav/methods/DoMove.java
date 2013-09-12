@@ -34,10 +34,10 @@ public class DoMove extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoMove.class);
 
-    private ResourceLocks _resourceLocks;
-    private DoDelete _doDelete;
-    private DoCopy _doCopy;
-    private boolean _readOnly;
+    private final ResourceLocks _resourceLocks;
+    private final DoDelete _doDelete;
+    private final DoCopy _doCopy;
+    private final boolean _readOnly;
 
     public DoMove(ResourceLocks resourceLocks, DoDelete doDelete,
             DoCopy doCopy, boolean readOnly) {
@@ -47,6 +47,7 @@ public class DoMove extends AbstractMethod {
         _readOnly = readOnly;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
 
@@ -54,7 +55,7 @@ public class DoMove extends AbstractMethod {
             LOG.trace("-- " + this.getClass().getName());
 
             String sourcePath = getRelativePath(req);
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            Hashtable<String, Integer> errorList = new Hashtable<>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
                 resp.setStatus(WebdavStatus.SC_LOCKED);
@@ -82,7 +83,7 @@ public class DoMove extends AbstractMethod {
 
                     if (_doCopy.copyResource(transaction, req, resp)) {
 
-                        errorList = new Hashtable<String, Integer>();
+                        errorList = new Hashtable<>();
                         _doDelete.deleteResource(transaction, sourcePath,
                                 errorList, req, resp);
                         if (!errorList.isEmpty()) {

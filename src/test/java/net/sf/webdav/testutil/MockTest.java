@@ -3,7 +3,6 @@ package net.sf.webdav.testutil;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 
-import junit.framework.Assert;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -11,20 +10,19 @@ import net.sf.webdav.methods.TestingOutputStream;
 
 import org.jmock.Mockery;
 import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
-public abstract class MockTest extends Assert {
+public abstract class MockTest {
 
-    protected static Mockery _mockery;
+    protected Mockery _mockery;
 
     protected static boolean readOnly = true;
 
     protected static int TEMP_TIMEOUT = 10;
     protected static boolean TEMPORARY = true;
 
-    protected static TestingOutputStream tos = new TestingOutputStream();
+    protected TestingOutputStream tos = new TestingOutputStream();
     protected static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l',
             'l', 'o', '/', '>' };
     protected static ByteArrayInputStream bais = new ByteArrayInputStream(
@@ -41,9 +39,9 @@ public abstract class MockTest extends Assert {
             + "</D:lockinfo>";
     protected static byte[] exclusiveLockRequestByteArray = exclusiveLockRequest
             .getBytes();
-    protected static ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
+    protected ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
             exclusiveLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
+    protected DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
             baisExclusive);
 
     protected static String sharedLockRequest = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
@@ -54,9 +52,9 @@ public abstract class MockTest extends Assert {
             + "</D:lockinfo>";
     protected static byte[] sharedLockRequestByteArray = sharedLockRequest
             .getBytes();
-    protected static ByteArrayInputStream baisShared = new ByteArrayInputStream(
+    protected ByteArrayInputStream baisShared = new ByteArrayInputStream(
             sharedLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
+    protected DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
             baisShared);
 
     protected static String tmpFolder = "/tmp/tests";
@@ -78,14 +76,9 @@ public abstract class MockTest extends Assert {
         _mockery.assertIsSatisfied();
     }
 
-    @BeforeClass
-    public static void setUpBeforeClass() {
+    @Before
+    public void setUpBeforeClass() {
         _mockery = new Mockery();
-    }
-
-    @AfterClass
-    public static void tearDownAfterClass() {
-        _mockery = null;
     }
 
     public static StoredObject initFolderStoredObject() {

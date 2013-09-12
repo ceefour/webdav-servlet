@@ -20,10 +20,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
@@ -34,14 +34,15 @@ public class DoOptions extends DeterminableMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoOptions.class);
 
-    private IWebdavStore _store;
-    private ResourceLocks _resourceLocks;
+    private final IWebdavStore _store;
+    private final ResourceLocks _resourceLocks;
 
     public DoOptions(IWebdavStore store, ResourceLocks resLocks) {
         _store = store;
         _resourceLocks = resLocks;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
 

@@ -36,10 +36,10 @@ public class DoPut extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoPut.class);
 
-    private IWebdavStore _store;
-    private IResourceLocks _resourceLocks;
-    private boolean _readOnly;
-    private boolean _lazyFolderCreationOnPut;
+    private final IWebdavStore _store;
+    private final IResourceLocks _resourceLocks;
+    private final boolean _readOnly;
+    private final boolean _lazyFolderCreationOnPut;
 
     private String _userAgent;
 
@@ -51,6 +51,7 @@ public class DoPut extends AbstractMethod {
         _lazyFolderCreationOnPut = lazyFolderCreationOnPut;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
@@ -61,7 +62,7 @@ public class DoPut extends AbstractMethod {
 
             _userAgent = req.getHeader("User-Agent");
 
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            Hashtable<String, Integer> errorList = new Hashtable<>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
                 resp.setStatus(WebdavStatus.SC_LOCKED);
@@ -109,7 +110,7 @@ public class DoPut extends AbstractMethod {
                                     .getLockedObjectByPath(transaction, path);
                             if (nullResourceLo == null) {
                                 resp
-                                        .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                                 return;
                             }
                             String nullResourceLockToken = nullResourceLo
@@ -129,13 +130,14 @@ public class DoPut extends AbstractMethod {
                                 String[] nullResourceLockOwners = nullResourceLo
                                         .getOwner();
                                 String owner = null;
-                                if (nullResourceLockOwners != null)
+                                if (nullResourceLockOwners != null) {
                                     owner = nullResourceLockOwners[0];
+                                }
 
                                 if (!_resourceLocks.unlock(transaction,
                                         lockToken, owner)) {
                                     resp
-                                            .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                    .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                                 }
                             } else {
                                 errorList.put(path, WebdavStatus.SC_LOCKED);
@@ -153,8 +155,10 @@ public class DoPut extends AbstractMethod {
 
                     so = _store.getStoredObject(transaction, path);
                     if (resourceLength != -1)
+                    {
                         so.setResourceLength(resourceLength);
-                    // Now lets report back what was actually saved
+                        // Now lets report back what was actually saved
+                    }
 
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);

@@ -1,5 +1,8 @@
 package net.sf.webdav.methods;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.util.Locale;
 
@@ -15,26 +18,26 @@ import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoGetTest extends MockTest {
 
-    static IWebdavStore mockStore;
-    static IMimeTyper mockMimeTyper;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
-    static TestingOutputStream tos = new TestingOutputStream();;
+    IWebdavStore mockStore;
+    IMimeTyper mockMimeTyper;
+    HttpServletRequest mockReq;
+    HttpServletResponse mockRes;
+    ITransaction mockTransaction;
+    TestingOutputStream tos = new TestingOutputStream();;
     static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
             '/', '>' };
     static ByteArrayInputStream bais = new ByteArrayInputStream(resourceContent);
     static DelegatingServletInputStream dsis = new DelegatingServletInputStream(
             bais);
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mockStore = _mockery.mock(IWebdavStore.class);
         mockMimeTyper = _mockery.mock(IMimeTyper.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
@@ -47,10 +50,10 @@ public class DoGetTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/index.html"));
 
                 StoredObject indexSo = null;
@@ -59,13 +62,13 @@ public class DoGetTest extends MockTest {
                         "/index.html");
                 will(returnValue(indexSo));
 
-                one(mockReq).getRequestURI();
+                oneOf(mockReq).getRequestURI();
                 will(returnValue("/index.html"));
 
-                one(mockRes)
+                oneOf(mockRes)
                         .sendError(WebdavStatus.SC_NOT_FOUND, "/index.html");
 
-                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
             }
         });
 
@@ -82,40 +85,40 @@ public class DoGetTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/index.html"));
 
                 StoredObject indexSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(indexSo));
 
-                one(mockReq).getHeader("If-None-Match");
+                oneOf(mockReq).getHeader("If-None-Match");
                 will(returnValue(null));
 
-                one(mockRes).setDateHeader("last-modified",
+                oneOf(mockRes).setDateHeader("last-modified",
                         indexSo.getLastModified().getTime());
 
-                one(mockRes).addHeader(with(any(String.class)),
+                oneOf(mockRes).addHeader(with(any(String.class)),
                         with(any(String.class)));
 
-                one(mockMimeTyper).getMimeType("/index.html");
+                oneOf(mockMimeTyper).getMimeType(mockTransaction, "/index.html");
                 will(returnValue("text/foo"));
 
-                one(mockRes).setContentType("text/foo");
+                oneOf(mockRes).setContentType("text/foo");
 
                 StoredObject so = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(so));
 
-                one(mockRes).getOutputStream();
+                oneOf(mockRes).getOutputStream();
                 will(returnValue(tos));
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         "/index.html");
                 will(returnValue(dsis));
             }
@@ -137,43 +140,43 @@ public class DoGetTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/foo/"));
 
                 StoredObject fooSo = initFolderStoredObject();
                 StoredObject aaa = initFolderStoredObject();
                 StoredObject bbb = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
                 will(returnValue(fooSo));
 
-                one(mockReq).getHeader("If-None-Match");
+                oneOf(mockReq).getHeader("If-None-Match");
                 will(returnValue(null));
 
-                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
                 will(returnValue(fooSo));
 
-                one(mockReq).getLocale();
+                allowing(mockReq).getLocale();
                 will(returnValue(Locale.GERMAN));
                 
-                one(mockRes).setContentType("text/html");
-				one(mockRes).setCharacterEncoding("UTF8");
+                oneOf(mockRes).setContentType("text/html");
+				oneOf(mockRes).setCharacterEncoding("UTF8");
                 
                 tos = new TestingOutputStream();
 
-                one(mockRes).getOutputStream();
+                oneOf(mockRes).getOutputStream();
                 will(returnValue(tos));
 
-                one(mockStore).getChildrenNames(mockTransaction, "/foo/");
+                oneOf(mockStore).getChildrenNames(mockTransaction, "/foo/");
                 will(returnValue(new String[] { "AAA", "BBB" }));
                 
-                one(mockStore).getStoredObject(mockTransaction, "/foo//AAA");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/foo//AAA");
                 will(returnValue(aaa));
 
-                one(mockStore).getStoredObject(mockTransaction, "/foo//BBB");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/foo//BBB");
 				will(returnValue(bbb));
 
             }
@@ -195,23 +198,23 @@ public class DoGetTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/foo/"));
 
                 StoredObject fooSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, "/foo/");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
                 will(returnValue(fooSo));
 
-                one(mockReq).getRequestURI();
+                oneOf(mockReq).getRequestURI();
                 will(returnValue("/foo/"));
 
-                one(mockRes).encodeRedirectURL("/foo//indexFile");
+                oneOf(mockRes).encodeRedirectURL("/foo//indexFile");
 
-                one(mockRes).sendRedirect("");
+                oneOf(mockRes).sendRedirect("");
             }
         });
 
@@ -229,50 +232,50 @@ public class DoGetTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/index.html"));
 
                 StoredObject indexSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(indexSo));
 
                 StoredObject alternativeSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, "/alternative");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/alternative");
                 will(returnValue(alternativeSo));
 
-                one(mockReq).getHeader("If-None-Match");
+                oneOf(mockReq).getHeader("If-None-Match");
                 will(returnValue(null));
 
-                one(mockRes).setDateHeader("last-modified",
+                oneOf(mockRes).setDateHeader("last-modified",
                         alternativeSo.getLastModified().getTime());
 
-                one(mockRes).addHeader(with(any(String.class)),
+                oneOf(mockRes).addHeader(with(any(String.class)),
                         with(any(String.class)));
 
-                one(mockMimeTyper).getMimeType("/alternative");
+                oneOf(mockMimeTyper).getMimeType(mockTransaction, "/alternative");
                 will(returnValue("text/foo"));
 
-                one(mockRes).setContentType("text/foo");
+                oneOf(mockRes).setContentType("text/foo");
 
-                one(mockStore).getStoredObject(mockTransaction, "/alternative");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/alternative");
                 will(returnValue(alternativeSo));
 
                 tos = new TestingOutputStream();
                 tos.write(resourceContent);
 
-                one(mockRes).getOutputStream();
+                oneOf(mockRes).getOutputStream();
                 will(returnValue(tos));
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         "/alternative");
                 will(returnValue(dsis));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
             }
         });
 
