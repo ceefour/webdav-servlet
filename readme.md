@@ -72,15 +72,14 @@ add the appropriate sections to the web.xml
 
 ## ACCESSING THE FILESTORE
 
-The webdav-filestore is reached at:
+- The webdav-filestore is reached at:
 
-"http://<ip/name + port of the server>/<name of the webapp>/<servlet-maping>"
+      "http://<ip/name + port of the server>/<name of the webapp>/<servlet-maping>"
 
-e.g.: http://localhost:8080/webdav-servlet
+  e.g.: http://localhost:8080/webdav-servlet
 
-weta-dfs-webdav has been tested on tomcat 5.0.28 and 5.5.12
-
-so far, we accessed it from windows(2000 and XP) and MAC
+- weta-dfs-webdav has been tested on tomcat 5.0.28 and 5.5.12
+- so far, we accessed it from windows(2000 and XP) and MAC
 
 
 ## CREDITS
