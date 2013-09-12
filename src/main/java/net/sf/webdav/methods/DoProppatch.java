@@ -34,9 +34,9 @@ public class DoProppatch extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoProppatch.class);
 
-    private boolean _readOnly;
-    private IWebdavStore _store;
-    private ResourceLocks _resourceLocks;
+    private final boolean _readOnly;
+    private final IWebdavStore _store;
+    private final ResourceLocks _resourceLocks;
 
     public DoProppatch(IWebdavStore store, ResourceLocks resLocks,
             boolean readOnly) {
@@ -45,6 +45,7 @@ public class DoProppatch extends AbstractMethod {
         _resourceLocks = resLocks;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
@@ -57,7 +58,7 @@ public class DoProppatch extends AbstractMethod {
         String path = getRelativePath(req);
         String parentPath = getParentPath(getCleanPath(path));
 
-        Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+        Hashtable<String, Integer> errorList = new Hashtable<>();
 
         if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
             resp.setStatus(WebdavStatus.SC_LOCKED);
@@ -101,10 +102,10 @@ public class DoProppatch extends AbstractMethod {
                 }
 
                 String[] lockTokens = getLockIdFromIfHeader(req);
-                boolean lockTokenMatchesIfHeader = (lockTokens != null && lockTokens[0].equals(lo.getID()));
+                boolean lockTokenMatchesIfHeader = lockTokens != null && lockTokens[0].equals(lo.getID());
                 if (lo != null && lo.isExclusive() && !lockTokenMatchesIfHeader) {
                     // Object on specified path is LOCKED
-                    errorList = new Hashtable<String, Integer>();
+                    errorList = new Hashtable<>();
                     errorList.put(path, new Integer(WebdavStatus.SC_LOCKED));
                     sendReport(req, resp, errorList);
                     return;
@@ -112,7 +113,7 @@ public class DoProppatch extends AbstractMethod {
 
                 List<String> toset = null;
                 List<String> toremove = null;
-                List<String> tochange = new Vector<String>();
+                List<String> tochange = new Vector<>();
                 // contains all properties from
                 // toset and toremove
 
@@ -143,7 +144,7 @@ public class DoProppatch extends AbstractMethod {
                     return;
                 }
 
-                HashMap<String, String> namespaces = new HashMap<String, String>();
+                HashMap<String, String> namespaces = new HashMap<>();
                 namespaces.put("DAV:", "D");
 
                 if (tosetNode != null) {
@@ -164,7 +165,7 @@ public class DoProppatch extends AbstractMethod {
                         namespaces);
                 generatedXML.writeXMLHeader();
                 generatedXML
-                        .writeElement("DAV::multistatus", XMLWriter.OPENING);
+                .writeElement("DAV::multistatus", XMLWriter.OPENING);
 
                 generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
                 String status = new String("HTTP/1.1 " + WebdavStatus.SC_OK
@@ -174,12 +175,14 @@ public class DoProppatch extends AbstractMethod {
                 generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
 
                 String href = req.getContextPath();
-                if ((href.endsWith("/")) && (path.startsWith("/")))
+                if (href.endsWith("/") && path.startsWith("/")) {
                     href += path.substring(1);
-                else
+                } else {
                     href += path;
-                if ((so.isFolder()) && (!href.endsWith("/")))
+                }
+                if (so.isFolder() && !href.endsWith("/")) {
                     href += "/";
+                }
 
                 generatedXML.writeText(rewriteUrl(href));
 
@@ -187,7 +190,7 @@ public class DoProppatch extends AbstractMethod {
 
                 for (Iterator<String> iter = tochange.iterator(); iter
                         .hasNext();) {
-                    String property = (String) iter.next();
+                    String property = iter.next();
 
                     generatedXML.writeElement("DAV::propstat",
                             XMLWriter.OPENING);
@@ -207,7 +210,7 @@ public class DoProppatch extends AbstractMethod {
                 generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
 
                 generatedXML
-                        .writeElement("DAV::multistatus", XMLWriter.CLOSING);
+                .writeElement("DAV::multistatus", XMLWriter.CLOSING);
 
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {

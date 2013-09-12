@@ -36,9 +36,9 @@ public class DoMkcol extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoMkcol.class);
 
-    private IWebdavStore _store;
-    private IResourceLocks _resourceLocks;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final IResourceLocks _resourceLocks;
+    private final boolean _readOnly;
 
     public DoMkcol(IWebdavStore store, IResourceLocks resourceLocks,
             boolean readOnly) {
@@ -47,6 +47,7 @@ public class DoMkcol extends AbstractMethod {
         _readOnly = readOnly;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
@@ -55,14 +56,9 @@ public class DoMkcol extends AbstractMethod {
             String path = getRelativePath(req);
             String parentPath = getParentPath(getCleanPath(path));
 
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            Hashtable<String, Integer> errorList = new Hashtable<>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-                // TODO remove
-                LOG
-                        .trace("MkCol on locked resource (parentPath) not executable!"
-                                + "\n Sending SC_FORBIDDEN (403) error response!");
-
                 resp.sendError(WebdavStatus.SC_FORBIDDEN);
                 return;
             }
@@ -75,12 +71,12 @@ public class DoMkcol extends AbstractMethod {
                 StoredObject parentSo, so = null;
                 try {
                     parentSo = _store.getStoredObject(transaction, parentPath);
-					if (parentSo == null) {
-						// parent not exists
-						resp.sendError(WebdavStatus.SC_CONFLICT);
-						return;
-					}
-					if (parentPath != null && parentSo.isFolder()) {
+                    if (parentSo == null) {
+                        // parent not exists
+                        resp.sendError(WebdavStatus.SC_CONFLICT);
+                        return;
+                    }
+                    if (parentPath != null && parentSo.isFolder()) {
                         so = _store.getStoredObject(transaction, path);
                         if (so == null) {
                             _store.createFolder(transaction, path);
@@ -94,16 +90,16 @@ public class DoMkcol extends AbstractMethod {
                                                 path);
                                 if (nullResourceLo == null) {
                                     resp
-                                            .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                    .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                                     return;
                                 }
                                 String nullResourceLockToken = nullResourceLo
                                         .getID();
                                 String[] lockTokens = getLockIdFromIfHeader(req);
                                 String lockToken = null;
-                                if (lockTokens != null)
+                                if (lockTokens != null) {
                                     lockToken = lockTokens[0];
-                                else {
+                                } else {
                                     resp.sendError(WebdavStatus.SC_BAD_REQUEST);
                                     return;
                                 }
@@ -114,23 +110,19 @@ public class DoMkcol extends AbstractMethod {
                                     String[] nullResourceLockOwners = nullResourceLo
                                             .getOwner();
                                     String owner = null;
-                                    if (nullResourceLockOwners != null)
+                                    if (nullResourceLockOwners != null) {
                                         owner = nullResourceLockOwners[0];
+                                    }
 
                                     if (_resourceLocks.unlock(transaction,
                                             lockToken, owner)) {
                                         resp.setStatus(WebdavStatus.SC_CREATED);
                                     } else {
                                         resp
-                                                .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                        .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
                                     }
 
                                 } else {
-                                    // TODO remove
-                                    LOG
-                                            .trace("MkCol on lock-null-resource with wrong lock-token!"
-                                                    + "\n Sending multistatus error report!");
-
                                     errorList.put(path, WebdavStatus.SC_LOCKED);
                                     sendReport(req, resp, errorList);
                                 }
@@ -140,16 +132,11 @@ public class DoMkcol extends AbstractMethod {
                                         .determineMethodsAllowed(so);
                                 resp.addHeader("Allow", methodsAllowed);
                                 resp
-                                        .sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                                .sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
                             }
                         }
 
-					} else if (parentPath != null && parentSo.isResource()) {
-                        // TODO remove
-                        LOG
-                                .trace("MkCol on resource is not executable"
-                                        + "\n Sending SC_METHOD_NOT_ALLOWED (405) error response!");
-
+                    } else if (parentPath != null && parentSo.isResource()) {
                         String methodsAllowed = DeterminableMethod
                                 .determineMethodsAllowed(parentSo);
                         resp.addHeader("Allow", methodsAllowed);

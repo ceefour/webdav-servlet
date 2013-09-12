@@ -38,10 +38,10 @@ public class DoCopy extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoCopy.class);
 
-    private IWebdavStore _store;
-    private ResourceLocks _resourceLocks;
-    private DoDelete _doDelete;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final ResourceLocks _resourceLocks;
+    private final DoDelete _doDelete;
+    private final boolean _readOnly;
 
     public DoCopy(IWebdavStore store, ResourceLocks resourceLocks,
             DoDelete doDelete, boolean readOnly) {
@@ -51,6 +51,7 @@ public class DoCopy extends AbstractMethod {
         _readOnly = readOnly;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
@@ -63,8 +64,9 @@ public class DoCopy extends AbstractMethod {
             if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
                     TEMP_TIMEOUT, TEMPORARY)) {
                 try {
-                    if (!copyResource(transaction, req, resp))
+                    if (!copyResource(transaction, req, resp)) {
                         return;
+                    }
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebdavStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
@@ -108,13 +110,14 @@ public class DoCopy extends AbstractMethod {
      */
     public boolean copyResource(ITransaction transaction,
             HttpServletRequest req, HttpServletResponse resp)
-            throws WebdavException, IOException, LockFailedException {
+                    throws WebdavException, IOException, LockFailedException {
 
         // Parsing destination header
         String destinationPath = parseDestinationHeader(req, resp);
 
-        if (destinationPath == null)
+        if (destinationPath == null) {
             return false;
+        }
 
         String path = getRelativePath(req);
 
@@ -123,7 +126,7 @@ public class DoCopy extends AbstractMethod {
             return false;
         }
 
-        Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+        Hashtable<String, Integer> errorList = new Hashtable<>();
         String parentDestinationPath = getParentPath(getCleanPath(destinationPath));
 
         if (!checkLocks(transaction, req, resp, _resourceLocks,
@@ -169,7 +172,7 @@ public class DoCopy extends AbstractMethod {
                     return false;
                 }
 
-                errorList = new Hashtable<String, Integer>();
+                errorList = new Hashtable<>();
 
                 destinationSo = _store.getStoredObject(transaction,
                         destinationPath);
@@ -237,7 +240,7 @@ public class DoCopy extends AbstractMethod {
     private void copy(ITransaction transaction, String sourcePath,
             String destinationPath, Hashtable<String, Integer> errorList,
             HttpServletRequest req, HttpServletResponse resp)
-            throws WebdavException, IOException {
+                    throws WebdavException, IOException {
 
         StoredObject sourceSo = _store.getStoredObject(transaction, sourcePath);
         if (sourceSo.isResource()) {
@@ -286,7 +289,7 @@ public class DoCopy extends AbstractMethod {
     private void copyFolder(ITransaction transaction, String sourcePath,
             String destinationPath, Hashtable<String, Integer> errorList,
             HttpServletRequest req, HttpServletResponse resp)
-            throws WebdavException {
+                    throws WebdavException {
 
         _store.createFolder(transaction, destinationPath);
         boolean infiniteDepth = true;
@@ -306,7 +309,7 @@ public class DoCopy extends AbstractMethod {
                 children[i] = "/" + children[i];
                 try {
                     childSo = _store.getStoredObject(transaction,
-                            (sourcePath + children[i]));
+                            sourcePath + children[i]);
                     if (childSo.isResource()) {
                         _store.createResource(transaction, destinationPath
                                 + children[i]);
@@ -380,7 +383,7 @@ public class DoCopy extends AbstractMethod {
             }
         } else {
             String hostName = req.getServerName();
-            if ((hostName != null) && (destinationPath.startsWith(hostName))) {
+            if (hostName != null && destinationPath.startsWith(hostName)) {
                 destinationPath = destinationPath.substring(hostName.length());
             }
 
@@ -403,15 +406,15 @@ public class DoCopy extends AbstractMethod {
         destinationPath = normalize(destinationPath);
 
         String contextPath = req.getContextPath();
-        if ((contextPath != null) && (destinationPath.startsWith(contextPath))) {
+        if (contextPath != null && destinationPath.startsWith(contextPath)) {
             destinationPath = destinationPath.substring(contextPath.length());
         }
 
         String pathInfo = req.getPathInfo();
         if (pathInfo != null) {
             String servletPath = req.getServletPath();
-            if ((servletPath != null)
-                    && (destinationPath.startsWith(servletPath))) {
+            if (servletPath != null
+                    && destinationPath.startsWith(servletPath)) {
                 destinationPath = destinationPath.substring(servletPath
                         .length());
             }
@@ -433,26 +436,31 @@ public class DoCopy extends AbstractMethod {
      */
     protected String normalize(String path) {
 
-        if (path == null)
+        if (path == null) {
             return null;
+        }
 
         // Create a place for the normalized path
         String normalized = path;
 
-        if (normalized.equals("/."))
+        if (normalized.equals("/.")) {
             return "/";
+        }
 
         // Normalize the slashes and add leading slash if necessary
-        if (normalized.indexOf('\\') >= 0)
+        if (normalized.indexOf('\\') >= 0) {
             normalized = normalized.replace('\\', '/');
-        if (!normalized.startsWith("/"))
+        }
+        if (!normalized.startsWith("/")) {
             normalized = "/" + normalized;
+        }
 
         // Resolve occurrences of "//" in the normalized path
         while (true) {
             int index = normalized.indexOf("//");
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             normalized = normalized.substring(0, index)
                     + normalized.substring(index + 1);
         }
@@ -460,8 +468,9 @@ public class DoCopy extends AbstractMethod {
         // Resolve occurrences of "/./" in the normalized path
         while (true) {
             int index = normalized.indexOf("/./");
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             normalized = normalized.substring(0, index)
                     + normalized.substring(index + 2);
         }
@@ -469,17 +478,20 @@ public class DoCopy extends AbstractMethod {
         // Resolve occurrences of "/../" in the normalized path
         while (true) {
             int index = normalized.indexOf("/../");
-            if (index < 0)
+            if (index < 0) {
                 break;
+            }
             if (index == 0)
-                return (null); // Trying to go outside our context
+            {
+                return null; // Trying to go outside our context
+            }
             int index2 = normalized.lastIndexOf('/', index - 1);
             normalized = normalized.substring(0, index2)
                     + normalized.substring(index + 3);
         }
 
         // Return the normalized path that we have completed
-        return (normalized);
+        return normalized;
 
     }
 

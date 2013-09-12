@@ -46,6 +46,7 @@ public class DoGet extends DoHead {
 
     }
 
+    @Override
     protected void doBody(ITransaction transaction, HttpServletResponse resp,
             String path) {
 
@@ -89,9 +90,10 @@ public class DoGet extends DoHead {
         }
     }
 
+    @Override
     protected void folderBody(ITransaction transaction, String path,
             HttpServletResponse resp, HttpServletRequest req)
-            throws IOException {
+                    throws IOException {
 
         StoredObject so = _store.getStoredObject(transaction, path);
         if (so == null) {
@@ -108,9 +110,7 @@ public class DoGet extends DoHead {
             }
 
             if (so.isFolder()) {
-                // TODO some folder response (for browsers, DAV tools
-                // use propfind) in html?
-                Locale locale = req.getLocale();
+                req.getLocale();
                 DateFormat shortDF= getDateTimeFormat(req.getLocale());
                 resp.setContentType("text/html");
                 resp.setCharacterEncoding("UTF8");
@@ -210,7 +210,7 @@ public class DoGet extends DoHead {
     protected String getCSS()
     {
         // The default styles to use
-       String retVal= "body {\n"+
+        String retVal= "body {\n"+
                 "	font-family: Arial, Helvetica, sans-serif;\n"+
                 "}\n"+
                 "h1 {\n"+
@@ -252,7 +252,7 @@ public class DoGet extends DoHead {
                 for (int n; (n = iStream.read(b)) != -1;)
                 {
                     out.append(new String(b, 0, n));
-}
+                }
                 retVal= out.toString();
             }
         }
@@ -304,4 +304,4 @@ public class DoGet extends DoHead {
     {
         return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.MEDIUM, browserLocale);
     }
- }
+}

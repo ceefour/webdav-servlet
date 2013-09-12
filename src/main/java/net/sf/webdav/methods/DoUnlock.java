@@ -33,7 +33,7 @@ public class DoUnlock extends DeterminableMethod {
     }
 
     @Override
-	public void execute(ITransaction transaction, HttpServletRequest req,
+    public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
 
@@ -52,8 +52,8 @@ public class DoUnlock extends DeterminableMethod {
                     String lockId = getLockIdFromLockTokenHeader(req);
                     LockedObject lo;
                     if (lockId != null
-                            && ((lo = _resourceLocks.getLockedObjectByID(
-                                    transaction, lockId)) != null)) {
+                            && (lo = _resourceLocks.getLockedObjectByID(
+                                    transaction, lockId)) != null) {
 
                         String[] owners = lo.getOwner();
                         String owner = null;
@@ -67,10 +67,9 @@ public class DoUnlock extends DeterminableMethod {
                             }
                         } else {
                             // exclusive, only one lock owner
-                            if (owners != null)
+                            if (owners != null) {
                                 owner = owners[0];
-                            else
-                                owner = null;
+                            }
                         }
 
                         if (_resourceLocks.unlock(transaction, lockId, owner)) {
@@ -79,9 +78,9 @@ public class DoUnlock extends DeterminableMethod {
                             if (so.isNullResource()) {
                                 _store.removeObject(transaction, path);
                             }
-                            
+
                             if (_lockingListener != null) {
-                            	_lockingListener.onUnlockResource(transaction, path);
+                                _lockingListener.onUnlockResource(transaction, path);
                             }
 
                             resp.setStatus(WebdavStatus.SC_NO_CONTENT);

@@ -46,10 +46,10 @@ import net.sf.webdav.locking.LockedObject;
 
 public abstract class AbstractMethod implements IMethodExecutor {
 
-    private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
-    private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<DateFormat>();
-    private static final ThreadLocal<DateFormat> thLocalDateFormat = new ThreadLocal<DateFormat>();
-    
+    private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<>();
+    private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<>();
+    private static final ThreadLocal<DateFormat> thLocalDateFormat = new ThreadLocal<>();
+
     /**
      * Array containing the safe characters set.
      */
@@ -71,7 +71,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
      * 1123)
      */
     protected static final String LAST_MODIFIED_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
-    
+
     protected static final String LOCAL_DATE_FORMAT = "dd/MM/yy' 'HH:mm:ss";
 
     static {
@@ -111,7 +111,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
      */
     protected static final int TEMP_TIMEOUT = 10;
 
-    
+
     public static String lastModifiedDateFormat(final Date date) {
         DateFormat df = thLastmodifiedDateFormat.get();
         if( df == null ) {
@@ -140,7 +140,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
         return df.format(date);
     }
 
-    
+
     /**
      * Return the relative path associated with this servlet.
      * 
@@ -156,9 +156,10 @@ public abstract class AbstractMethod implements IMethodExecutor {
             // if (result == null)
             // result = (String) request
             // .getAttribute("javax.servlet.include.servlet_path");
-            if ((result == null) || (result.equals("")))
+            if (result == null || result.equals("")) {
                 result = "/";
-            return (result);
+            }
+            return result;
         }
 
         // No, extract the desired path directly from the request
@@ -166,10 +167,10 @@ public abstract class AbstractMethod implements IMethodExecutor {
         // if (result == null) {
         // result = request.getServletPath();
         // }
-        if ((result == null) || (result.equals(""))) {
+        if (result == null || result.equals("")) {
             result = "/";
         }
-        return (result);
+        return result;
 
     }
 
@@ -198,8 +199,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
      */
     protected String getCleanPath(String path) {
 
-        if (path.endsWith("/") && path.length() > 1)
+        if (path.endsWith("/") && path.length() > 1) {
             path = path.substring(0, path.length() - 1);
+        }
         return path;
     }
 
@@ -345,15 +347,16 @@ public abstract class AbstractMethod implements IMethodExecutor {
                 transaction, path);
         if (loByPath != null) {
 
-            if (loByPath.isShared())
+            if (loByPath.isShared()) {
                 return true;
+            }
 
             // the resource is locked
             String[] lockTokens = getLockIdFromIfHeader(req);
             String lockToken = null;
-            if (lockTokens != null)
+            if (lockTokens != null) {
                 lockToken = lockTokens[0];
-            else {
+            } else {
                 return false;
             }
             if (lockToken != null) {
@@ -405,7 +408,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
             String absoluteUri = req.getRequestURI();
             // String relativePath = getRelativePath(req);
 
-            HashMap<String, String> namespaces = new HashMap<String, String>();
+            HashMap<String, String> namespaces = new HashMap<>();
             namespaces.put("DAV:", "D");
 
             XMLWriter generatedXML = new XMLWriter(namespaces);
@@ -416,8 +419,8 @@ public abstract class AbstractMethod implements IMethodExecutor {
             Enumeration<String> pathList = errorList.keys();
             while (pathList.hasMoreElements()) {
 
-                String errorPath = (String) pathList.nextElement();
-                int errorCode = ((Integer) errorList.get(errorPath)).intValue();
+                String errorPath = pathList.nextElement();
+                int errorCode = errorList.get(errorPath).intValue();
 
                 generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
 
@@ -432,8 +435,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
                             + errorPath.length();
                     toAppend = absoluteUri.substring(0, endIndex);
                 }
-                if (!toAppend.startsWith("/") && !toAppend.startsWith("http:"))
+                if (!toAppend.startsWith("/") && !toAppend.startsWith("http:")) {
                     toAppend = "/" + toAppend;
+                }
                 generatedXML.writeText(errorPath);
                 generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
                 generatedXML.writeElement("DAV::status", XMLWriter.OPENING);

@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -32,6 +33,8 @@ import net.sf.webdav.methods.DoUnlock;
 
 public class WebDavServletBean extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(WebDavServletBean.class);
 
@@ -46,10 +49,10 @@ public class WebDavServletBean extends HttpServlet {
     protected static final MD5Encoder MD5_ENCODER = new MD5Encoder();
 
     private static final boolean READ_ONLY = false;
-	protected ResourceLocks _resLocks;
-	protected IWebdavStore _store;
-	protected ILockingListener _lockingListener;
-    private final HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
+    protected ResourceLocks _resLocks;
+    protected IWebdavStore _store;
+    protected ILockingListener _lockingListener;
+    private final Map<String, IMethodExecutor> _methodMap = new HashMap<>();
 
     public WebDavServletBean() {
         _resLocks = new ResourceLocks();
@@ -70,7 +73,7 @@ public class WebDavServletBean extends HttpServlet {
 
         IMimeTyper mimeTyper = new IMimeTyper() {
             @Override
-			public String getMimeType(ITransaction transaction, String path) {
+            public String getMimeType(ITransaction transaction, String path) {
                 String retVal= _store.getStoredObject(transaction, path).getMimeType();
                 if ( retVal== null) {
                     retVal= getServletContext().getMimeType( path);
@@ -101,8 +104,9 @@ public class WebDavServletBean extends HttpServlet {
 
     @Override
     public void destroy() {
-        if(_store != null)
+        if(_store != null) {
             _store.destroy();
+        }
         super.destroy();
     }
 
@@ -122,8 +126,9 @@ public class WebDavServletBean extends HttpServlet {
         ITransaction transaction = null;
         boolean needRollback = false;
 
-        if (LOG.isTraceEnabled())
+        if (LOG.isTraceEnabled()) {
             debugRequest(methodName, req);
+        }
 
         try {
             Principal userPrincipal = req.getUserPrincipal();
@@ -175,15 +180,16 @@ public class WebDavServletBean extends HttpServlet {
             LOG.error("WebdavException: " + sw.toString());
             throw new ServletException(e);
         } catch (Exception e) {
-        	if (!(e instanceof NullPointerException)) {
-        		java.io.StringWriter sw = new java.io.StringWriter();
-        		java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-        		e.printStackTrace(pw);
-        		LOG.error("Exception: " + sw.toString());
-        	}
+            if (!(e instanceof NullPointerException)) {
+                java.io.StringWriter sw = new java.io.StringWriter();
+                java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+                e.printStackTrace(pw);
+                LOG.error("Exception: " + sw.toString());
+            }
         } finally {
-            if (needRollback)
+            if (needRollback) {
                 _store.rollback(transaction);
+            }
         }
 
     }

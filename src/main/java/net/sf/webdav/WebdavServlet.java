@@ -34,104 +34,105 @@ import net.sf.webdav.exceptions.WebdavException;
 
 public class WebdavServlet extends WebDavServletBean {
 
-	private static final String ROOTPATH_PARAMETER = "rootpath";
+    private static final long serialVersionUID = 1L;
+    private static final String ROOTPATH_PARAMETER = "rootpath";
 
-	@Override
-	public void init() throws ServletException {
+    @Override
+    public void init() throws ServletException {
 
-		// Parameters from web.xml
-		String clazzName = getServletConfig().getInitParameter(
-				"ResourceHandlerImplementation");
-		if (clazzName == null || clazzName.equals("")) {
-			clazzName = LocalFileSystemStore.class.getName();
-		}
+        // Parameters from web.xml
+        String clazzName = getServletConfig().getInitParameter(
+                "ResourceHandlerImplementation");
+        if (clazzName == null || clazzName.equals("")) {
+            clazzName = LocalFileSystemStore.class.getName();
+        }
 
-		File root = getFileRoot();
+        File root = getFileRoot();
 
-		IWebdavStore webdavStore = constructStore(clazzName, root);
+        IWebdavStore webdavStore = constructStore(clazzName, root);
 
-		boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
-				&& getInitParameter("lazyFolderCreationOnPut").equals("1");
+        boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
+                && getInitParameter("lazyFolderCreationOnPut").equals("1");
 
-		String dftIndexFile = getInitParameter("default-index-file");
-		String insteadOf404 = getInitParameter("instead-of-404");
+        String dftIndexFile = getInitParameter("default-index-file");
+        String insteadOf404 = getInitParameter("instead-of-404");
 
-		int noContentLengthHeader = getIntInitParameter("no-content-length-headers");
+        int noContentLengthHeader = getIntInitParameter("no-content-length-headers");
 
-		// Lock notifications
-		ILockingListener listener = constructLockingListener(getInitParameter("LockingListener"));
+        // Lock notifications
+        ILockingListener listener = constructLockingListener(getInitParameter("LockingListener"));
 
-		super.init(webdavStore, listener, dftIndexFile, insteadOf404,
-				noContentLengthHeader, lazyFolderCreationOnPut);
-	}
+        super.init(webdavStore, listener, dftIndexFile, insteadOf404,
+                noContentLengthHeader, lazyFolderCreationOnPut);
+    }
 
-	private int getIntInitParameter(String key) {
-		return getInitParameter(key) == null ? -1 : Integer
-				.parseInt(getInitParameter(key));
-	}
+    private int getIntInitParameter(String key) {
+        return getInitParameter(key) == null ? -1 : Integer
+                .parseInt(getInitParameter(key));
+    }
 
-	protected IWebdavStore constructStore(String clazzName, File root) {
-		IWebdavStore webdavStore;
-			try {
-				Class<?> clazz = WebdavServlet.class.getClassLoader()
-						.loadClass(clazzName);
+    protected IWebdavStore constructStore(String clazzName, File root) {
+        IWebdavStore webdavStore;
+        try {
+            Class<?> clazz = WebdavServlet.class.getClassLoader()
+                    .loadClass(clazzName);
 
-				Constructor<?> ctor = clazz
-						.getConstructor(new Class[] { File.class });
+            Constructor<?> ctor = clazz
+                    .getConstructor(new Class[] { File.class });
 
-				webdavStore = (IWebdavStore) ctor
-						.newInstance(new Object[] { root });
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new RuntimeException(
-						"some problem making store component", e);
-			}
-		return webdavStore;
-	}
+            webdavStore = (IWebdavStore) ctor
+                    .newInstance(new Object[] { root });
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(
+                    "some problem making store component", e);
+        }
+        return webdavStore;
+    }
 
-	@SuppressWarnings("unchecked")
-	protected ILockingListener constructLockingListener(String clazzName) {
-		ILockingListener listener = null;
+    @SuppressWarnings("unchecked")
+    protected ILockingListener constructLockingListener(String clazzName) {
+        ILockingListener listener = null;
 
-		if (clazzName != null && !"".equals(clazzName)) {
-			try {
-				Class<ILockingListener> clazz = (Class<ILockingListener>) WebdavServlet.class
-						.getClassLoader().loadClass(clazzName);
-				listener = clazz.newInstance();
-			} catch (Exception e) {
-				throw new RuntimeException(
-						"Could not instantiate locking listener", e);
-			}
-		}
+        if (clazzName != null && !"".equals(clazzName)) {
+            try {
+                Class<ILockingListener> clazz = (Class<ILockingListener>) WebdavServlet.class
+                        .getClassLoader().loadClass(clazzName);
+                listener = clazz.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        "Could not instantiate locking listener", e);
+            }
+        }
 
-		return listener;
-	}
+        return listener;
+    }
 
-	private File getFileRoot() {
-		String rootPath = getInitParameter(ROOTPATH_PARAMETER);
-		if (rootPath == null) {
-			throw new WebdavException("missing parameter: "
-					+ ROOTPATH_PARAMETER);
-		}
-		if (rootPath.equals("*WAR-FILE-ROOT*")) {
-			String file = LocalFileSystemStore.class.getProtectionDomain()
-					.getCodeSource().getLocation().getFile().replace('\\', '/');
-			if (file.charAt(0) == '/'
-					&& System.getProperty("os.name").indexOf("Windows") != -1) {
-				file = file.substring(1, file.length());
-			}
+    private File getFileRoot() {
+        String rootPath = getInitParameter(ROOTPATH_PARAMETER);
+        if (rootPath == null) {
+            throw new WebdavException("missing parameter: "
+                    + ROOTPATH_PARAMETER);
+        }
+        if (rootPath.equals("*WAR-FILE-ROOT*")) {
+            String file = LocalFileSystemStore.class.getProtectionDomain()
+                    .getCodeSource().getLocation().getFile().replace('\\', '/');
+            if (file.charAt(0) == '/'
+                    && System.getProperty("os.name").indexOf("Windows") != -1) {
+                file = file.substring(1, file.length());
+            }
 
-			int ix = file.indexOf("/WEB-INF/");
-			if (ix != -1) {
-				rootPath = file.substring(0, ix).replace('/',
-						File.separatorChar);
-			} else {
-				throw new WebdavException(
-						"Could not determine root of war file. Can't extract from path '"
-								+ file + "' for this web container");
-			}
-		}
-		return new File(rootPath);
-	}
+            int ix = file.indexOf("/WEB-INF/");
+            if (ix != -1) {
+                rootPath = file.substring(0, ix).replace('/',
+                        File.separatorChar);
+            } else {
+                throw new WebdavException(
+                        "Could not determine root of war file. Can't extract from path '"
+                                + file + "' for this web container");
+            }
+        }
+        return new File(rootPath);
+    }
 
 }

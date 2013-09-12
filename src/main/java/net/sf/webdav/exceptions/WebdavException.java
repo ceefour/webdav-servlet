@@ -18,6 +18,8 @@ package net.sf.webdav.exceptions;
 
 public class WebdavException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public WebdavException() {
         super();
     }
