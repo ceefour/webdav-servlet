@@ -9,18 +9,18 @@ import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DoNotImplementedTest extends MockTest {
 
-    static IWebdavStore mockStore;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
+    IWebdavStore mockStore;
+    HttpServletRequest mockReq;
+    HttpServletResponse mockRes;
+    ITransaction mockTransaction;
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mockStore = _mockery.mock(IWebdavStore.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
         mockRes = _mockery.mock(HttpServletResponse.class);
@@ -32,9 +32,9 @@ public class DoNotImplementedTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getMethod();
+                oneOf(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
             }
         });
 
@@ -49,9 +49,9 @@ public class DoNotImplementedTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getMethod();
+                oneOf(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
+                oneOf(mockRes).sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
             }
         });
 

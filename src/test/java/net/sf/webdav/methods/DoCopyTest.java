@@ -1,7 +1,6 @@
 package net.sf.webdav.methods;
 
 import java.io.ByteArrayInputStream;
-import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,22 +14,22 @@ import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoCopyTest extends MockTest {
 
-    static IWebdavStore mockStore;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
+    IWebdavStore mockStore;
+    HttpServletRequest mockReq;
+    HttpServletResponse mockRes;
+    ITransaction mockTransaction;
     static ByteArrayInputStream bais = new ByteArrayInputStream(resourceContent);
     static DelegatingServletInputStream dsis = new DelegatingServletInputStream(
             bais);
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mockStore = _mockery.mock(IWebdavStore.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
         mockRes = _mockery.mock(HttpServletResponse.class);
@@ -42,13 +41,13 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
             }
         });
 
@@ -74,45 +73,45 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue("/destination"));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("myServer"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/destination"));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(path));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("T"));
 
                 StoredObject so = initLockNullStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, path);
+                oneOf(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(so));
 
-                one(mockRes).addHeader("Allow",
+                oneOf(mockRes).addHeader("Allow",
                         "OPTIONS, MKCOL, PUT, PROPFIND, LOCK, UNLOCK");
 
-                one(mockRes).sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                oneOf(mockRes).sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
             }
         });
 
@@ -137,47 +136,39 @@ public class DoCopyTest extends MockTest {
         final String wrongLockToken = "(<opaquelocktoken:" + lo.getID()
                 + "WRONG>)";
 
-        final PrintWriter pw = new PrintWriter("/tmp/XMLTestFile");
-
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("myServer"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(wrongLockToken));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
-
-                one(mockReq).getRequestURI();
-                will(returnValue("http://foo.bar".concat(destCollectionPath)));
-
-                one(mockRes).getWriter();
-                will(returnValue(pw));
+                oneOf(mockRes).setStatus(WebdavStatus.SC_LOCKED);
             }
         });
 
@@ -204,67 +195,67 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("myServer"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(rightLockToken));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("F"));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
 
                 StoredObject destFileSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_CREATED);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
 
-                one(mockStore).createResource(mockTransaction, destFilePath);
+                oneOf(mockStore).createResource(mockTransaction, destFilePath);
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         sourceFilePath);
                 will(returnValue(dsis));
 
-                one(mockStore).setResourceContent(mockTransaction,
+                oneOf(mockStore).setResourceContent(mockTransaction,
                         destFilePath, dsis, null, null);
                 will(returnValue(resourceLength));
 
                 destFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
             }
@@ -283,16 +274,16 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(null));
 
-                one(mockRes).sendError(WebdavStatus.SC_BAD_REQUEST);
+                oneOf(mockRes).sendError(WebdavStatus.SC_BAD_REQUEST);
             }
         });
 
@@ -311,34 +302,34 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("serverName"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
 
             }
         });
@@ -358,84 +349,84 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceCollectionPath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(destCollectionPath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("serverName"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destCollectionPath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceCollectionPath));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("F"));
 
                 StoredObject sourceCollectionSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction,
+                oneOf(mockStore).getStoredObject(mockTransaction,
                         sourceCollectionPath);
                 will(returnValue(sourceCollectionSo));
 
                 StoredObject destCollectionSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction,
+                oneOf(mockStore).getStoredObject(mockTransaction,
                         destCollectionPath);
                 will(returnValue(destCollectionSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_CREATED);
 
-                one(mockStore).getStoredObject(mockTransaction,
+                oneOf(mockStore).getStoredObject(mockTransaction,
                         sourceCollectionPath);
                 will(returnValue(sourceCollectionSo));
 
-                one(mockStore)
+                oneOf(mockStore)
                         .createFolder(mockTransaction, destCollectionPath);
 
-                one(mockReq).getHeader("Depth");
+                oneOf(mockReq).getHeader("Depth");
                 will(returnValue("-1"));
 
                 sourceChildren = new String[] { "sourceFile" };
 
-                one(mockStore).getChildrenNames(mockTransaction,
+                oneOf(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
                 will(returnValue(sourceChildren));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
 
-                one(mockStore).createResource(mockTransaction,
+                oneOf(mockStore).createResource(mockTransaction,
                         destCollectionPath + "/sourceFile");
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         sourceFilePath);
                 will(returnValue(dsis));
 
-                one(mockStore).setResourceContent(mockTransaction,
+                oneOf(mockStore).setResourceContent(mockTransaction,
                         destCollectionPath + "/sourceFile", dsis, null, null);
 
                 StoredObject destFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction,
+                oneOf(mockStore).getStoredObject(mockTransaction,
                         destCollectionPath + "/sourceFile");
                 will(returnValue(destFileSo));
 
@@ -457,42 +448,42 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("serverName"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("F"));
 
                 StoredObject notExistSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(notExistSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
+                oneOf(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
 
             }
         });
@@ -513,66 +504,66 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject sourceSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("serverName"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/folder/destFolder"));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject existingDestSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(existingDestSo));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("T"));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(existingDestSo));
 
-                one(mockStore).removeObject(mockTransaction, destFilePath);
+                oneOf(mockStore).removeObject(mockTransaction, destFilePath);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockStore).createResource(mockTransaction, destFilePath);
+                oneOf(mockStore).createResource(mockTransaction, destFilePath);
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         sourceFilePath);
                 will(returnValue(dsis));
 
-                one(mockStore).setResourceContent(mockTransaction,
+                oneOf(mockStore).setResourceContent(mockTransaction,
                         destFilePath, dsis, null, null);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(existingDestSo));
 
             }
@@ -594,47 +585,47 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject sourceSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue("serverName".concat(destFilePath)));
 
-                one(mockReq).getServerName();
+                oneOf(mockReq).getServerName();
                 will(returnValue("serverName"));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue(""));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("/servletPath"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject existingDestSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(existingDestSo));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("F"));
 
-                one(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                oneOf(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
 
             }
         });
@@ -654,63 +645,63 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject sourceSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue("http://destination:80".concat(destFilePath)));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue("http://destination:80"));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(destCollectionPath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("http://destination:80"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getAttribute("javax.servlet.include.path_info");
+                oneOf(mockReq).getAttribute("javax.servlet.include.path_info");
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("T"));
 
                 StoredObject destFileSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                oneOf(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockStore).removeObject(mockTransaction, destFilePath);
+                oneOf(mockStore).removeObject(mockTransaction, destFilePath);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockStore).createResource(mockTransaction, destFilePath);
+                oneOf(mockStore).createResource(mockTransaction, destFilePath);
 
-                one(mockStore).getResourceContent(mockTransaction,
+                oneOf(mockStore).getResourceContent(mockTransaction,
                         sourceFilePath);
                 will(returnValue(dsis));
 
-                one(mockStore).setResourceContent(mockTransaction,
+                oneOf(mockStore).setResourceContent(mockTransaction,
                         destFilePath, dsis, null, null);
 
-                one(mockStore).getStoredObject(mockTransaction, destFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
             }
         });
@@ -730,46 +721,46 @@ public class DoCopyTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
                 StoredObject sourceSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+                oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceSo));
 
-                one(mockReq).getHeader("Destination");
+                oneOf(mockReq).getHeader("Destination");
                 will(returnValue("http://destination:80"
                         .concat(destCollectionPath)));
 
-                one(mockReq).getContextPath();
+                oneOf(mockReq).getContextPath();
                 will(returnValue("http://destination:80"));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getServletPath();
+                oneOf(mockReq).getServletPath();
                 will(returnValue("http://destination:80"));
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getAttribute("javax.servlet.include.path_info");
+                oneOf(mockReq).getAttribute("javax.servlet.include.path_info");
                 will(returnValue(sourceFilePath));
 
-                one(mockReq).getHeader("Overwrite");
+                oneOf(mockReq).getHeader("Overwrite");
                 will(returnValue("F"));
 
                 StoredObject existingDestSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction,
+                oneOf(mockStore).getStoredObject(mockTransaction,
                         destCollectionPath);
                 will(returnValue(existingDestSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                oneOf(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
             }
         });
 

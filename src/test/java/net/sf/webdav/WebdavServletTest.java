@@ -7,7 +7,7 @@ import net.sf.webdav.testutil.MockPrincipal;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -18,19 +18,19 @@ import org.springframework.mock.web.MockServletContext;
 public class WebdavServletTest extends MockTest {
 
     // private static WebdavServlet _servlet = new WebdavServlet();
-    static ServletConfig servletConfig;
-    static ServletContext servletContext;
+    ServletConfig servletConfig;
+    ServletContext servletContext;
     // static HttpServletRequest mockeryReq;
     // static HttpServletResponse mockRes;
-    static IWebdavStore mockStore;
+    IWebdavStore mockStore;
 
-    static MockServletConfig mockServletConfig;
-    static MockServletContext mockServletContext;
-    static MockHttpServletRequest mockReq;
-    static MockHttpServletResponse mockRes;
-    static MockHttpSession mockHttpSession;
-    static MockPrincipal mockPrincipal;
-    static ITransaction mockTransaction;
+    MockServletConfig mockServletConfig;
+    MockServletContext mockServletContext;
+    MockHttpServletRequest mockReq;
+    MockHttpServletResponse mockRes;
+    MockHttpSession mockHttpSession;
+    MockPrincipal mockPrincipal;
+    ITransaction mockTransaction;
 
     static boolean readOnly = true;
     static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
@@ -38,8 +38,8 @@ public class WebdavServletTest extends MockTest {
     static String dftIndexFile = "/index.html";
     static String insteadOf404 = "/insteadOf404";
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         servletConfig = _mockery.mock(ServletConfig.class);
         servletContext = _mockery.mock(ServletContext.class);
         mockStore = _mockery.mock(IWebdavStore.class);
@@ -63,7 +63,7 @@ public class WebdavServletTest extends MockTest {
         });
 
         WebDavServletBean servlet = new WebdavServlet();
-        servlet.init(mockStore, dftIndexFile, insteadOf404, 1, true);
+        servlet.init(mockStore, null, dftIndexFile, insteadOf404, 1, true);
 
         _mockery.assertIsSatisfied();
     }
@@ -83,21 +83,25 @@ public class WebdavServletTest extends MockTest {
 
                 allowing(servletContext).log("webdav-servlet: init");
 
-                one(servletConfig).getInitParameter(
+                oneOf(servletConfig).getInitParameter(
                         "ResourceHandlerImplementation");
                 will(returnValue(""));
 
-                one(servletConfig).getInitParameter("rootpath");
+                oneOf(servletConfig).getInitParameter(
+                		"LockingListener");
+                will(returnValue(""));
+
+                oneOf(servletConfig).getInitParameter("rootpath");
                 will(returnValue("./target/tmpTestData/"));
 
                 exactly(2).of(servletConfig).getInitParameter(
                         "lazyFolderCreationOnPut");
                 will(returnValue("1"));
 
-                one(servletConfig).getInitParameter("default-index-file");
+                oneOf(servletConfig).getInitParameter("default-index-file");
                 will(returnValue("index.html"));
 
-                one(servletConfig).getInitParameter("instead-of-404");
+                oneOf(servletConfig).getInitParameter("instead-of-404");
                 will(returnValue(""));
 
                 exactly(2).of(servletConfig).getInitParameter(

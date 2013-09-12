@@ -91,6 +91,7 @@ public class XMLWriter {
      * 
      * @return String containing the generated XML
      */
+    @Override
     public String toString() {
         return _buffer.toString();
     }
@@ -133,8 +134,8 @@ public class XMLWriter {
         if (_isRootElement) {
             for (Iterator<String> iter = _namespaces.keySet().iterator(); iter
                     .hasNext();) {
-                String fullName = (String) iter.next();
-                String abbrev = (String) _namespaces.get(fullName);
+                String fullName = iter.next();
+                String abbrev = _namespaces.get(fullName);
                 nsdecl.append(" xmlns:").append(abbrev).append("=\"").append(
                         fullName).append("\"");
             }
@@ -145,7 +146,7 @@ public class XMLWriter {
         if (pos >= 0) {
             // lookup prefix for namespace
             String fullns = name.substring(0, pos);
-            String prefix = (String) _namespaces.get(fullns);
+            String prefix = _namespaces.get(fullns);
             if (prefix == null) {
                 // there is no prefix for this namespace
                 name = name.substring(pos + 1);
@@ -160,16 +161,16 @@ public class XMLWriter {
         }
 
         switch (type) {
-        case OPENING:
-            _buffer.append("<" + name + nsdecl + ">");
-            break;
-        case CLOSING:
-            _buffer.append("</" + name + ">\n");
-            break;
-        case NO_CONTENT:
-        default:
-            _buffer.append("<" + name + nsdecl + "/>");
-            break;
+            case OPENING:
+                _buffer.append("<" + name + nsdecl + ">");
+                break;
+            case CLOSING:
+                _buffer.append("</" + name + ">\n");
+                break;
+            case NO_CONTENT:
+            default:
+                _buffer.append("<" + name + nsdecl + "/>");
+                break;
         }
     }
 

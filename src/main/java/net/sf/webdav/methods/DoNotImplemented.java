@@ -13,19 +13,21 @@ public class DoNotImplemented implements IMethodExecutor {
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoNotImplemented.class);
-    private boolean _readOnly;
+    private final boolean _readOnly;
 
     public DoNotImplemented(boolean readOnly) {
         _readOnly = readOnly;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException {
         LOG.trace("-- " + req.getMethod());
 
         if (_readOnly) {
             resp.sendError(WebdavStatus.SC_FORBIDDEN);
-        } else
+        } else {
             resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        }
     }
 }

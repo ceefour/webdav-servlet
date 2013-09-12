@@ -34,8 +34,10 @@ import net.sf.webdav.exceptions.WebdavException;
 
 public class WebdavServlet extends WebDavServletBean {
 
+    private static final long serialVersionUID = 1L;
     private static final String ROOTPATH_PARAMETER = "rootpath";
 
+    @Override
     public void init() throws ServletException {
 
         // Parameters from web.xml
@@ -57,7 +59,10 @@ public class WebdavServlet extends WebDavServletBean {
 
         int noContentLengthHeader = getIntInitParameter("no-content-length-headers");
 
-        super.init(webdavStore, dftIndexFile, insteadOf404,
+        // Lock notifications
+        ILockingListener listener = constructLockingListener(getInitParameter("LockingListener"));
+
+        super.init(webdavStore, listener, dftIndexFile, insteadOf404,
                 noContentLengthHeader, lazyFolderCreationOnPut);
     }
 
@@ -69,8 +74,8 @@ public class WebdavServlet extends WebDavServletBean {
     protected IWebdavStore constructStore(String clazzName, File root) {
         IWebdavStore webdavStore;
         try {
-            Class<?> clazz = WebdavServlet.class.getClassLoader().loadClass(
-                    clazzName);
+            Class<?> clazz = WebdavServlet.class.getClassLoader()
+                    .loadClass(clazzName);
 
             Constructor<?> ctor = clazz
                     .getConstructor(new Class[] { File.class });
@@ -79,9 +84,28 @@ public class WebdavServlet extends WebDavServletBean {
                     .newInstance(new Object[] { root });
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("some problem making store component", e);
+            throw new RuntimeException(
+                    "some problem making store component", e);
         }
         return webdavStore;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected ILockingListener constructLockingListener(String clazzName) {
+        ILockingListener listener = null;
+
+        if (clazzName != null && !"".equals(clazzName)) {
+            try {
+                Class<ILockingListener> clazz = (Class<ILockingListener>) WebdavServlet.class
+                        .getClassLoader().loadClass(clazzName);
+                listener = clazz.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(
+                        "Could not instantiate locking listener", e);
+            }
+        }
+
+        return listener;
     }
 
     private File getFileRoot() {

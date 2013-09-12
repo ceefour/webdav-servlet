@@ -37,9 +37,9 @@ public class DoDelete extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoDelete.class);
 
-    private IWebdavStore _store;
-    private ResourceLocks _resourceLocks;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final ResourceLocks _resourceLocks;
+    private final boolean _readOnly;
 
     public DoDelete(IWebdavStore store, ResourceLocks resourceLocks,
             boolean readOnly) {
@@ -48,6 +48,7 @@ public class DoDelete extends AbstractMethod {
         _readOnly = readOnly;
     }
 
+    @Override
     public void execute(ITransaction transaction, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
@@ -56,7 +57,7 @@ public class DoDelete extends AbstractMethod {
             String path = getRelativePath(req);
             String parentPath = getParentPath(getCleanPath(path));
 
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            Hashtable<String, Integer> errorList = new Hashtable<>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
                 resp.setStatus(WebdavStatus.SC_LOCKED);
@@ -73,7 +74,7 @@ public class DoDelete extends AbstractMethod {
             if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
                     TEMP_TIMEOUT, TEMPORARY)) {
                 try {
-                    errorList = new Hashtable<String, Integer>();
+                    errorList = new Hashtable<>();
                     deleteResource(transaction, path, errorList, req, resp);
                     if (!errorList.isEmpty()) {
                         sendReport(req, resp, errorList);

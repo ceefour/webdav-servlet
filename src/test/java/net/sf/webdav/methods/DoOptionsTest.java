@@ -14,21 +14,21 @@ import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 public class DoOptionsTest extends MockTest {
 
-    static IWebdavStore mockStore;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static IMimeTyper mockMimeTyper;
-    static ITransaction mockTransaction;
+    IWebdavStore mockStore;
+    HttpServletRequest mockReq;
+    HttpServletResponse mockRes;
+    IMimeTyper mockMimeTyper;
+    ITransaction mockTransaction;
     static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
             '/', '>' };
 
-    @BeforeClass
-    public static void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         mockStore = _mockery.mock(IWebdavStore.class);
         mockMimeTyper = _mockery.mock(IMimeTyper.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
@@ -42,26 +42,26 @@ public class DoOptionsTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/index.html"));
 
-                one(mockRes).addHeader("DAV", "1, 2");
+                oneOf(mockRes).addHeader("DAV", "1, 2");
 
                 StoredObject indexSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(indexSo));
 
-                one(mockRes).addHeader(
+                oneOf(mockRes).addHeader(
                         "Allow",
                         "OPTIONS, GET, HEAD, POST, DELETE, "
                                 + "TRACE, PROPPATCH, COPY, "
                                 + "MOVE, LOCK, UNLOCK, PROPFIND");
 
-                one(mockRes).addHeader("MS-Author-Via", "DAV");
+                oneOf(mockRes).addHeader("MS-Author-Via", "DAV");
             }
         });
 
@@ -77,22 +77,22 @@ public class DoOptionsTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue("/index.html"));
 
-                one(mockRes).addHeader("DAV", "1, 2");
+                oneOf(mockRes).addHeader("DAV", "1, 2");
 
                 StoredObject indexSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, "/index.html");
+                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(indexSo));
 
-                one(mockRes).addHeader("Allow", "OPTIONS, MKCOL, PUT");
+                oneOf(mockRes).addHeader("Allow", "OPTIONS, MKCOL, PUT");
 
-                one(mockRes).addHeader("MS-Author-Via", "DAV");
+                oneOf(mockRes).addHeader("MS-Author-Via", "DAV");
             }
         });
 
