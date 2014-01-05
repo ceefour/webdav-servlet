@@ -87,7 +87,7 @@ public class DoUnlock extends DeterminableMethod {
                     }
                 }
             } catch (LockFailedException e) {
-                e.printStackTrace();
+                LOG.error("Lockfailed exception", e);
             } finally {
                 _resourceLocks.unlockTemporaryLockedObjects(transaction, path,
                         tempLockOwner);
