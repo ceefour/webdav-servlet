@@ -27,37 +27,37 @@ public class LockedObject {
      * Describing the depth of a locked collection. If the locked resource is
      * not a collection, depth is 0 / doesn't matter.
      */
-    int _lockDepth;
+    volatile int _lockDepth;
 
     /**
      * Describing the timeout of a locked object (ms)
      */
-    long _expiresAt;
+    volatile long _expiresAt;
 
     /**
      * owner of the lock. shared locks can have multiple owners. is null if no
      * owner is present
      */
     // protected String[] _owner = null;
-    String[] _owner = null;
+    volatile String[] _owner = null;
 
     /**
      * children of that lock
      */
-    LockedObject[] _children = null;
+    volatile LockedObject[] _children = null;
 
-    LockedObject _parent = null;
+    volatile LockedObject _parent = null;
 
     /**
      * weather the lock is exclusive or not. if owner=null the exclusive value
      * doesn't matter
      */
-    boolean _exclusive = false;
+    volatile boolean _exclusive = false;
 
     /**
      * weather the lock is a write or read lock
      */
-    String _type = null;
+    volatile String _type = null;
 
     /**
      * @param _resourceLocks
