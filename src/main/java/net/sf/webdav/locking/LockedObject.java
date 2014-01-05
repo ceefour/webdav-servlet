@@ -157,7 +157,7 @@ public class LockedObject {
      * @param newChild
      *      new child
      */
-    public void addChild(LockedObject newChild) {
+    void addChild(LockedObject newChild) {
         if (_children == null) {
             _children = new LockedObject[0];
         }
@@ -173,7 +173,7 @@ public class LockedObject {
      * (does not check this itself)
      * 
      */
-    public void removeLockedObject() {
+    void removeLockedObject() {
         if (this != _resourceLocks._root && !this.getPath().equals("/")) {
 
             int size = _parent._children.length;
@@ -209,7 +209,7 @@ public class LockedObject {
      * (does not check this itself)
      * 
      */
-    public void removeTempLockedObject() {
+    void removeTempLockedObject() {
         if (this != _resourceLocks._tempRoot) {
             // removing from tree
             if (_parent != null && _parent._children != null) {
@@ -252,7 +252,7 @@ public class LockedObject {
      *      the depth to which should be checked
      * @return true if the lock can be placed
      */
-    public boolean checkLocks(boolean exclusive, int depth) {
+    boolean checkLocks(boolean exclusive, int depth) {
         if (checkParents(exclusive) && checkChildren(exclusive, depth)) {
             return true;
         }
