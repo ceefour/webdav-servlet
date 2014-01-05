@@ -177,7 +177,7 @@ public class ResourceLocks implements IResourceLocks {
 
     }
 
-    public void checkTimeouts(ITransaction transaction, boolean temporary) {
+    public synchronized void checkTimeouts(ITransaction transaction, boolean temporary) {
         if (!temporary) {
             Enumeration<LockedObject> lockedObjects = _locks.elements();
             while (lockedObjects.hasMoreElements()) {
