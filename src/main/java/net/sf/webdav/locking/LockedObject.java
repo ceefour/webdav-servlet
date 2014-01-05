@@ -89,7 +89,7 @@ public class LockedObject {
      *      string that represents the owner
      * @return true if the owner was added, false otherwise
      */
-    public boolean addLockedObjectOwner(String owner) {
+    public synchronized boolean addLockedObjectOwner(String owner) {
 
         if (_owner == null) {
             _owner = new String[1];
@@ -120,7 +120,7 @@ public class LockedObject {
      * @param owner
      *      string that represents the owner
      */
-    public void removeLockedObjectOwner(String owner) {
+    public synchronized void removeLockedObjectOwner(String owner) {
 
         try {
             if (_owner != null) {
