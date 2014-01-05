@@ -9,9 +9,6 @@ import java.util.UUID;
  * @author re
  * 
  */
-// TODO make variables final where possible
-// TODO make public methods package private where possible.
-// TODO make methods that are still public synchronized.
 public class LockedObject {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
