@@ -32,7 +32,7 @@ import net.sf.webdav.exceptions.LockFailedException;
  */
 public class ResourceLocks implements IResourceLocks {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(ResourceLocks.class);
 
     /**
@@ -41,35 +41,35 @@ public class ResourceLocks implements IResourceLocks {
      */
     private final int _cleanupLimit = 100000;
 
-    protected int _cleanupCounter = 0;
+    int _cleanupCounter = 0;
 
     /**
      * keys: path value: LockedObject from that path
      */
-    protected Hashtable<String, LockedObject> _locks = new Hashtable<String, LockedObject>();
+    final Hashtable<String, LockedObject> _locks = new Hashtable<String, LockedObject>();
 
     /**
      * keys: id value: LockedObject from that id
      */
-    protected Hashtable<String, LockedObject> _locksByID = new Hashtable<String, LockedObject>();
+    final Hashtable<String, LockedObject> _locksByID = new Hashtable<String, LockedObject>();
 
     /**
      * keys: path value: Temporary LockedObject from that path
      */
-    protected Hashtable<String, LockedObject> _tempLocks = new Hashtable<String, LockedObject>();
+    final Hashtable<String, LockedObject> _tempLocks = new Hashtable<String, LockedObject>();
 
     /**
      * keys: id value: Temporary LockedObject from that id
      */
-    protected Hashtable<String, LockedObject> _tempLocksByID = new Hashtable<String, LockedObject>();
+    final Hashtable<String, LockedObject> _tempLocksByID = new Hashtable<String, LockedObject>();
 
     // REMEMBER TO REMOVE UNUSED LOCKS FROM THE HASHTABLE AS WELL
 
-    protected LockedObject _root = null;
+    final LockedObject _root;
 
-    protected LockedObject _tempRoot = null;
+    final LockedObject _tempRoot;
 
-    private boolean _temporary = true;
+    private final boolean _temporary = true;
 
     public ResourceLocks() {
         _root = new LockedObject(this, "/", true);
