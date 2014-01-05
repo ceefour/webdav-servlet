@@ -15,12 +15,12 @@ import net.sf.webdav.locking.LockedObject;
 
 public class DoUnlock extends DeterminableMethod {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoUnlock.class);
 
-    private IWebdavStore _store;
-    private IResourceLocks _resourceLocks;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final IResourceLocks _resourceLocks;
+    private final boolean _readOnly;
 
     public DoUnlock(IWebdavStore store, IResourceLocks resourceLocks,
             boolean readOnly) {
