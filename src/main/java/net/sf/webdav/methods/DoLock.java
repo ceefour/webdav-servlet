@@ -44,6 +44,7 @@ import org.xml.sax.SAXException;
 
 public class DoLock extends AbstractMethod {
 
+    // TODO make variables final where possible.
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoLock.class);
 
@@ -80,8 +81,6 @@ public class DoLock extends AbstractMethod {
         } else {
             _path = getRelativePath(req);
             _parentPath = getParentPath(getCleanPath(_path));
-
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _path)) {
                 resp.setStatus(WebdavStatus.SC_LOCKED);
