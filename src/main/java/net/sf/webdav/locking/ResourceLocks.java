@@ -41,7 +41,7 @@ public class ResourceLocks implements IResourceLocks {
      */
     private final int _cleanupLimit = 100000;
 
-    int _cleanupCounter = 0;
+    volatile int _cleanupCounter = 0;
 
     /**
      * keys: path value: LockedObject from that path
