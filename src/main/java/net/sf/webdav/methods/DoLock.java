@@ -69,8 +69,9 @@ public class DoLock extends AbstractMethod {
         _readOnly = readOnly;
     }
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, LockFailedException {
+    public synchronized void execute(ITransaction transaction,
+            HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, LockFailedException {
         LOG.trace("-- " + this.getClass().getName());
 
         if (_readOnly) {
@@ -275,6 +276,7 @@ public class DoLock extends AbstractMethod {
                     + _userAgent + "'");
 
             doMacLockRequestWorkaround(transaction, req, resp);
+            _macLockRequest = false;
         } else {
             // Getting LockInformation from request
             if (getLockInformation(transaction, req, resp)) {
