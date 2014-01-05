@@ -2,55 +2,62 @@ package net.sf.webdav.locking;
 
 import java.util.UUID;
 
+
 /**
  * a helper class for ResourceLocks, represents the Locks
  * 
  * @author re
  * 
  */
+// TODO make variables final where possible
+// TODO make public methods package private where possible.
+// TODO make methods that are still public synchronized.
 public class LockedObject {
 
-    private ResourceLocks _resourceLocks;
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(LockedObject.class);
 
-    private String _path;
+    private final ResourceLocks _resourceLocks;
 
-    private String _id;
+    private final String _path;
+
+    private final String _id;
 
     /**
      * Describing the depth of a locked collection. If the locked resource is
      * not a collection, depth is 0 / doesn't matter.
      */
-    protected int _lockDepth;
+    int _lockDepth;
 
     /**
      * Describing the timeout of a locked object (ms)
      */
-    protected long _expiresAt;
+    long _expiresAt;
 
     /**
      * owner of the lock. shared locks can have multiple owners. is null if no
      * owner is present
      */
     // protected String[] _owner = null;
-    protected String[] _owner = null;
+    String[] _owner = null;
 
     /**
      * children of that lock
      */
-    protected LockedObject[] _children = null;
+    LockedObject[] _children = null;
 
-    protected LockedObject _parent = null;
+    LockedObject _parent = null;
 
     /**
      * weather the lock is exclusive or not. if owner=null the exclusive value
      * doesn't matter
      */
-    protected boolean _exclusive = false;
+    boolean _exclusive = false;
 
     /**
      * weather the lock is a write or read lock
      */
-    protected String _type = null;
+    String _type = null;
 
     /**
      * @param _resourceLocks
@@ -140,8 +147,7 @@ public class LockedObject {
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("LockedObject.removeLockedObjectOwner()");
-            System.out.println(e.toString());
+            LOG.error("LockedObject.removeLockedObjectOwner()", e);
         }
     }
 
