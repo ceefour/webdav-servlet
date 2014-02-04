@@ -1,7 +1,5 @@
 package net.sf.webdav.methods;
 
-import java.io.PrintWriter;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -254,8 +252,6 @@ public class DoDeleteTest extends MockTest {
         final String wrongLockToken = "(<opaquelocktoken:" + lo.getID()
                 + "WRONG>)";
 
-        final PrintWriter pw = new PrintWriter("/tmp/XMLTestFile");
-
         _mockery.checking(new Expectations() {
             {
                 one(mockReq).getAttribute("javax.servlet.include.request_uri");
@@ -267,13 +263,7 @@ public class DoDeleteTest extends MockTest {
                 one(mockReq).getHeader("If");
                 will(returnValue(wrongLockToken));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
-
-                one(mockReq).getRequestURI();
-                will(returnValue("http://foo.bar".concat(lockedFolderPath)));
-
-                one(mockRes).getWriter();
-                will(returnValue(pw));
+                one(mockRes).setStatus(WebdavStatus.SC_LOCKED);
 
             }
         });

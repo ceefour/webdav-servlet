@@ -105,6 +105,9 @@ public class DoProppatchTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(testFileSo));
 
+                one(mockReq).getHeader("If");
+                will(returnValue(null));
+
                 one(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
@@ -144,6 +147,9 @@ public class DoProppatchTest extends MockTest {
 
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(testFileSo));
+
+                one(mockReq).getHeader("If");
+                will(returnValue(null));
 
                 one(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
