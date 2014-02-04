@@ -253,10 +253,10 @@ public class DoPropfind extends AbstractMethod {
 
         StoredObject so = _store.getStoredObject(transaction, path);
 
-        boolean isFolder = so.isFolder();
+        final boolean isFolder = so.isFolder();
         final String creationdate = creationDateFormat(so.getCreationDate());
         final String lastModified = lastModifiedDateFormat(so.getLastModified());
-        String resourceLength = String.valueOf(so.getResourceLength());
+        final String resourceLength = String.valueOf(so.getResourceLength());
 
         // ResourceInfo resourceInfo = new ResourceInfo(path, resources);
 
@@ -302,9 +302,8 @@ public class DoPropfind extends AbstractMethod {
             generatedXML.writeElement("DAV::displayname", XMLWriter.OPENING);
             generatedXML.writeData(resourceName);
             generatedXML.writeElement("DAV::displayname", XMLWriter.CLOSING);
+            generatedXML.writeProperty("DAV::getlastmodified", lastModified);
             if (!isFolder) {
-                generatedXML
-                        .writeProperty("DAV::getlastmodified", lastModified);
                 generatedXML.writeProperty("DAV::getcontentlength",
                         resourceLength);
                 String contentType = mimeType;
@@ -345,6 +344,8 @@ public class DoPropfind extends AbstractMethod {
             generatedXML
                     .writeElement("DAV::creationdate", XMLWriter.NO_CONTENT);
             generatedXML.writeElement("DAV::displayname", XMLWriter.NO_CONTENT);
+            generatedXML.
+                    writeElement("DAV::getlastmodified", XMLWriter.NO_CONTENT);
             if (!isFolder) {
                 generatedXML.writeElement("DAV::getcontentlanguage",
                         XMLWriter.NO_CONTENT);
@@ -353,8 +354,6 @@ public class DoPropfind extends AbstractMethod {
                 generatedXML.writeElement("DAV::getcontenttype",
                         XMLWriter.NO_CONTENT);
                 generatedXML.writeElement("DAV::getetag", XMLWriter.NO_CONTENT);
-                generatedXML.writeElement("DAV::getlastmodified",
-                        XMLWriter.NO_CONTENT);
             }
             generatedXML
                     .writeElement("DAV::resourcetype", XMLWriter.NO_CONTENT);
@@ -422,12 +421,8 @@ public class DoPropfind extends AbstractMethod {
                         generatedXML.writeProperty("DAV::getetag", getETag(so));
                     }
                 } else if (property.equals("DAV::getlastmodified")) {
-                    if (isFolder) {
-                        propertiesNotFound.addElement(property);
-                    } else {
-                        generatedXML.writeProperty("DAV::getlastmodified",
-                                lastModified);
-                    }
+                    generatedXML.writeProperty("DAV::getlastmodified",
+                            lastModified);
                 } else if (property.equals("DAV::resourcetype")) {
                     if (isFolder) {
                         generatedXML.writeElement("DAV::resourcetype",

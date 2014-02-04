@@ -31,6 +31,7 @@ import net.sf.webdav.methods.DoPut;
 import net.sf.webdav.methods.DoUnlock;
 
 public class WebDavServletBean extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(WebDavServletBean.class);

@@ -2,6 +2,7 @@ package net.sf.webdav.locking;
 
 import java.util.UUID;
 
+
 /**
  * a helper class for ResourceLocks, represents the Locks
  * 
@@ -10,47 +11,50 @@ import java.util.UUID;
  */
 public class LockedObject {
 
-    private ResourceLocks _resourceLocks;
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+            .getLogger(LockedObject.class);
 
-    private String _path;
+    private final ResourceLocks _resourceLocks;
 
-    private String _id;
+    private final String _path;
+
+    private final String _id;
 
     /**
      * Describing the depth of a locked collection. If the locked resource is
      * not a collection, depth is 0 / doesn't matter.
      */
-    protected int _lockDepth;
+    volatile int _lockDepth;
 
     /**
      * Describing the timeout of a locked object (ms)
      */
-    protected long _expiresAt;
+    volatile long _expiresAt;
 
     /**
      * owner of the lock. shared locks can have multiple owners. is null if no
      * owner is present
      */
     // protected String[] _owner = null;
-    protected String[] _owner = null;
+    volatile String[] _owner = null;
 
     /**
      * children of that lock
      */
-    protected LockedObject[] _children = null;
+    volatile LockedObject[] _children = null;
 
-    protected LockedObject _parent = null;
+    volatile LockedObject _parent = null;
 
     /**
      * weather the lock is exclusive or not. if owner=null the exclusive value
      * doesn't matter
      */
-    protected boolean _exclusive = false;
+    volatile boolean _exclusive = false;
 
     /**
      * weather the lock is a write or read lock
      */
-    protected String _type = null;
+    volatile String _type = null;
 
     /**
      * @param _resourceLocks
@@ -82,7 +86,7 @@ public class LockedObject {
      *      string that represents the owner
      * @return true if the owner was added, false otherwise
      */
-    public boolean addLockedObjectOwner(String owner) {
+    public synchronized boolean addLockedObjectOwner(String owner) {
 
         if (_owner == null) {
             _owner = new String[1];
@@ -113,7 +117,7 @@ public class LockedObject {
      * @param owner
      *      string that represents the owner
      */
-    public void removeLockedObjectOwner(String owner) {
+    public synchronized void removeLockedObjectOwner(String owner) {
 
         try {
             if (_owner != null) {
@@ -140,8 +144,7 @@ public class LockedObject {
                 }
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("LockedObject.removeLockedObjectOwner()");
-            System.out.println(e.toString());
+            LOG.error("LockedObject.removeLockedObjectOwner()", e);
         }
     }
 
@@ -151,7 +154,7 @@ public class LockedObject {
      * @param newChild
      *      new child
      */
-    public void addChild(LockedObject newChild) {
+    void addChild(LockedObject newChild) {
         if (_children == null) {
             _children = new LockedObject[0];
         }
@@ -167,7 +170,7 @@ public class LockedObject {
      * (does not check this itself)
      * 
      */
-    public void removeLockedObject() {
+    void removeLockedObject() {
         if (this != _resourceLocks._root && !this.getPath().equals("/")) {
 
             int size = _parent._children.length;
@@ -203,7 +206,7 @@ public class LockedObject {
      * (does not check this itself)
      * 
      */
-    public void removeTempLockedObject() {
+    void removeTempLockedObject() {
         if (this != _resourceLocks._tempRoot) {
             // removing from tree
             if (_parent != null && _parent._children != null) {
@@ -246,7 +249,7 @@ public class LockedObject {
      *      the depth to which should be checked
      * @return true if the lock can be placed
      */
-    public boolean checkLocks(boolean exclusive, int depth) {
+    boolean checkLocks(boolean exclusive, int depth) {
         if (checkParents(exclusive) && checkChildren(exclusive, depth)) {
             return true;
         }

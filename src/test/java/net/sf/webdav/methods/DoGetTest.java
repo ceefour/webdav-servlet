@@ -102,7 +102,7 @@ public class DoGetTest extends MockTest {
                 one(mockRes).addHeader(with(any(String.class)),
                         with(any(String.class)));
 
-                one(mockMimeTyper).getMimeType("/index.html");
+                one(mockMimeTyper).getMimeType(mockTransaction, "/index.html");
                 will(returnValue("text/foo"));
 
                 one(mockRes).setContentType("text/foo");
@@ -156,7 +156,7 @@ public class DoGetTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, "/foo/");
                 will(returnValue(fooSo));
 
-                one(mockReq).getLocale();
+                atLeast(1).of(mockReq).getLocale();
                 will(returnValue(Locale.GERMAN));
                 
                 one(mockRes).setContentType("text/html");
@@ -254,7 +254,7 @@ public class DoGetTest extends MockTest {
                 one(mockRes).addHeader(with(any(String.class)),
                         with(any(String.class)));
 
-                one(mockMimeTyper).getMimeType("/alternative");
+                one(mockMimeTyper).getMimeType(mockTransaction, "/alternative");
                 will(returnValue("text/foo"));
 
                 one(mockRes).setContentType("text/foo");

@@ -66,6 +66,7 @@ public class DoGet extends DoHead {
 
                 while ((read = in.read(copyBuffer, 0, copyBuffer.length)) != -1) {
                     out.write(copyBuffer, 0, read);
+                    out.flush();
                 }
             } finally {
                 // flushing causes a IOE if a file is opened on the webserver
@@ -110,7 +111,6 @@ public class DoGet extends DoHead {
             if (so.isFolder()) {
                 // TODO some folder response (for browsers, DAV tools
                 // use propfind) in html?
-                Locale locale = req.getLocale();
                 DateFormat shortDF= getDateTimeFormat(req.getLocale());
                 resp.setContentType("text/html");
                 resp.setCharacterEncoding("UTF8");

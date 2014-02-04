@@ -1,7 +1,6 @@
 package net.sf.webdav.methods;
 
 import java.io.ByteArrayInputStream;
-import java.io.PrintWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -137,8 +136,6 @@ public class DoCopyTest extends MockTest {
         final String wrongLockToken = "(<opaquelocktoken:" + lo.getID()
                 + "WRONG>)";
 
-        final PrintWriter pw = new PrintWriter("/tmp/XMLTestFile");
-
         _mockery.checking(new Expectations() {
             {
                 one(mockReq).getAttribute("javax.servlet.include.request_uri");
@@ -171,13 +168,7 @@ public class DoCopyTest extends MockTest {
                 one(mockReq).getHeader("If");
                 will(returnValue(wrongLockToken));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
-
-                one(mockReq).getRequestURI();
-                will(returnValue("http://foo.bar".concat(destCollectionPath)));
-
-                one(mockRes).getWriter();
-                will(returnValue(pw));
+                one(mockRes).setStatus(WebdavStatus.SC_LOCKED);
             }
         });
 
@@ -412,11 +403,9 @@ public class DoCopyTest extends MockTest {
                 one(mockReq).getHeader("Depth");
                 will(returnValue("-1"));
 
-                sourceChildren = new String[] { "sourceFile" };
-
                 one(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                will(returnValue(getSourceChildren()));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 

@@ -19,7 +19,6 @@ package net.sf.webdav.fromcatalina;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.servlet.http.Cookie;
 
