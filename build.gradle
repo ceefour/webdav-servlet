@@ -79,3 +79,5 @@ if (rootProject.hasProperty('uploadArchives.my.edu.clhs.baseRepositoryUrl')) {
     }
   }
 }
+
+task wrapper(type: Wrapper)
