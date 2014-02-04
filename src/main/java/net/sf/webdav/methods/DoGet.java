@@ -66,6 +66,7 @@ public class DoGet extends DoHead {
 
                 while ((read = in.read(copyBuffer, 0, copyBuffer.length)) != -1) {
                     out.write(copyBuffer, 0, read);
+                    out.flush();
                 }
             } finally {
                 // flushing causes a IOE if a file is opened on the webserver
