@@ -44,12 +44,12 @@ import org.xml.sax.SAXException;
 
 public class DoLock extends AbstractMethod {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoLock.class);
 
-    private IWebdavStore _store;
-    private IResourceLocks _resourceLocks;
-    private boolean _readOnly;
+    private final IWebdavStore _store;
+    private final IResourceLocks _resourceLocks;
+    private final boolean _readOnly;
 
     private boolean _macLockRequest = false;
 
@@ -80,8 +80,6 @@ public class DoLock extends AbstractMethod {
         } else {
             _path = getRelativePath(req);
             _parentPath = getParentPath(getCleanPath(_path));
-
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _path)) {
                 resp.setStatus(WebdavStatus.SC_LOCKED);
