@@ -408,7 +408,6 @@ public class DoMoveTest extends MockTest {
     @Test
     public void testMovingOfaCollectionIfDestinationIsNotPresent()
             throws Exception {
-
         _mockery.checking(new Expectations() {
             {
                 one(mockReq).getAttribute("javax.servlet.include.request_uri");
@@ -465,11 +464,9 @@ public class DoMoveTest extends MockTest {
                 one(mockReq).getHeader("Depth");
                 will(returnValue(null));
 
-                String[] sourceChildren = new String[] { "sourceFile" };
-
                 one(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                will(returnValue(getSourceChildren()));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
@@ -500,11 +497,9 @@ public class DoMoveTest extends MockTest {
                         sourceCollectionPath);
                 will(returnValue(sourceCollectionSo));
 
-                sourceChildren = new String[] { "sourceFile" };
-
                 one(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                will(returnValue(getSourceChildren()));
 
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
@@ -643,7 +638,7 @@ public class DoMoveTest extends MockTest {
                 will(returnValue(destCollectionSo));
 
                 one(mockStore).getChildrenNames(mockTransaction, overwritePath);
-                will(returnValue(destChildren));
+                will(returnValue(getDestChildren()));
 
                 StoredObject destFileSo = initFileStoredObject(resourceContent);
 
@@ -667,7 +662,7 @@ public class DoMoveTest extends MockTest {
 
                 one(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                will(returnValue(getSourceChildren()));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
@@ -696,11 +691,10 @@ public class DoMoveTest extends MockTest {
                         sourceCollectionPath);
                 will(returnValue(sourceCollectionSo));
 
-                sourceChildren = new String[] { "sourceFile" };
-
-                one(mockStore).getChildrenNames(mockTransaction,
-                        sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                one(mockStore).getChildrenNames(
+                    mockTransaction, sourceCollectionPath
+                );
+                will(returnValue(getSourceChildren()));
 
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));

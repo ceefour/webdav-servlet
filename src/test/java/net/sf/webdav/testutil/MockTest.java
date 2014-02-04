@@ -1,6 +1,7 @@
 package net.sf.webdav.testutil;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.Date;
 
 import junit.framework.Assert;
@@ -70,8 +71,8 @@ public abstract class MockTest extends Assert {
     protected static String overwritePath = destCollectionPath
             + "/sourceFolder";
 
-    protected static String[] sourceChildren = new String[] { "sourceFile" };
-    protected static String[] destChildren = new String[] { "destFile" };
+    private static final String[] sourceChildren = new String[] { "sourceFile" };
+    private static final String[] destChildren = new String[] { "destFile" };
 
     @After
     public final void assertSatisfiedMockery() throws Exception {
@@ -135,5 +136,13 @@ public abstract class MockTest extends Assert {
         lo.setExclusive(true);
 
         return lo;
+    }
+
+    protected static String[] getSourceChildren() {
+        return Arrays.copyOf(sourceChildren, sourceChildren.length);
+    }
+
+    protected static String[] getDestChildren() {
+        return Arrays.copyOf(destChildren, destChildren.length);
     }
 }

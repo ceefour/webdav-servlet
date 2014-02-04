@@ -403,11 +403,9 @@ public class DoCopyTest extends MockTest {
                 one(mockReq).getHeader("Depth");
                 will(returnValue("-1"));
 
-                sourceChildren = new String[] { "sourceFile" };
-
                 one(mockStore).getChildrenNames(mockTransaction,
                         sourceCollectionPath);
-                will(returnValue(sourceChildren));
+                will(returnValue(getSourceChildren()));
 
                 StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
