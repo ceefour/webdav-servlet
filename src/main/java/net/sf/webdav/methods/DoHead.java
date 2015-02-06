@@ -65,14 +65,20 @@ public class DoHead extends AbstractMethod {
         String path = getRelativePath(req);
         LOG.trace("-- " + this.getClass().getName());
 
-        StoredObject so = _store.getStoredObject(transaction, path);
-        if (so == null) {
-            if (this._insteadOf404 != null && !_insteadOf404.trim().equals("")) {
-                path = this._insteadOf404;
-                so = _store.getStoredObject(transaction, this._insteadOf404);
-            }
-        } else
-            bUriExists = true;
+        StoredObject so;
+        try {
+            so = _store.getStoredObject(transaction, path);
+            if (so == null) {
+                if (this._insteadOf404 != null && !_insteadOf404.trim().equals("")) {
+                    path = this._insteadOf404;
+                    so = _store.getStoredObject(transaction, this._insteadOf404);
+                }
+            } else
+                bUriExists = true;
+        } catch (AccessDeniedException e) {
+            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            return;
+        }
 
         if (so != null) {
             if (so.isFolder()) {
