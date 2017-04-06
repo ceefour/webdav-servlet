@@ -73,7 +73,7 @@ public class DoPropfindTest extends MockTest {
                 one(mockRes).getWriter();
                 will(returnValue(printWriter));
 
-                one(mockMimeTyper).getMimeType(path);
+                one(mockMimeTyper).getMimeType(mockTransaction, path);
                 will(returnValue("text/xml; charset=UTF-8"));
 
                 one(mockStore).getStoredObject(mockTransaction, path);
@@ -164,7 +164,7 @@ public class DoPropfindTest extends MockTest {
                 one(mockRes).getWriter();
                 will(returnValue(printWriter));
 
-                one(mockMimeTyper).getMimeType(path);
+                one(mockMimeTyper).getMimeType(mockTransaction, path);
                 will(returnValue("text/xml; charset=UTF-8"));
 
                 one(mockStore).getStoredObject(mockTransaction, path);

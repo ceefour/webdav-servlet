@@ -88,7 +88,7 @@ public class DoHeadTest extends MockTest {
                 one(mockRes).addHeader(with(any(String.class)),
                         with(any(String.class)));
 
-                one(mockMimeTyper).getMimeType("/index.html");
+                one(mockMimeTyper).getMimeType(mockTransaction, "/index.html");
                 will(returnValue("text/foo"));
 
                 one(mockRes).setContentType("text/foo");

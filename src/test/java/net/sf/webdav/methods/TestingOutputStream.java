@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 import org.junit.Ignore;
 
@@ -19,4 +20,15 @@ public class TestingOutputStream extends ServletOutputStream {
     public String toString() {
         return baos.toString();
     }
+
+	@Override
+	public boolean isReady() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setWriteListener(WriteListener writeListener) {
+		// TODO Auto-generated method stub		
+	}
 }
