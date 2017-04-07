@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
@@ -52,7 +52,7 @@ public class DoMoveTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -112,7 +112,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
@@ -132,7 +132,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
@@ -198,7 +198,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                one(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
 
             }
         });
@@ -260,7 +260,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
@@ -283,7 +283,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, destFilePath);
                 will(returnValue(destFileSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
@@ -343,7 +343,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, sourceFilePath);
                 will(returnValue(sourceFileSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
+                one(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
             }
         });
 
@@ -390,7 +390,7 @@ public class DoMoveTest extends MockTest {
                 one(mockReq).getPathInfo();
                 will(returnValue(destFilePath));
 
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -453,7 +453,7 @@ public class DoMoveTest extends MockTest {
                         destCollectionPath);
                 will(returnValue(destCollectionSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockStore).getStoredObject(mockTransaction,
                         sourceCollectionPath);
@@ -494,7 +494,7 @@ public class DoMoveTest extends MockTest {
                         destCollectionPath + "/sourceFile");
                 will(returnValue(movedSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction,
                         sourceCollectionPath);
@@ -575,7 +575,7 @@ public class DoMoveTest extends MockTest {
                         destCollectionPath);
                 will(returnValue(destCollectionSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                one(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
             }
         });
 
@@ -637,7 +637,7 @@ public class DoMoveTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, overwritePath);
                 will(returnValue(destCollectionSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction, overwritePath);
                 will(returnValue(destCollectionSo));
@@ -690,7 +690,7 @@ public class DoMoveTest extends MockTest {
                         overwritePath + "/sourceFile");
                 will(returnValue(movedSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction,
                         sourceCollectionPath);

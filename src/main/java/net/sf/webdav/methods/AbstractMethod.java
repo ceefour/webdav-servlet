@@ -37,7 +37,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.sf.webdav.IMethodExecutor;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.fromcatalina.URLEncoder;
 import net.sf.webdav.fromcatalina.XMLWriter;
@@ -392,15 +392,15 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
         if (errorList.size() == 1) {
             int code = errorList.elements().nextElement();
-            if (WebdavStatus.getStatusText(code) != "") {
-                resp.sendError(code, WebdavStatus.getStatusText(code));
+            if (WebDAVStatus.getStatusText(code) != "") {
+                resp.sendError(code, WebDAVStatus.getStatusText(code));
             } else {
                 resp.sendError(code);
             }
         }
         else
         {
-            resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
+            resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
             String absoluteUri = req.getRequestURI();
             // String relativePath = getRelativePath(req);
@@ -438,7 +438,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
                 generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
                 generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
                 generatedXML.writeText("HTTP/1.1 " + errorCode + " "
-                        + WebdavStatus.getStatusText(errorCode));
+                        + WebDAVStatus.getStatusText(errorCode));
                 generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
 
                 generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);

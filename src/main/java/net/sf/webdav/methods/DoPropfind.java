@@ -30,7 +30,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
@@ -132,7 +132,7 @@ public class DoPropfind extends AbstractMethod {
                             propertyFindType = FIND_ALL_PROP;
                         }
                     } catch (Exception e) {
-                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                        resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                         return;
                     }
                 } else {
@@ -148,7 +148,7 @@ public class DoPropfind extends AbstractMethod {
                     properties = XMLHelper.getPropertiesFromXML(propNode);
                 }
 
-                resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
+                resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
                 resp.setContentType("text/xml; charset=UTF-8");
 
                 // Create multistatus object
@@ -171,10 +171,10 @@ public class DoPropfind extends AbstractMethod {
 
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {
-                resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             } catch (WebdavException e) {
                 LOG.warn("Sending internal error!");
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             } catch (ServletException e) {
                 e.printStackTrace(); // To change body of catch statement use
                 // File | Settings | File Templates.
@@ -184,7 +184,7 @@ public class DoPropfind extends AbstractMethod {
             }
         } else {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
-            errorList.put(path, WebdavStatus.SC_LOCKED);
+            errorList.put(path, WebDAVStatus.SC_LOCKED);
             sendReport(req, resp, errorList);
         }
     }
@@ -261,8 +261,8 @@ public class DoPropfind extends AbstractMethod {
         // ResourceInfo resourceInfo = new ResourceInfo(path, resources);
 
         generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
-        String status = new String("HTTP/1.1 " + WebdavStatus.SC_OK + " "
-                + WebdavStatus.getStatusText(WebdavStatus.SC_OK));
+        String status = new String("HTTP/1.1 " + WebDAVStatus.SC_OK + " "
+                + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
 
         // Generating href element
         generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
@@ -467,9 +467,9 @@ public class DoPropfind extends AbstractMethod {
 
             if (propertiesNotFoundList.hasMoreElements()) {
 
-                status = new String("HTTP/1.1 " + WebdavStatus.SC_NOT_FOUND
+                status = new String("HTTP/1.1 " + WebDAVStatus.SC_NOT_FOUND
                         + " "
-                        + WebdavStatus.getStatusText(WebdavStatus.SC_NOT_FOUND));
+                        + WebDAVStatus.getStatusText(WebDAVStatus.SC_NOT_FOUND));
 
                 generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
                 generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);

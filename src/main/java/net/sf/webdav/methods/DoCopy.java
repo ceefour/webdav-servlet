@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
@@ -66,25 +66,25 @@ public class DoCopy extends AbstractMethod {
                     if (!copyResource(transaction, req, resp))
                         return;
                 } catch (AccessDeniedException e) {
-                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebdavStatus.SC_CONFLICT, req
+                    resp.sendError(WebDAVStatus.SC_CONFLICT, req
                             .getRequestURI());
                 } catch (ObjectNotFoundException e) {
-                    resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
                 } catch (WebdavException e) {
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             path, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
 
         } else {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
 
     }
@@ -119,7 +119,7 @@ public class DoCopy extends AbstractMethod {
         String path = getRelativePath(req);
 
         if (path.equals(destinationPath)) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             return false;
         }
 
@@ -128,12 +128,12 @@ public class DoCopy extends AbstractMethod {
 
         if (!checkLocks(transaction, req, resp, _resourceLocks,
                 parentDestinationPath)) {
-            resp.setStatus(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebDAVStatus.SC_LOCKED);
             return false; // parentDestination is locked
         }
 
         if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
-            resp.setStatus(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebDAVStatus.SC_LOCKED);
             return false; // destination is locked
         }
 
@@ -165,7 +165,7 @@ public class DoCopy extends AbstractMethod {
                     String methodsAllowed = DeterminableMethod
                             .determineMethodsAllowed(copySo);
                     resp.addHeader("Allow", methodsAllowed);
-                    resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                    resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
                     return false;
                 }
 
@@ -182,16 +182,16 @@ public class DoCopy extends AbstractMethod {
                                 errorList, req, resp);
 
                     } else {
-                        resp.setStatus(WebdavStatus.SC_CREATED);
+                        resp.setStatus(WebDAVStatus.SC_CREATED);
                     }
                 } else {
 
                     // If the destination exists, then it's a conflict
                     if (destinationSo != null) {
-                        resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                        resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
                         return false;
                     } else {
-                        resp.setStatus(WebdavStatus.SC_CREATED);
+                        resp.setStatus(WebDAVStatus.SC_CREATED);
                     }
 
                 }
@@ -206,7 +206,7 @@ public class DoCopy extends AbstractMethod {
                         destinationPath, lockOwner);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             return false;
         }
         return true;
@@ -258,7 +258,7 @@ public class DoCopy extends AbstractMethod {
                 copyFolder(transaction, sourcePath, destinationPath, errorList,
                         req, resp);
             } else {
-                resp.sendError(WebdavStatus.SC_NOT_FOUND);
+                resp.sendError(WebDAVStatus.SC_NOT_FOUND);
             }
         }
     }
@@ -329,16 +329,16 @@ public class DoCopy extends AbstractMethod {
                     }
                 } catch (AccessDeniedException e) {
                     errorList.put(destinationPath + children[i], new Integer(
-                            WebdavStatus.SC_FORBIDDEN));
+                            WebDAVStatus.SC_FORBIDDEN));
                 } catch (ObjectNotFoundException e) {
                     errorList.put(destinationPath + children[i], new Integer(
-                            WebdavStatus.SC_NOT_FOUND));
+                            WebDAVStatus.SC_NOT_FOUND));
                 } catch (ObjectAlreadyExistsException e) {
                     errorList.put(destinationPath + children[i], new Integer(
-                            WebdavStatus.SC_CONFLICT));
+                            WebDAVStatus.SC_CONFLICT));
                 } catch (WebdavException e) {
                     errorList.put(destinationPath + children[i], new Integer(
-                            WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+                            WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
                 }
             }
         }
@@ -360,7 +360,7 @@ public class DoCopy extends AbstractMethod {
         String destinationPath = req.getHeader("Destination");
 
         if (destinationPath == null) {
-            resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+            resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
             return null;
         }
 

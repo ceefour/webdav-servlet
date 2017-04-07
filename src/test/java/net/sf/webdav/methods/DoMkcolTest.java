@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -46,7 +46,7 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -80,7 +80,7 @@ public class DoMkcolTest extends MockTest {
 
                 one(mockStore).createFolder(mockTransaction, mkcolPath);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
             }
         });
@@ -113,7 +113,7 @@ public class DoMkcolTest extends MockTest {
 
                 one(mockRes).addHeader("Allow", methodsAllowed);
 
-                one(mockRes).sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                one(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
             }
         });
 
@@ -151,7 +151,7 @@ public class DoMkcolTest extends MockTest {
                                 "Allow",
                                 "OPTIONS, GET, HEAD, POST, DELETE, TRACE, PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND, PUT");
 
-                one(mockRes).sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                one(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 
             }
         });
@@ -196,7 +196,7 @@ public class DoMkcolTest extends MockTest {
 
                 one(mockStore).createFolder(mockTransaction, mkcolPath);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
             }
         });
@@ -227,7 +227,7 @@ public class DoMkcolTest extends MockTest {
                 one(mockReq).getHeader("If");
                 will(returnValue(wrongLockToken));
 
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -300,7 +300,7 @@ public class DoMkcolTest extends MockTest {
 
                 lockNullResourceSo = initLockNullStoredObject();
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
@@ -327,7 +327,7 @@ public class DoMkcolTest extends MockTest {
                         mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -388,7 +388,7 @@ public class DoMkcolTest extends MockTest {
                 one(mockResourceLocks).unlock(mockTransaction, loId, owner);
                 will(returnValue(true));
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockResourceLocks).unlockTemporaryLockedObjects(
                         with(any(ITransaction.class)), with(any(String.class)),

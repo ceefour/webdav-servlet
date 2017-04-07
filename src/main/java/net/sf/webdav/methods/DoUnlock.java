@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.locking.IResourceLocks;
@@ -34,7 +34,7 @@ public class DoUnlock extends DeterminableMethod {
         LOG.trace("-- " + this.getClass().getName());
 
         if (_readOnly) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             return;
         } else {
 
@@ -76,14 +76,14 @@ public class DoUnlock extends DeterminableMethod {
                                 _store.removeObject(transaction, path);
                             }
 
-                            resp.setStatus(WebdavStatus.SC_NO_CONTENT);
+                            resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
                         } else {
                             LOG.trace("DoUnlock failure at " + lo.getPath());
-                            resp.sendError(WebdavStatus.SC_METHOD_FAILURE);
+                            resp.sendError(WebDAVStatus.SC_METHOD_FAILURE);
                         }
 
                     } else {
-                        resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                        resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
                     }
                 }
             } catch (LockFailedException e) {

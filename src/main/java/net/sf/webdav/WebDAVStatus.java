@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author Marc Eaddy
  * @version 1.0, 16 Nov 1997
  */
-public class WebdavStatus {
+public class WebDAVStatus {
 
     // ----------------------------------------------------- Instance Variables
 

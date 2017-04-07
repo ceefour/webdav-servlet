@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -44,7 +44,7 @@ public class DoUnlockTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -88,7 +88,7 @@ public class DoUnlockTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, lockPath);
                 will(returnValue(lockedSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
             }
         });
 
@@ -127,7 +127,7 @@ public class DoUnlockTest extends MockTest {
                 one(mockReq).getHeader("Lock-Token");
                 will(returnValue(lockToken));
 
-                one(mockRes).sendError(WebdavStatus.SC_BAD_REQUEST);
+                one(mockRes).sendError(WebDAVStatus.SC_BAD_REQUEST);
             }
         });
 
@@ -155,7 +155,7 @@ public class DoUnlockTest extends MockTest {
                 one(mockReq).getHeader("Lock-Token");
                 will(returnValue(lockToken));
 
-                one(mockRes).sendError(WebdavStatus.SC_BAD_REQUEST);
+                one(mockRes).sendError(WebDAVStatus.SC_BAD_REQUEST);
             }
         });
 
@@ -228,7 +228,7 @@ public class DoUnlockTest extends MockTest {
 
                 one(mockStore).createResource(mockTransaction, nullLoPath);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 lockNullResourceSo = initLockNullStoredObject();
 
@@ -257,7 +257,7 @@ public class DoUnlockTest extends MockTest {
                         nullLoPath);
                 will(returnValue(lockNullResourceLo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -311,7 +311,7 @@ public class DoUnlockTest extends MockTest {
 
                 one(mockStore).removeObject(mockTransaction, nullLoPath);
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockResourceLocks).unlockTemporaryLockedObjects(
                         with(any(ITransaction.class)), with(any(String.class)),

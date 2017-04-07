@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.testutil.MockTest;
 
 import org.jmock.Expectations;
@@ -34,7 +34,7 @@ public class DoNotImplementedTest extends MockTest {
             {
                 one(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -51,7 +51,7 @@ public class DoNotImplementedTest extends MockTest {
             {
                 one(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebdavStatus.SC_NOT_IMPLEMENTED);
+                one(mockRes).sendError(WebDAVStatus.SC_NOT_IMPLEMENTED);
             }
         });
 

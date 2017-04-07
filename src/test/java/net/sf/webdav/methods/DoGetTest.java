@@ -10,7 +10,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
@@ -63,9 +63,9 @@ public class DoGetTest extends MockTest {
                 will(returnValue("/index.html"));
 
                 one(mockRes)
-                        .sendError(WebdavStatus.SC_NOT_FOUND, "/index.html");
+                        .sendError(WebDAVStatus.SC_NOT_FOUND, "/index.html");
 
-                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+                one(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
             }
         });
 
@@ -272,7 +272,7 @@ public class DoGetTest extends MockTest {
                         "/alternative");
                 will(returnValue(dsis));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+                one(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
             }
         });
 

@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.IMethodExecutor;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 
 public class DoNotImplemented implements IMethodExecutor {
 
@@ -24,7 +24,7 @@ public class DoNotImplemented implements IMethodExecutor {
         LOG.trace("-- " + req.getMethod());
 
         if (_readOnly) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         } else
             resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }

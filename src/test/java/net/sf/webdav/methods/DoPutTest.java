@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -44,7 +44,7 @@ public class DoPutTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -81,7 +81,7 @@ public class DoPutTest extends MockTest {
 
                 one(mockStore).createResource(mockTransaction, path);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockReq).getInputStream();
                 will(returnValue(dsis));
@@ -128,7 +128,7 @@ public class DoPutTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
+                one(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
                 one(mockReq).getRequestURI();
                 will(returnValue("http://foo.bar".concat(path)));
@@ -174,7 +174,7 @@ public class DoPutTest extends MockTest {
 
                 one(mockStore).createResource(mockTransaction, path);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 one(mockReq).getInputStream();
                 will(returnValue(dsis));
@@ -217,7 +217,7 @@ public class DoPutTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -286,7 +286,7 @@ public class DoPutTest extends MockTest {
 
                 lockNullResourceSo = initLockNullStoredObject();
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(lockNullResourceSo));
@@ -312,7 +312,7 @@ public class DoPutTest extends MockTest {
                         path);
                 will(returnValue(lockNullResourceLo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -390,7 +390,7 @@ public class DoPutTest extends MockTest {
                 one(mockResourceLocks).unlock(mockTransaction, loId, owner);
                 will(returnValue(true));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NO_CONTENT);
+                one(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
                 one(mockReq).getInputStream();
                 will(returnValue(dsis));

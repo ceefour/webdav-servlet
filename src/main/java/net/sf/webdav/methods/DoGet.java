@@ -30,7 +30,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 
 public class DoGet extends DoHead {
@@ -55,7 +55,7 @@ public class DoGet extends DoHead {
                 String methodsAllowed = DeterminableMethod
                         .determineMethodsAllowed(so);
                 resp.addHeader("Allow", methodsAllowed);
-                resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
                 return;
             }
             OutputStream out = resp.getOutputStream();
@@ -103,7 +103,7 @@ public class DoGet extends DoHead {
                 String methodsAllowed = DeterminableMethod
                         .determineMethodsAllowed(so);
                 resp.addHeader("Allow", methodsAllowed);
-                resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
                 return;
             }
 

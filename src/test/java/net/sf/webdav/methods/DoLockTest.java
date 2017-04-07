@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
@@ -47,7 +47,7 @@ public class DoLockTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -96,7 +96,7 @@ public class DoLockTest extends MockTest {
                 one(mockReq).getHeader("Timeout");
                 will(returnValue("Infinite"));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -157,7 +157,7 @@ public class DoLockTest extends MockTest {
                 one(mockReq).getHeader("Timeout");
                 will(returnValue(timeoutString));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -217,7 +217,7 @@ public class DoLockTest extends MockTest {
                 one(mockReq).getHeader("Timeout");
                 will(returnValue(timeoutString));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -278,7 +278,7 @@ public class DoLockTest extends MockTest {
                 one(mockReq).getHeader("Timeout");
                 will(returnValue(timeoutString));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -338,7 +338,7 @@ public class DoLockTest extends MockTest {
                 one(mockReq).getHeader("Timeout");
                 will(returnValue(timeoutString));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -419,7 +419,7 @@ public class DoLockTest extends MockTest {
 
                 one(mockStore).createResource(mockTransaction, lockPath);
 
-                one(mockRes).setStatus(WebdavStatus.SC_CREATED);
+                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
                 lockNullResourceSo = initLockNullStoredObject();
 
@@ -448,7 +448,7 @@ public class DoLockTest extends MockTest {
                         lockPath);
                 will(returnValue(lockNullResourceLo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_OK);
+                one(mockRes).setStatus(WebDAVStatus.SC_OK);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 

@@ -15,7 +15,7 @@ import javax.xml.parsers.DocumentBuilder;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
@@ -50,7 +50,7 @@ public class DoProppatch extends AbstractMethod {
         LOG.trace("-- " + this.getClass().getName());
 
         if (_readOnly) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             return;
         }
 
@@ -60,12 +60,12 @@ public class DoProppatch extends AbstractMethod {
         Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
         if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-            resp.setStatus(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebDAVStatus.SC_LOCKED);
             return; // parent is locked
         }
 
         if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-            resp.setStatus(WebdavStatus.SC_LOCKED);
+            resp.setStatus(WebDAVStatus.SC_LOCKED);
             return; // resource is locked
         }
 
@@ -96,7 +96,7 @@ public class DoProppatch extends AbstractMethod {
                     String methodsAllowed = DeterminableMethod
                             .determineMethodsAllowed(so);
                     resp.addHeader("Allow", methodsAllowed);
-                    resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                    resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
                     return;
                 }
 
@@ -105,7 +105,7 @@ public class DoProppatch extends AbstractMethod {
                 if (lo != null && lo.isExclusive() && !lockTokenMatchesIfHeader) {
                     // Object on specified path is LOCKED
                     errorList = new Hashtable<String, Integer>();
-                    errorList.put(path, new Integer(WebdavStatus.SC_LOCKED));
+                    errorList.put(path, new Integer(WebDAVStatus.SC_LOCKED));
                     sendReport(req, resp, errorList);
                     return;
                 }
@@ -134,12 +134,12 @@ public class DoProppatch extends AbstractMethod {
                         toremoveNode = XMLHelper.findSubElement(XMLHelper
                                 .findSubElement(rootElement, "remove"), "prop");
                     } catch (Exception e) {
-                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                        resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                         return;
                     }
                 } else {
                     // no content: error
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                     return;
                 }
 
@@ -156,7 +156,7 @@ public class DoProppatch extends AbstractMethod {
                     tochange.addAll(toremove);
                 }
 
-                resp.setStatus(WebdavStatus.SC_MULTI_STATUS);
+                resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
                 resp.setContentType("text/xml; charset=UTF-8");
 
                 // Create multistatus object
@@ -167,8 +167,8 @@ public class DoProppatch extends AbstractMethod {
                         .writeElement("DAV::multistatus", XMLWriter.OPENING);
 
                 generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
-                String status = new String("HTTP/1.1 " + WebdavStatus.SC_OK
-                        + " " + WebdavStatus.getStatusText(WebdavStatus.SC_OK));
+                String status = new String("HTTP/1.1 " + WebDAVStatus.SC_OK
+                        + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
 
                 // Generating href element
                 generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
@@ -211,9 +211,9 @@ public class DoProppatch extends AbstractMethod {
 
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {
-                resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             } catch (WebdavException e) {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             } catch (ServletException e) {
                 e.printStackTrace(); // To change body of catch statement use
                 // File | Settings | File Templates.
@@ -222,7 +222,7 @@ public class DoProppatch extends AbstractMethod {
                         tempLockOwner);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }

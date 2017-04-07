@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
@@ -64,12 +64,12 @@ public class DoPut extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // parent is locked
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // resource is locked
             }
 
@@ -82,7 +82,7 @@ public class DoPut extends AbstractMethod {
                     parentSo = _store.getStoredObject(transaction, parentPath);
                     if (parentPath != null && parentSo != null
                             && parentSo.isResource()) {
-                        resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                        resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                         return;
 
                     } else if (parentPath != null && parentSo == null
@@ -91,7 +91,7 @@ public class DoPut extends AbstractMethod {
 
                     } else if (parentPath != null && parentSo == null
                             && !_lazyFolderCreationOnPut) {
-                        errorList.put(parentPath, WebdavStatus.SC_NOT_FOUND);
+                        errorList.put(parentPath, WebDAVStatus.SC_NOT_FOUND);
                         sendReport(req, resp, errorList);
                         return;
                     }
@@ -100,7 +100,7 @@ public class DoPut extends AbstractMethod {
 
                     if (so == null) {
                         _store.createResource(transaction, path);
-                        // resp.setStatus(WebdavStatus.SC_CREATED);
+                        // resp.setStatus(WebDAVStatus.SC_CREATED);
                     } else {
                         // This has already been created, just update the data
                         if (so.isNullResource()) {
@@ -109,7 +109,7 @@ public class DoPut extends AbstractMethod {
                                     .getLockedObjectByPath(transaction, path);
                             if (nullResourceLo == null) {
                                 resp
-                                        .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                        .sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                                 return;
                             }
                             String nullResourceLockToken = nullResourceLo
@@ -119,7 +119,7 @@ public class DoPut extends AbstractMethod {
                             if (lockTokens != null) {
                                 lockToken = lockTokens[0];
                             } else {
-                                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                                resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
                                 return;
                             }
                             if (lockToken.equals(nullResourceLockToken)) {
@@ -135,10 +135,10 @@ public class DoPut extends AbstractMethod {
                                 if (!_resourceLocks.unlock(transaction,
                                         lockToken, owner)) {
                                     resp
-                                            .sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                                            .sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                                 }
                             } else {
-                                errorList.put(path, WebdavStatus.SC_LOCKED);
+                                errorList.put(path, WebDAVStatus.SC_LOCKED);
                                 sendReport(req, resp, errorList);
                             }
                         }
@@ -157,18 +157,18 @@ public class DoPut extends AbstractMethod {
                     // Now lets report back what was actually saved
 
                 } catch (AccessDeniedException e) {
-                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (WebdavException e) {
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             path, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
 
     }
@@ -181,15 +181,15 @@ public class DoPut extends AbstractMethod {
                 && _userAgent.indexOf("Transmit") == -1) {
             LOG.trace("DoPut.execute() : do workaround for user agent '"
                     + _userAgent + "'");
-            resp.setStatus(WebdavStatus.SC_CREATED);
+            resp.setStatus(WebDAVStatus.SC_CREATED);
         } else if (_userAgent != null && _userAgent.indexOf("Transmit") != -1) {
             // Transmit also uses WEBDAVFS 1.x.x but crashes
             // with SC_CREATED response
             LOG.trace("DoPut.execute() : do workaround for user agent '"
                     + _userAgent + "'");
-            resp.setStatus(WebdavStatus.SC_NO_CONTENT);
+            resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
         } else {
-            resp.setStatus(WebdavStatus.SC_CREATED);
+            resp.setStatus(WebDAVStatus.SC_CREATED);
         }
     }
 }

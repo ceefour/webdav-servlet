@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
@@ -57,19 +57,19 @@ public class DoMove extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return;
             }
 
             String destinationPath = req.getHeader("Destination");
             if (destinationPath == null) {
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
                 return;
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks,
                     destinationPath)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return;
             }
 
@@ -91,23 +91,23 @@ public class DoMove extends AbstractMethod {
                     }
 
                 } catch (AccessDeniedException e) {
-                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
                 } catch (WebdavException e) {
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             sourcePath, tempLockOwner);
                 }
             } else {
                 errorList.put(req.getHeader("Destination"),
-                        WebdavStatus.SC_LOCKED);
+                        WebDAVStatus.SC_LOCKED);
                 sendReport(req, resp, errorList);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 
         }
 

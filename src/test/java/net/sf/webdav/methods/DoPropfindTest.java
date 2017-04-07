@@ -9,7 +9,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
@@ -66,7 +66,7 @@ public class DoPropfindTest extends MockTest {
                 will(returnValue(0));
                 // no content, which means it is a allprop request
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
+                one(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -157,7 +157,7 @@ public class DoPropfindTest extends MockTest {
                 will(returnValue(0));
                 // no content, which means it is a allprop request
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
+                one(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -211,7 +211,7 @@ public class DoPropfindTest extends MockTest {
                 one(mockReq).getRequestURI();
                 will(returnValue(path));
 
-                one(mockRes).sendError(WebdavStatus.SC_NOT_FOUND, path);
+                one(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND, path);
             }
         });
 

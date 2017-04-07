@@ -10,7 +10,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
@@ -45,7 +45,7 @@ public class DoProppatchTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebdavStatus.SC_FORBIDDEN);
+                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -75,7 +75,7 @@ public class DoProppatchTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, path);
                 will(returnValue(notExistingSo));
 
-                one(mockRes).sendError(WebdavStatus.SC_NOT_FOUND);
+                one(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
             }
         });
 
@@ -114,7 +114,7 @@ public class DoProppatchTest extends MockTest {
                 one(mockReq).getContentLength();
                 will(returnValue(0));
 
-                one(mockRes).sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                one(mockRes).sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
         });
 
@@ -157,7 +157,7 @@ public class DoProppatchTest extends MockTest {
                 one(mockReq).getInputStream();
                 will(returnValue(dsis));
 
-                one(mockRes).setStatus(WebdavStatus.SC_MULTI_STATUS);
+                one(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
                 one(mockRes).setContentType("text/xml; charset=UTF-8");
 

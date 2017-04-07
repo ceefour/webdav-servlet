@@ -7,7 +7,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
 
@@ -52,7 +52,7 @@ public class DoHeadTest extends MockTest {
                 one(mockStore).getStoredObject(mockTransaction, "/index.html");
                 will(returnValue(indexSo));
 
-                one(mockRes).setStatus(WebdavStatus.SC_NOT_FOUND);
+                one(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
             }
         });
 

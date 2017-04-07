@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
@@ -76,7 +76,7 @@ public class DoHead extends AbstractMethod {
             } else
                 bUriExists = true;
         } catch (AccessDeniedException e) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             return;
         }
 
@@ -92,7 +92,7 @@ public class DoHead extends AbstractMethod {
                 String methodsAllowed = DeterminableMethod
                         .determineMethodsAllowed(so);
                 resp.addHeader("Allow", methodsAllowed);
-                resp.sendError(WebdavStatus.SC_METHOD_NOT_ALLOWED);
+                resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
                 return;
             }
 
@@ -106,7 +106,7 @@ public class DoHead extends AbstractMethod {
                     String eTagMatch = req.getHeader("If-None-Match");
                     if (eTagMatch != null) {
                         if (eTagMatch.equals(getETag(so))) {
-                            resp.setStatus(WebdavStatus.SC_NOT_MODIFIED);
+                            resp.setStatus(WebDAVStatus.SC_NOT_MODIFIED);
                             return;
                         }
                     }
@@ -159,25 +159,25 @@ public class DoHead extends AbstractMethod {
                         folderBody(transaction, path, resp, req);
                     }
                 } catch (AccessDeniedException e) {
-                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
                 } catch (WebdavException e) {
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             path, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
             folderBody(transaction, path, resp, req);
         }
 
         if (!bUriExists)
-            resp.setStatus(WebdavStatus.SC_NOT_FOUND);
+            resp.setStatus(WebDAVStatus.SC_NOT_FOUND);
 
     }
 

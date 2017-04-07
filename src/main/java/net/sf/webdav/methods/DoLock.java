@@ -27,7 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.fromcatalina.XMLWriter;
@@ -74,7 +74,7 @@ public class DoLock extends AbstractMethod {
         LOG.trace("-- " + this.getClass().getName());
 
         if (_readOnly) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
             return;
         } else {
             _path = getRelativePath(req);
@@ -83,12 +83,12 @@ public class DoLock extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _path)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // resource is locked
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _parentPath)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // parent is locked
             }
 
@@ -115,7 +115,7 @@ public class DoLock extends AbstractMethod {
                         doLock(transaction, req, resp);
                     }
                 } catch (LockFailedException e) {
-                    resp.sendError(WebdavStatus.SC_LOCKED);
+                    resp.sendError(WebDAVStatus.SC_LOCKED);
                     LOG.error("Lockfailed exception", e);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
@@ -162,7 +162,7 @@ public class DoLock extends AbstractMethod {
             executeLock(transaction, req, resp);
 
         } catch (ServletException e) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.trace(e.toString());
         } catch (LockFailedException e) {
             sendLockFailError(transaction, req, resp);
@@ -184,7 +184,7 @@ public class DoLock extends AbstractMethod {
                 _store.createFolder(transaction, _parentPath);
             } else if (_parentPath != null && parentSo != null
                     && parentSo.isResource()) {
-                resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
                 return;
             }
 
@@ -198,9 +198,9 @@ public class DoLock extends AbstractMethod {
                     LOG
                             .trace("DoLock.execute() : do workaround for user agent '"
                                     + _userAgent + "'");
-                    resp.setStatus(WebdavStatus.SC_NO_CONTENT);
+                    resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
                 } else {
-                    resp.setStatus(WebdavStatus.SC_CREATED);
+                    resp.setStatus(WebDAVStatus.SC_CREATED);
                 }
 
             } else {
@@ -218,10 +218,10 @@ public class DoLock extends AbstractMethod {
         } catch (LockFailedException e) {
             sendLockFailError(transaction, req, resp);
         } catch (WebdavException e) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("Webdav exception", e);
         } catch (ServletException e) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("Servlet exception", e);
         } finally {
             parentSo = null;
@@ -252,11 +252,11 @@ public class DoLock extends AbstractMethod {
                 refreshLo = null;
             } else {
                 // no LockObject to given lockToken
-                resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+                resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
             }
 
         } else {
-            resp.sendError(WebdavStatus.SC_PRECONDITION_FAILED);
+            resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
         }
     }
 
@@ -297,7 +297,7 @@ public class DoLock extends AbstractMethod {
                     if (lo != null) {
                         generateXMLReport(transaction, resp, lo);
                     } else {
-                        resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                        resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                     }
                 } else {
                     sendLockFailError(transaction, req, resp);
@@ -307,7 +307,7 @@ public class DoLock extends AbstractMethod {
             } else {
                 // information for LOCK could not be read successfully
                 resp.setContentType("text/xml; charset=UTF-8");
-                resp.sendError(WebdavStatus.SC_BAD_REQUEST);
+                resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
             }
         }
     }
@@ -429,11 +429,11 @@ public class DoLock extends AbstractMethod {
             }
 
         } catch (DOMException e) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("DOM exception", e);
             return false;
         } catch (SAXException e) {
-            resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("SAX exception", e);
             return false;
         }
@@ -490,7 +490,7 @@ public class DoLock extends AbstractMethod {
         HashMap<String, String> namespaces = new HashMap<String, String>();
         namespaces.put("DAV:", "D");
 
-        resp.setStatus(WebdavStatus.SC_OK);
+        resp.setStatus(WebDAVStatus.SC_OK);
         resp.setContentType("text/xml; charset=UTF-8");
 
         XMLWriter generatedXML = new XMLWriter(resp.getWriter(), namespaces);
@@ -571,7 +571,7 @@ public class DoLock extends AbstractMethod {
             if (lo != null) {
                 generateXMLReport(transaction, resp, lo);
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
             // Locking was not successful
@@ -586,7 +586,7 @@ public class DoLock extends AbstractMethod {
             HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
-        errorList.put(_path, WebdavStatus.SC_LOCKED);
+        errorList.put(_path, WebDAVStatus.SC_LOCKED);
         sendReport(req, resp, errorList);
     }
 

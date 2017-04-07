@@ -127,7 +127,7 @@ public class WebDAVServletBean extends HttpServlet {
             transaction = _store.begin(userPrincipal);
             needRollback = true;
             _store.checkAuthentication(transaction);
-            resp.setStatus(WebdavStatus.SC_OK);
+            resp.setStatus(WebDAVStatus.SC_OK);
 
             try {
                 IMethodExecutor methodExecutor = (IMethodExecutor) _methodMap
@@ -158,13 +158,13 @@ public class WebDAVServletBean extends HttpServlet {
                 java.io.PrintWriter pw = new java.io.PrintWriter(sw);
                 e.printStackTrace(pw);
                 LOG.error("IOException: " + sw.toString());
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 _store.rollback(transaction);
                 throw new ServletException(e);
             }
 
         } catch (UnauthenticatedException e) {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         } catch (WebdavException e) {
             java.io.StringWriter sw = new java.io.StringWriter();
             java.io.PrintWriter pw = new java.io.PrintWriter(sw);

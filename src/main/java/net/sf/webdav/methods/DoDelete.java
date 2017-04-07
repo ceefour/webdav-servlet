@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
-import net.sf.webdav.WebdavStatus;
+import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
@@ -59,12 +59,12 @@ public class DoDelete extends AbstractMethod {
             Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // parent is locked
             }
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-                resp.setStatus(WebdavStatus.SC_LOCKED);
+                resp.setStatus(WebDAVStatus.SC_LOCKED);
                 return; // resource is locked
             }
 
@@ -79,21 +79,21 @@ public class DoDelete extends AbstractMethod {
                         sendReport(req, resp, errorList);
                     }
                 } catch (AccessDeniedException e) {
-                    resp.sendError(WebdavStatus.SC_FORBIDDEN);
+                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebdavStatus.SC_NOT_FOUND, req
+                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
                 } catch (WebdavException e) {
-                    resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
                             path, tempLockOwner);
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_INTERNAL_SERVER_ERROR);
+                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             }
         } else {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
 
     }
@@ -121,7 +121,7 @@ public class DoDelete extends AbstractMethod {
             Hashtable<String, Integer> errorList, HttpServletRequest req,
             HttpServletResponse resp) throws IOException, WebdavException {
 
-        resp.setStatus(WebdavStatus.SC_NO_CONTENT);
+        resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
 
         if (!_readOnly) {
 
@@ -135,16 +135,16 @@ public class DoDelete extends AbstractMethod {
                         deleteFolder(transaction, path, errorList, req, resp);
                         _store.removeObject(transaction, path);
                     } else {
-                        resp.sendError(WebdavStatus.SC_NOT_FOUND);
+                        resp.sendError(WebDAVStatus.SC_NOT_FOUND);
                     }
                 }
             } else {
-                resp.sendError(WebdavStatus.SC_NOT_FOUND);
+                resp.sendError(WebDAVStatus.SC_NOT_FOUND);
             }
             so = null;
 
         } else {
-            resp.sendError(WebdavStatus.SC_FORBIDDEN);
+            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
     }
 
@@ -190,13 +190,13 @@ public class DoDelete extends AbstractMethod {
                 }
             } catch (AccessDeniedException e) {
                 errorList.put(path + children[i], new Integer(
-                        WebdavStatus.SC_FORBIDDEN));
+                        WebDAVStatus.SC_FORBIDDEN));
             } catch (ObjectNotFoundException e) {
                 errorList.put(path + children[i], new Integer(
-                        WebdavStatus.SC_NOT_FOUND));
+                        WebDAVStatus.SC_NOT_FOUND));
             } catch (WebdavException e) {
                 errorList.put(path + children[i], new Integer(
-                        WebdavStatus.SC_INTERNAL_SERVER_ERROR));
+                        WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
             }
         }
         so = null;
