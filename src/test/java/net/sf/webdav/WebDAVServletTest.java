@@ -15,7 +15,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
 
-public class WebdavServletTest extends MockTest {
+public class WebDAVServletTest extends MockTest {
 
     // private static WebDAVServlet _servlet = new WebDAVServlet();
     static ServletConfig servletConfig;
