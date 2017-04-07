@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.locking.ResourceLocks;
@@ -19,7 +19,7 @@ import org.junit.Test;
 
 public class DoOptionsTest extends MockTest {
 
-    static IWebdavStore mockStore;
+    static IWebDAVStore mockStore;
     static HttpServletRequest mockReq;
     static HttpServletResponse mockRes;
     static IMimeTyper mockMimeTyper;
@@ -29,7 +29,7 @@ public class DoOptionsTest extends MockTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebdavStore.class);
+        mockStore = _mockery.mock(IWebDAVStore.class);
         mockMimeTyper = _mockery.mock(IMimeTyper.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
         mockRes = _mockery.mock(HttpServletResponse.class);

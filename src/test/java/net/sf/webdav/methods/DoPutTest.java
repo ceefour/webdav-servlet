@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.IResourceLocks;
@@ -19,7 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DoPutTest extends MockTest {
-    static IWebdavStore mockStore;
+    static IWebDAVStore mockStore;
     static HttpServletRequest mockReq;
     static HttpServletResponse mockRes;
     static IResourceLocks mockResourceLocks;
@@ -32,7 +32,7 @@ public class DoPutTest extends MockTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebdavStore.class);
+        mockStore = _mockery.mock(IWebDAVStore.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
         mockRes = _mockery.mock(HttpServletResponse.class);
         mockResourceLocks = _mockery.mock(IResourceLocks.class);

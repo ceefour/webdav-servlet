@@ -22,7 +22,7 @@ public class WebDAVServletTest extends MockTest {
     static ServletContext servletContext;
     // static HttpServletRequest mockeryReq;
     // static HttpServletResponse mockRes;
-    static IWebdavStore mockStore;
+    static IWebDAVStore mockStore;
 
     static MockServletConfig mockServletConfig;
     static MockServletContext mockServletContext;
@@ -42,7 +42,7 @@ public class WebDAVServletTest extends MockTest {
     public static void setUp() throws Exception {
         servletConfig = _mockery.mock(ServletConfig.class);
         servletContext = _mockery.mock(ServletContext.class);
-        mockStore = _mockery.mock(IWebdavStore.class);
+        mockStore = _mockery.mock(IWebDAVStore.class);
 
         mockServletConfig = new MockServletConfig(mockServletContext);
         mockHttpSession = new MockHttpSession(mockServletContext);

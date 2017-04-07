@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
@@ -19,7 +19,7 @@ import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoMoveTest extends MockTest {
 
-    static IWebdavStore mockStore;
+    static IWebDAVStore mockStore;
     static HttpServletRequest mockReq;
     static HttpServletResponse mockRes;
     static ITransaction mockTransaction;
@@ -40,7 +40,7 @@ public class DoMoveTest extends MockTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebdavStore.class);
+        mockStore = _mockery.mock(IWebDAVStore.class);
         mockReq = _mockery.mock(HttpServletRequest.class);
         mockRes = _mockery.mock(HttpServletResponse.class);
         mockTransaction = _mockery.mock(ITransaction.class);
