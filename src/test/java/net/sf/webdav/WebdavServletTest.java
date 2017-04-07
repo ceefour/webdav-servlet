@@ -62,7 +62,7 @@ public class WebdavServletTest extends MockTest {
         _mockery.checking(new Expectations() {
         });
 
-        WebDavServletBean servlet = new WebDAVServlet();
+        WebDAVServletBean servlet = new WebDAVServlet();
         servlet.init(mockStore, dftIndexFile, insteadOf404, 1, true);
 
         _mockery.assertIsSatisfied();
@@ -106,7 +106,7 @@ public class WebdavServletTest extends MockTest {
             }
         });
 
-        WebDavServletBean servlet = new WebDAVServlet();
+        WebDAVServletBean servlet = new WebDAVServlet();
 
         servlet.init(servletConfig);
 
@@ -150,7 +150,7 @@ public class WebdavServletTest extends MockTest {
             }
         });
 
-        WebDavServletBean servlet = new WebDAVServlet();
+        WebDAVServletBean servlet = new WebDAVServlet();
 
         servlet.init(mockServletConfig);
 

@@ -32,7 +32,7 @@ import net.sf.webdav.exceptions.WebdavException;
  * @author Remy Maucherat
  */
 
-public class WebDAVServlet extends WebDavServletBean {
+public class WebDAVServlet extends WebDAVServletBean {
 
     private static final String ROOTPATH_PARAMETER = "rootpath";
 

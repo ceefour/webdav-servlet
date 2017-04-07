@@ -30,10 +30,10 @@ import net.sf.webdav.methods.DoProppatch;
 import net.sf.webdav.methods.DoPut;
 import net.sf.webdav.methods.DoUnlock;
 
-public class WebDavServletBean extends HttpServlet {
+public class WebDAVServletBean extends HttpServlet {
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(WebDavServletBean.class);
+            .getLogger(WebDAVServletBean.class);
 
     /**
      * MD5 message digest provider.
@@ -50,7 +50,7 @@ public class WebDavServletBean extends HttpServlet {
 	protected IWebDAVStore _store;
     private HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
 
-    public WebDavServletBean() {
+    public WebDAVServletBean() {
         _resLocks = new ResourceLocks();
 
         try {
