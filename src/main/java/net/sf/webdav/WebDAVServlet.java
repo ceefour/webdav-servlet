@@ -32,7 +32,7 @@ import net.sf.webdav.exceptions.WebdavException;
  * @author Remy Maucherat
  */
 
-public class WebdavServlet extends WebDavServletBean {
+public class WebDAVServlet extends WebDavServletBean {
 
     private static final String ROOTPATH_PARAMETER = "rootpath";
 
@@ -69,7 +69,7 @@ public class WebdavServlet extends WebDavServletBean {
     protected IWebDAVStore constructStore(String clazzName, File root) {
         IWebDAVStore webdavStore;
         try {
-            Class<?> clazz = WebdavServlet.class.getClassLoader().loadClass(
+            Class<?> clazz = WebDAVServlet.class.getClassLoader().loadClass(
                     clazzName);
 
             Constructor<?> ctor = clazz

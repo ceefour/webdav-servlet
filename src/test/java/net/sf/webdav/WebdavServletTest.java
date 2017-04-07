@@ -17,7 +17,7 @@ import org.springframework.mock.web.MockServletContext;
 
 public class WebdavServletTest extends MockTest {
 
-    // private static WebdavServlet _servlet = new WebdavServlet();
+    // private static WebDAVServlet _servlet = new WebDAVServlet();
     static ServletConfig servletConfig;
     static ServletContext servletContext;
     // static HttpServletRequest mockeryReq;
@@ -62,7 +62,7 @@ public class WebdavServletTest extends MockTest {
         _mockery.checking(new Expectations() {
         });
 
-        WebDavServletBean servlet = new WebdavServlet();
+        WebDavServletBean servlet = new WebDAVServlet();
         servlet.init(mockStore, dftIndexFile, insteadOf404, 1, true);
 
         _mockery.assertIsSatisfied();
@@ -106,7 +106,7 @@ public class WebdavServletTest extends MockTest {
             }
         });
 
-        WebDavServletBean servlet = new WebdavServlet();
+        WebDavServletBean servlet = new WebDAVServlet();
 
         servlet.init(servletConfig);
 
@@ -150,7 +150,7 @@ public class WebdavServletTest extends MockTest {
             }
         });
 
-        WebDavServletBean servlet = new WebdavServlet();
+        WebDavServletBean servlet = new WebDAVServlet();
 
         servlet.init(mockServletConfig);
 

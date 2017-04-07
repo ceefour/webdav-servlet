@@ -195,7 +195,7 @@ public class WebDavServletBean extends HttpServlet {
     
     private void debugRequest(String methodName, HttpServletRequest req) {
         LOG.trace("-----------");
-        LOG.trace("WebdavServlet\n request: methodName = " + methodName);
+        LOG.trace("WebDAVServlet\n request: methodName = " + methodName);
         LOG.trace("time: " + System.currentTimeMillis());
         LOG.trace("path: " + req.getRequestURI());
         LOG.trace("-----------");

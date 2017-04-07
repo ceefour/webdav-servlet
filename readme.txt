@@ -22,7 +22,7 @@ INSTALLATION & CONFIGURATION
   	<servlet>
 		<servlet-name>webdav</servlet-name>
 		<servlet-class>
-			net.sf.webdav.WebdavServlet
+			net.sf.webdav.WebDAVServlet
 		</servlet-class>
 		<init-param>
 			<param-name>ResourceHandlerImplementation</param-name>
