@@ -16,7 +16,7 @@
 
 package net.sf.webdav.exceptions;
 
-public class ObjectAlreadyExistsException extends WebdavException {
+public class ObjectAlreadyExistsException extends WebDAVException {
 
     public ObjectAlreadyExistsException() {
         super();

@@ -16,7 +16,7 @@
 
 package net.sf.webdav.exceptions;
 
-public class UnauthenticatedException extends WebdavException {
+public class UnauthenticatedException extends WebDAVException {
 
     public UnauthenticatedException() {
         super();

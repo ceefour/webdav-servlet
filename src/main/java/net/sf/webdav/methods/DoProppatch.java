@@ -18,7 +18,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.fromcatalina.XMLHelper;
 import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.LockedObject;
@@ -212,7 +212,7 @@ public class DoProppatch extends AbstractMethod {
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {
                 resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            } catch (WebdavException e) {
+            } catch (WebDAVException e) {
                 resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             } catch (ServletException e) {
                 e.printStackTrace(); // To change body of catch statement use

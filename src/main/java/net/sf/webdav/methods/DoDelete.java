@@ -29,7 +29,7 @@ import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
 
 public class DoDelete extends AbstractMethod {
@@ -83,7 +83,7 @@ public class DoDelete extends AbstractMethod {
                 } catch (ObjectAlreadyExistsException e) {
                     resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
-                } catch (WebdavException e) {
+                } catch (WebDAVException e) {
                     resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,
@@ -112,14 +112,14 @@ public class DoDelete extends AbstractMethod {
      *      HttpServletRequest
      * @param resp
      *      HttpServletResponse
-     * @throws WebdavException
+     * @throws WebDAVException
      *      if an error in the underlying store occurs
      * @throws IOException
      *      when an error occurs while sending the response
      */
     public void deleteResource(ITransaction transaction, String path,
             Hashtable<String, Integer> errorList, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, WebdavException {
+            HttpServletResponse resp) throws IOException, WebDAVException {
 
         resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
 
@@ -164,12 +164,12 @@ public class DoDelete extends AbstractMethod {
      *      HttpServletRequest
      * @param resp
      *      HttpServletResponse
-     * @throws WebdavException
+     * @throws WebDAVException
      *      if an error in the underlying store occurs
      */
     private void deleteFolder(ITransaction transaction, String path,
             Hashtable<String, Integer> errorList, HttpServletRequest req,
-            HttpServletResponse resp) throws WebdavException {
+            HttpServletResponse resp) throws WebDAVException {
 
         String[] children = _store.getChildrenNames(transaction, path);
         children = children == null ? new String[] {} : children;
@@ -194,7 +194,7 @@ public class DoDelete extends AbstractMethod {
             } catch (ObjectNotFoundException e) {
                 errorList.put(path + children[i], new Integer(
                         WebDAVStatus.SC_NOT_FOUND));
-            } catch (WebdavException e) {
+            } catch (WebDAVException e) {
                 errorList.put(path + children[i], new Integer(
                         WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
             }

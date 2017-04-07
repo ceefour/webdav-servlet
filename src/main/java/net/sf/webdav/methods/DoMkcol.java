@@ -27,7 +27,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 
@@ -160,7 +160,7 @@ public class DoMkcol extends AbstractMethod {
                     }
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-                } catch (WebdavException e) {
+                } catch (WebDAVException e) {
                     resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,

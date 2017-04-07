@@ -26,7 +26,7 @@ import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
 
 public class DoOptions extends DeterminableMethod {
@@ -62,7 +62,7 @@ public class DoOptions extends DeterminableMethod {
                 resp.addHeader("MS-Author-Via", "DAV");
             } catch (AccessDeniedException e) {
                 resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            } catch (WebdavException e) {
+            } catch (WebDAVException e) {
                 resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             } finally {
                 _resourceLocks.unlockTemporaryLockedObjects(transaction, path,

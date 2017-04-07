@@ -21,7 +21,7 @@ import java.lang.reflect.Constructor;
 
 import javax.servlet.ServletException;
 
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 
 /**
  * Servlet which provides support for WebDAV level 2.
@@ -87,7 +87,7 @@ public class WebDAVServlet extends WebDAVServletBean {
     private File getFileRoot() {
         String rootPath = getInitParameter(ROOTPATH_PARAMETER);
         if (rootPath == null) {
-            throw new WebdavException("missing parameter: "
+            throw new WebDAVException("missing parameter: "
                     + ROOTPATH_PARAMETER);
         }
         if (rootPath.equals("*WAR-FILE-ROOT*")) {
@@ -103,7 +103,7 @@ public class WebDAVServlet extends WebDAVServletBean {
                 rootPath = file.substring(0, ix).replace('/',
                         File.separatorChar);
             } else {
-                throw new WebdavException(
+                throw new WebDAVException(
                         "Could not determine root of war file. Can't extract from path '"
                                 + file + "' for this web container");
             }

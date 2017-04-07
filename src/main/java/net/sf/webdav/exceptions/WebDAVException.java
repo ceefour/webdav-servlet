@@ -16,21 +16,21 @@
 
 package net.sf.webdav.exceptions;
 
-public class WebdavException extends RuntimeException {
+public class WebDAVException extends RuntimeException {
 
-    public WebdavException() {
+    public WebDAVException() {
         super();
     }
 
-    public WebdavException(String message) {
+    public WebDAVException(String message) {
         super(message);
     }
 
-    public WebdavException(String message, Throwable cause) {
+    public WebDAVException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public WebdavException(Throwable cause) {
+    public WebDAVException(Throwable cause) {
         super(cause);
     }
 }

@@ -26,7 +26,7 @@ import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
 
 public class DoMove extends AbstractMethod {
@@ -95,7 +95,7 @@ public class DoMove extends AbstractMethod {
                 } catch (ObjectAlreadyExistsException e) {
                     resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
                             .getRequestURI());
-                } catch (WebdavException e) {
+                } catch (WebDAVException e) {
                     resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
                     _resourceLocks.unlockTemporaryLockedObjects(transaction,

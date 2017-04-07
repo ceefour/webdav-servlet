@@ -29,7 +29,7 @@ import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
@@ -217,7 +217,7 @@ public class DoLock extends AbstractMethod {
 
         } catch (LockFailedException e) {
             sendLockFailError(transaction, req, resp);
-        } catch (WebdavException e) {
+        } catch (WebDAVException e) {
             resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             LOG.error("Webdav exception", e);
         } catch (ServletException e) {

@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.exceptions.UnauthenticatedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.fromcatalina.MD5Encoder;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.methods.DoCopy;
@@ -165,11 +165,11 @@ public class WebDAVServletBean extends HttpServlet {
 
         } catch (UnauthenticatedException e) {
             resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-        } catch (WebdavException e) {
+        } catch (WebDAVException e) {
             java.io.StringWriter sw = new java.io.StringWriter();
             java.io.PrintWriter pw = new java.io.PrintWriter(sw);
             e.printStackTrace(pw);
-            LOG.error("WebdavException: " + sw.toString());
+            LOG.error("WebDAVException: " + sw.toString());
             throw new ServletException(e);
         } catch (Exception e) {
             java.io.StringWriter sw = new java.io.StringWriter();

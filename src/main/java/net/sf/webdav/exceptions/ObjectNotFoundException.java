@@ -16,7 +16,7 @@
 
 package net.sf.webdav.exceptions;
 
-public class ObjectNotFoundException extends WebdavException {
+public class ObjectNotFoundException extends WebDAVException {
 
     public ObjectNotFoundException() {
         super();

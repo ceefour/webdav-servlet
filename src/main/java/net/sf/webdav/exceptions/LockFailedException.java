@@ -1,6 +1,6 @@
 package net.sf.webdav.exceptions;
 
-public class LockFailedException extends WebdavException {
+public class LockFailedException extends WebDAVException {
 
     public LockFailedException() {
         super();

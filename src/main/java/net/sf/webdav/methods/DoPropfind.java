@@ -33,7 +33,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.fromcatalina.URLEncoder;
 import net.sf.webdav.fromcatalina.XMLHelper;
 import net.sf.webdav.fromcatalina.XMLWriter;
@@ -172,7 +172,7 @@ public class DoPropfind extends AbstractMethod {
                 generatedXML.sendData();
             } catch (AccessDeniedException e) {
                 resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            } catch (WebdavException e) {
+            } catch (WebDAVException e) {
                 LOG.warn("Sending internal error!");
                 resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
             } catch (ServletException e) {
@@ -207,7 +207,7 @@ public class DoPropfind extends AbstractMethod {
     private void recursiveParseProperties(ITransaction transaction,
             String currentPath, HttpServletRequest req, XMLWriter generatedXML,
             int propertyFindType, Vector<String> properties, int depth,
-            String mimeType) throws WebdavException {
+            String mimeType) throws WebDAVException {
 
         parseProperties(transaction, req, generatedXML, currentPath,
                 propertyFindType, properties, mimeType);
@@ -249,7 +249,7 @@ public class DoPropfind extends AbstractMethod {
     private void parseProperties(ITransaction transaction,
             HttpServletRequest req, XMLWriter generatedXML, String path,
             int type, Vector<String> propertiesVector, String mimeType)
-            throws WebdavException {
+            throws WebDAVException {
 
         StoredObject so = _store.getStoredObject(transaction, path);
 

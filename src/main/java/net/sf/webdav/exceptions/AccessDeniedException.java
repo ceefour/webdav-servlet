@@ -16,7 +16,7 @@
 
 package net.sf.webdav.exceptions;
 
-public class AccessDeniedException extends WebdavException {
+public class AccessDeniedException extends WebDAVException {
 
     public AccessDeniedException() {
         super();
