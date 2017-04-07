@@ -36,7 +36,7 @@ import net.sf.webdav.exceptions.WebdavException;
  * @author joa
  * @author re
  */
-public class LocalFileSystemStore implements IWebdavStore {
+public class LocalFileSystemStore implements IWebDAVStore {
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(LocalFileSystemStore.class);

@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.LockFailedException;
@@ -47,7 +47,7 @@ public class DoLock extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoLock.class);
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private IResourceLocks _resourceLocks;
     private boolean _readOnly;
 
@@ -62,7 +62,7 @@ public class DoLock extends AbstractMethod {
 
     private String _userAgent = null;
 
-    public DoLock(IWebdavStore store, IResourceLocks resourceLocks,
+    public DoLock(IWebDAVStore store, IResourceLocks resourceLocks,
             boolean readOnly) {
         _store = store;
         _resourceLocks = resourceLocks;

@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.locking.ResourceLocks;
@@ -38,7 +38,7 @@ public class DoGet extends DoHead {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoGet.class);
 
-    public DoGet(IWebdavStore store, String dftIndexFile, String insteadOf404,
+    public DoGet(IWebDAVStore store, String dftIndexFile, String insteadOf404,
             ResourceLocks resourceLocks, IMimeTyper mimeTyper,
             int contentLengthHeader) {
         super(store, dftIndexFile, insteadOf404, resourceLocks, mimeTyper,

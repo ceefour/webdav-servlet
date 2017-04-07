@@ -47,7 +47,7 @@ public class WebDavServletBean extends HttpServlet {
 
     private static final boolean READ_ONLY = false;
 	protected ResourceLocks _resLocks;
-	protected IWebdavStore _store;
+	protected IWebDAVStore _store;
     private HashMap<String, IMethodExecutor> _methodMap = new HashMap<String, IMethodExecutor>();
 
     public WebDavServletBean() {
@@ -60,7 +60,7 @@ public class WebDavServletBean extends HttpServlet {
         }
     }
 
-    public void init(IWebdavStore store, String dftIndexFile,
+    public void init(IWebDAVStore store, String dftIndexFile,
             String insteadOf404, int nocontentLenghHeaders,
             boolean lazyFolderCreationOnPut) throws ServletException {
 

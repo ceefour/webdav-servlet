@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
@@ -35,10 +35,10 @@ public class DoProppatch extends AbstractMethod {
             .getLogger(DoProppatch.class);
 
     private boolean _readOnly;
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private ResourceLocks _resourceLocks;
 
-    public DoProppatch(IWebdavStore store, ResourceLocks resLocks,
+    public DoProppatch(IWebDAVStore store, ResourceLocks resLocks,
             boolean readOnly) {
         _readOnly = readOnly;
         _store = store;

@@ -1,5 +1,5 @@
 /*
- * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebdavStore.java,v 1.1 2008-08-05 07:38:42 bauhardt Exp $
+ * $Header: /Users/ak/temp/cvs2svn/webdav-servlet/src/main/java/net/sf/webdav/IWebDAVStore.java,v 1.1 2008-08-05 07:38:42 bauhardt Exp $
  * $Revision: 1.1 $
  * $Date: 2008-08-05 07:38:42 $
  *
@@ -35,7 +35,7 @@ import net.sf.webdav.exceptions.WebdavException;
  * Webdav Construcktion Kit from slide
  * 
  */
-public interface IWebdavStore {
+public interface IWebDAVStore {
 
     /**
      * Life cycle method, called by WebdavServlet's destroy() method. Should be used to clean up resources.

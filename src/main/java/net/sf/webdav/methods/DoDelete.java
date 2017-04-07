@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
@@ -37,11 +37,11 @@ public class DoDelete extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoDelete.class);
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private ResourceLocks _resourceLocks;
     private boolean _readOnly;
 
-    public DoDelete(IWebdavStore store, ResourceLocks resourceLocks,
+    public DoDelete(IWebDAVStore store, ResourceLocks resourceLocks,
             boolean readOnly) {
         _store = store;
         _resourceLocks = resourceLocks;

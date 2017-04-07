@@ -25,7 +25,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
@@ -35,7 +35,7 @@ import net.sf.webdav.locking.ResourceLocks;
 public class DoHead extends AbstractMethod {
 
     protected String _dftIndexFile;
-    protected IWebdavStore _store;
+    protected IWebDAVStore _store;
     protected String _insteadOf404;
     protected ResourceLocks _resourceLocks;
     protected IMimeTyper _mimeTyper;
@@ -44,7 +44,7 @@ public class DoHead extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoHead.class);
 
-    public DoHead(IWebdavStore store, String dftIndexFile, String insteadOf404,
+    public DoHead(IWebDAVStore store, String dftIndexFile, String insteadOf404,
             ResourceLocks resourceLocks, IMimeTyper mimeTyper,
             int contentLengthHeader) {
         _store = store;

@@ -28,7 +28,7 @@ import javax.xml.parsers.DocumentBuilder;
 
 import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
@@ -70,13 +70,13 @@ public class DoPropfind extends AbstractMethod {
      */
     private static final int FIND_PROPERTY_NAMES = 2;
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private ResourceLocks _resourceLocks;
     private IMimeTyper _mimeTyper;
 
     private int _depth;
 
-    public DoPropfind(IWebdavStore store, ResourceLocks resLocks,
+    public DoPropfind(IWebDAVStore store, ResourceLocks resLocks,
             IMimeTyper mimeTyper) {
         _store = store;
         _resourceLocks = resLocks;

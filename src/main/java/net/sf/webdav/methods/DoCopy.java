@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
@@ -38,12 +38,12 @@ public class DoCopy extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoCopy.class);
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private ResourceLocks _resourceLocks;
     private DoDelete _doDelete;
     private boolean _readOnly;
 
-    public DoCopy(IWebdavStore store, ResourceLocks resourceLocks,
+    public DoCopy(IWebDAVStore store, ResourceLocks resourceLocks,
             DoDelete doDelete, boolean readOnly) {
         _store = store;
         _resourceLocks = resourceLocks;

@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.WebdavStatus;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
@@ -18,11 +18,11 @@ public class DoUnlock extends DeterminableMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoUnlock.class);
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private IResourceLocks _resourceLocks;
     private boolean _readOnly;
 
-    public DoUnlock(IWebdavStore store, IResourceLocks resourceLocks,
+    public DoUnlock(IWebDAVStore store, IResourceLocks resourceLocks,
             boolean readOnly) {
         _store = store;
         _resourceLocks = resourceLocks;

@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
+import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebdavStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
@@ -36,14 +36,14 @@ public class DoPut extends AbstractMethod {
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
             .getLogger(DoPut.class);
 
-    private IWebdavStore _store;
+    private IWebDAVStore _store;
     private IResourceLocks _resourceLocks;
     private boolean _readOnly;
     private boolean _lazyFolderCreationOnPut;
 
     private String _userAgent;
 
-    public DoPut(IWebdavStore store, IResourceLocks resLocks, boolean readOnly,
+    public DoPut(IWebDAVStore store, IResourceLocks resLocks, boolean readOnly,
             boolean lazyFolderCreationOnPut) {
         _store = store;
         _resourceLocks = resLocks;

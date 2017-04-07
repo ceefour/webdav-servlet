@@ -47,7 +47,7 @@ public class WebdavServlet extends WebDavServletBean {
 
         File root = getFileRoot();
 
-        IWebdavStore webdavStore = constructStore(clazzName, root);
+        IWebDAVStore webdavStore = constructStore(clazzName, root);
 
         boolean lazyFolderCreationOnPut = getInitParameter("lazyFolderCreationOnPut") != null
                 && getInitParameter("lazyFolderCreationOnPut").equals("1");
@@ -66,8 +66,8 @@ public class WebdavServlet extends WebDavServletBean {
                 .parseInt(getInitParameter(key));
     }
 
-    protected IWebdavStore constructStore(String clazzName, File root) {
-        IWebdavStore webdavStore;
+    protected IWebDAVStore constructStore(String clazzName, File root) {
+        IWebDAVStore webdavStore;
         try {
             Class<?> clazz = WebdavServlet.class.getClassLoader().loadClass(
                     clazzName);
@@ -75,7 +75,7 @@ public class WebdavServlet extends WebDavServletBean {
             Constructor<?> ctor = clazz
                     .getConstructor(new Class[] { File.class });
 
-            webdavStore = (IWebdavStore) ctor
+            webdavStore = (IWebDAVStore) ctor
                     .newInstance(new Object[] { root });
         } catch (Exception e) {
             e.printStackTrace();
