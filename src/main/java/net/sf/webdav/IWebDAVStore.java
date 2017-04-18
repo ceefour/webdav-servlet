@@ -26,7 +26,7 @@ package net.sf.webdav;
 import java.io.InputStream;
 import java.security.Principal;
 
-import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.exceptions.WebDAVException;
 
 /**
  * Interface for simple implementation of any store for the WebdavServlet
