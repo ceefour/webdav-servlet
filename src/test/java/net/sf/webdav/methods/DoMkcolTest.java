@@ -46,7 +46,7 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -62,25 +62,25 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
                 StoredObject parentSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
                 StoredObject mkcolSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(mkcolSo));
 
-                one(mockStore).createFolder(mockTransaction, mkcolPath);
+                oneOf(mockStore).createFolder(mockTransaction, mkcolPath);
 
-                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
             }
         });
@@ -97,23 +97,23 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
                 StoredObject parentSo = initFileStoredObject(resourceContent);
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
                 String methodsAllowed = "OPTIONS, GET, HEAD, POST, DELETE, TRACE, "
                         + "PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND";
 
-                one(mockRes).addHeader("Allow", methodsAllowed);
+                oneOf(mockRes).addHeader("Allow", methodsAllowed);
 
-                one(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
             }
         });
 
@@ -130,28 +130,28 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
                 StoredObject parentSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
                 StoredObject mkcolSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(mkcolSo));
 
-                one(mockRes)
+                oneOf(mockRes)
                         .addHeader(
                                 "Allow",
                                 "OPTIONS, GET, HEAD, POST, DELETE, TRACE, PROPPATCH, COPY, MOVE, LOCK, UNLOCK, PROPFIND, PUT");
 
-                one(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 
             }
         });
@@ -175,28 +175,28 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(rightLockToken));
 
                 StoredObject parentSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
                 StoredObject mkcolSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(mkcolSo));
 
-                one(mockStore).createFolder(mockTransaction, mkcolPath);
+                oneOf(mockStore).createFolder(mockTransaction, mkcolPath);
 
-                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
             }
         });
@@ -218,16 +218,16 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(wrongLockToken));
 
-                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -240,7 +240,7 @@ public class DoMkcolTest extends MockTest {
     @Test
     public void testMkcolOnALockNullResource() throws Exception {
 
-        final PrintWriter pw = new PrintWriter("/tmp/XMLTestFile");
+        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
 
         final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
                 exclusiveLockRequestByteArray);
@@ -249,89 +249,89 @@ public class DoMkcolTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
                 LockedObject lockNullResourceLo = null;
 
-                one(mockResourceLocks).getLockedObjectByPath(mockTransaction,
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
                         mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
                 LockedObject parentLo = null;
 
-                one(mockResourceLocks).getLockedObjectByPath(mockTransaction,
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
                         parentPath);
                 will(returnValue(parentLo));
 
-                one(mockReq).getHeader("User-Agent");
+                oneOf(mockReq).getHeader("User-Agent");
                 will(returnValue("Goliath"));
 
-                one(mockResourceLocks).lock(with(any(ITransaction.class)),
+                oneOf(mockResourceLocks).lock(with(any(ITransaction.class)),
                         with(any(String.class)), with(any(String.class)),
                         with(any(boolean.class)), with(any(int.class)),
                         with(any(int.class)), with(any(boolean.class)));
                 will(returnValue(true));
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(null));
 
                 StoredObject lockNullResourceSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
 
                 StoredObject parentSo = null;
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
-                one(mockStore).createFolder(mockTransaction, parentPath);
+                oneOf(mockStore).createFolder(mockTransaction, parentPath);
 
                 parentSo = initFolderStoredObject();
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
 
-                one(mockStore).createResource(mockTransaction, mkcolPath);
+                oneOf(mockStore).createResource(mockTransaction, mkcolPath);
 
                 lockNullResourceSo = initLockNullStoredObject();
 
-                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
 
-                one(mockReq).getInputStream();
+                oneOf(mockReq).getInputStream();
                 will(returnValue(dsisExclusive));
 
-                one(mockReq).getHeader("Depth");
+                oneOf(mockReq).getHeader("Depth");
                 will(returnValue(("0")));
 
-                one(mockReq).getHeader("Timeout");
+                oneOf(mockReq).getHeader("Timeout");
                 will(returnValue("Infinite"));
 
                 ResourceLocks resLocks = ResourceLocks.class.newInstance();
 
-                one(mockResourceLocks).exclusiveLock(mockTransaction,
+                oneOf(mockResourceLocks).exclusiveLock(mockTransaction,
                         mkcolPath, "I'am the Lock Owner", 0, 604800);
                 will(returnValue(true));
 
                 lockNullResourceLo = initLockNullLockedObject(resLocks,
                         mkcolPath);
 
-                one(mockResourceLocks).getLockedObjectByPath(mockTransaction,
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
                         mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
-                one(mockRes).setStatus(WebDAVStatus.SC_OK);
+                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                one(mockRes).setContentType("text/xml; charset=UTF-8");
+                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                one(mockRes).getWriter();
+                oneOf(mockRes).getWriter();
                 will(returnValue(pw));
 
                 String loId = null;
@@ -340,44 +340,44 @@ public class DoMkcolTest extends MockTest {
                 }
                 final String lockToken = "<opaquelocktoken:" + loId + ">";
 
-                one(mockRes).addHeader("Lock-Token", lockToken);
+                oneOf(mockRes).addHeader("Lock-Token", lockToken);
 
-                one(mockResourceLocks).unlockTemporaryLockedObjects(
+                oneOf(mockResourceLocks).unlockTemporaryLockedObjects(
                         with(any(ITransaction.class)), with(any(String.class)),
                         with(any(String.class)));
 
                 // -----LOCK on a non-existing resource successful------
                 // --------now MKCOL on the lock-null resource----------
 
-                one(mockReq).getAttribute("javax.servlet.include.request_uri");
+                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
                 will(returnValue(null));
 
-                one(mockReq).getPathInfo();
+                oneOf(mockReq).getPathInfo();
                 will(returnValue(mkcolPath));
 
-                one(mockResourceLocks).getLockedObjectByPath(mockTransaction,
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
                         parentPath);
                 will(returnValue(parentLo));
 
-                one(mockResourceLocks).lock(with(any(ITransaction.class)),
+                oneOf(mockResourceLocks).lock(with(any(ITransaction.class)),
                         with(any(String.class)), with(any(String.class)),
                         with(any(boolean.class)), with(any(int.class)),
                         with(any(int.class)), with(any(boolean.class)));
                 will(returnValue(true));
 
-                one(mockStore).getStoredObject(mockTransaction, parentPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
                 will(returnValue(parentSo));
 
-                one(mockStore).getStoredObject(mockTransaction, mkcolPath);
+                oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
 
-                one(mockResourceLocks).getLockedObjectByPath(mockTransaction,
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
                         mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
                 final String ifHeaderLockToken = "(<locktoken:" + loId + ">)";
 
-                one(mockReq).getHeader("If");
+                oneOf(mockReq).getHeader("If");
                 will(returnValue(ifHeaderLockToken));
 
                 String[] owners = lockNullResourceLo.getOwner();
@@ -385,12 +385,12 @@ public class DoMkcolTest extends MockTest {
                 if (owners != null)
                     owner = owners[0];
 
-                one(mockResourceLocks).unlock(mockTransaction, loId, owner);
+                oneOf(mockResourceLocks).unlock(mockTransaction, loId, owner);
                 will(returnValue(true));
 
-                one(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+                oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
-                one(mockResourceLocks).unlockTemporaryLockedObjects(
+                oneOf(mockResourceLocks).unlockTemporaryLockedObjects(
                         with(any(ITransaction.class)), with(any(String.class)),
                         with(any(String.class)));
 

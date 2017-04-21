@@ -68,10 +68,8 @@ public class DoDelete extends AbstractMethod {
                 return; // resource is locked
             }
 
-            String tempLockOwner = "doDelete" + System.currentTimeMillis()
-                    + req.toString();
-            if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
-                    TEMP_TIMEOUT, TEMPORARY)) {
+            String tempLockOwner = "doDelete" + System.currentTimeMillis() + req.toString();
+            if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
                 try {
                     errorList = new Hashtable<String, Integer>();
                     deleteResource(transaction, path, errorList, req, resp);
@@ -81,13 +79,11 @@ public class DoDelete extends AbstractMethod {
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
-                            .getRequestURI());
+                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
                 } catch (WebDAVException e) {
                     resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                 } finally {
-                    _resourceLocks.unlockTemporaryLockedObjects(transaction,
-                            path, tempLockOwner);
+                    _resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
                 }
             } else {
                 resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
@@ -95,7 +91,6 @@ public class DoDelete extends AbstractMethod {
         } else {
             resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
-
     }
 
     /**
@@ -180,27 +175,19 @@ public class DoDelete extends AbstractMethod {
                 so = _store.getStoredObject(transaction, path + children[i]);
                 if (so.isResource()) {
                     _store.removeObject(transaction, path + children[i]);
-
                 } else {
-                    deleteFolder(transaction, path + children[i], errorList,
-                            req, resp);
-
+                    deleteFolder(transaction, path + children[i], errorList,req, resp);
                     _store.removeObject(transaction, path + children[i]);
-
                 }
             } catch (AccessDeniedException e) {
-                errorList.put(path + children[i], new Integer(
-                        WebDAVStatus.SC_FORBIDDEN));
+                errorList.put(path + children[i], new Integer(WebDAVStatus.SC_FORBIDDEN));
             } catch (ObjectNotFoundException e) {
-                errorList.put(path + children[i], new Integer(
-                        WebDAVStatus.SC_NOT_FOUND));
+                errorList.put(path + children[i], new Integer(WebDAVStatus.SC_NOT_FOUND));
             } catch (WebDAVException e) {
-                errorList.put(path + children[i], new Integer(
-                        WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
+                errorList.put(path + children[i], new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
             }
         }
         so = null;
-
     }
 
 }

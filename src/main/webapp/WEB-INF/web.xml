@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!DOCTYPE web-app
-    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-    "http://java.sun.com/dtd/web-app_2_3.dtd">
-
-<web-app>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+		 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1web.xml .xsd"
+         version="3.1">
 
 	<display-name>WebDAV-Servlet</display-name>
 	<description>
-		a servlet that brings easy WebDAV access to any store, only 1 interface needs to be implemented
+		a servlet that brings easy WebDAV access to any store,
+		only 1 interface needs to be implemented
 	</description>
 	<servlet>
 		<servlet-name>webdav</servlet-name>
@@ -16,91 +16,75 @@
 			net.sf.webdav.WebDAVServlet
 		</servlet-class>
 		<init-param>
+			<!-- name of the class that implements net.sf.webdav.WebdavStore -->
 			<param-name>ResourceHandlerImplementation</param-name>
 			<param-value>
-                net.sf.webdav.LocalFileSystemStore
-            </param-value>
-			<description>
-				name of the class that implements
-                net.sf.webdav.WebdavStore
-            </description>
+				net.sf.webdav.LocalFileSystemStore
+			</param-value>
 		</init-param>
 		<init-param>
+			<!-- place where to store the webdavcontent on the filesystem -->
 			<param-name>rootpath</param-name>
 			<param-value>/tmp/webdav</param-value>
-			<description>
-				place where to store the webdavcontent on the filesystem
-			</description>
 		</init-param>
-		
-	    <init-param>
-	        <param-name>lazyFolderCreationOnPut</param-name>
-	        <param-value>0</param-value>
-	        <description>
-	            Overriding RFC 2518, the folders of resources being
-                created, can be created too if they do not exist.
-	        </description>
-	    </init-param>
-	    <init-param>
-            <param-name>no-content-length-headers</param-name>
-            <param-value>0</param-value>
-            <description>
-	          TODO
-	        </description>
-        </init-param>
-        <init-param>
-            <param-name>default-index-file</param-name>
-            <param-value></param-value>
-        </init-param>
-        <init-param>
-            <param-name>instead-of-404</param-name>
-            <param-value></param-value>
-        </init-param>
-        <init-param>
-        	<param-name>maxUploadSize</param-name>
-        	<param-value>2000000000</param-value>
-        	<!-- set to 2G -->
-        </init-param>
-
-    </servlet>
+		<init-param>
+			<!-- Overriding RFC 2518, the folders of resources being
+				created, can be created too if they do not exist. -->
+			<param-name>lazyFolderCreationOnPut</param-name>
+			<param-value>0</param-value>
+		</init-param>
+		<init-param>
+			<!-- TODO implement this parameter -->
+			<param-name>no-content-length-headers</param-name>
+			<param-value>0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>default-index-file</param-name>
+			<param-value></param-value>
+		</init-param>
+		<init-param>
+			<param-name>instead-of-404</param-name>
+			<param-value></param-value>
+		</init-param>
+		<init-param>
+			<param-name>maxUploadSize</param-name>
+			<param-value>2000000000</param-value>
+			<!-- set to 2G -->
+		</init-param>
+	</servlet>
 
 	<!-- The mapping for the webdav servlet -->
-	<!-- Using /* as the mapping ensures that jasper, welcome files etc are
-		over-ridden and all requests are processed by the webdav servlet.
-		This also overcomes a number of issues with some webdav clients
-		(including MS Webfolders) that do not respond correctly
- to the
-		redirects (302) that result from using a mapping of / -->
+	<!-- Using /* as the mapping ensures that jasper, welcome files etc are 
+		over-ridden and all requests are processed by the webdav servlet. This also 
+		overcomes a number of issues with some webdav clients (including MS Webfolders) 
+		that do not respond correctly to the redirects (302) that result from using 
+		a mapping of / -->
 	<servlet-mapping>
 		<servlet-name>webdav</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 
 	<!-- ================ Security Constraints for Testing =============== -->
-
-	<!--
-		<security-constraint>
+	<!-- 
+	<security-constraint>
 		<web-resource-collection>
-		<web-resource-name>The Entire Web Application</web-resource-name>
-		<url-pattern>/*</url-pattern>
+			<web-resource-name>The
+				Entire Web Application</web-resource-name>
+			<url-pattern>/*</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-		<role-name>webdav</role-name>
+			<role-name>webdav</role-name>
 		</auth-constraint>
-		</security-constraint>
-		
-		<login-config>
+	</security-constraint>
+	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>Tomcat Supported Realm</realm-name>
-		</login-config>
-		
-		<security-role>
-		<description>
-		An example role defined in "conf/tomcat-users.xml"
-		</description>
+	</login-config>
+	<security-role>
+		<description> An example role defined in "conf/tomcat-users.xml" </description>
 		<role-name>webdav</role-name>
-		</security-role>
-	-->
+	</security-role> 
+	 -->
 
 	<welcome-file-list>
 		<welcome-file />

@@ -32,9 +32,9 @@ public class DoNotImplementedTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getMethod();
+                oneOf(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
             }
         });
 
@@ -49,9 +49,9 @@ public class DoNotImplementedTest extends MockTest {
 
         _mockery.checking(new Expectations() {
             {
-                one(mockReq).getMethod();
+                oneOf(mockReq).getMethod();
                 will(returnValue("notImplementedMethod"));
-                one(mockRes).sendError(WebDAVStatus.SC_NOT_IMPLEMENTED);
+                oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_IMPLEMENTED);
             }
         });
 

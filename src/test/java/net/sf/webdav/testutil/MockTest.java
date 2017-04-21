@@ -3,11 +3,10 @@ package net.sf.webdav.testutil;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
-import net.sf.webdav.methods.TestingOutputStream;
 
 import org.jmock.Mockery;
 import org.junit.After;
@@ -24,13 +23,11 @@ public abstract class MockTest extends Assert {
     protected static int TEMP_TIMEOUT = 10;
     protected static boolean TEMPORARY = true;
 
-    protected static TestingOutputStream tos = new TestingOutputStream();
-    protected static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l',
-            'l', 'o', '/', '>' };
-    protected static ByteArrayInputStream bais = new ByteArrayInputStream(
-            resourceContent);
-    protected static DelegatingServletInputStream dsis = new DelegatingServletInputStream(
-            bais);
+    protected static TestingOutputStream tos = new TestingOutputStream(); 
+    
+    protected static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o', '/', '>' };
+    protected static ByteArrayInputStream bais = new ByteArrayInputStream(resourceContent);
+    protected static DelegatingServletInputStream dsis = new DelegatingServletInputStream(bais);
     protected static long resourceLength = resourceContent.length;
 
     protected static String exclusiveLockRequest = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
@@ -39,12 +36,9 @@ public abstract class MockTest extends Assert {
             + "<D:locktype><D:write/></D:locktype>"
             + "<D:owner><D:href>I'am the Lock Owner</D:href></D:owner>"
             + "</D:lockinfo>";
-    protected static byte[] exclusiveLockRequestByteArray = exclusiveLockRequest
-            .getBytes();
-    protected static ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
-            exclusiveLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
-            baisExclusive);
+    protected static byte[] exclusiveLockRequestByteArray = exclusiveLockRequest.getBytes();
+    protected static ByteArrayInputStream baisExclusive = new ByteArrayInputStream(exclusiveLockRequestByteArray);
+    protected static DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(baisExclusive);
 
     protected static String sharedLockRequest = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
             + "<D:lockinfo xmlns:D='DAV:'>"
@@ -52,23 +46,18 @@ public abstract class MockTest extends Assert {
             + "<D:locktype><D:write/></D:locktype>"
             + "<D:owner><D:href>I'am the Lock Owner</D:href></D:owner>"
             + "</D:lockinfo>";
-    protected static byte[] sharedLockRequestByteArray = sharedLockRequest
-            .getBytes();
-    protected static ByteArrayInputStream baisShared = new ByteArrayInputStream(
-            sharedLockRequestByteArray);
-    protected static DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
-            baisShared);
+    protected static byte[] sharedLockRequestByteArray = sharedLockRequest.getBytes();
+    protected static ByteArrayInputStream baisShared = new ByteArrayInputStream(sharedLockRequestByteArray);
+    protected static DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(baisShared);
 
-    protected static String tmpFolder = "/tmp/tests";
+    protected static String tmpFolder = "src/test/resources/tmp";
 
     protected static String sourceCollectionPath = tmpFolder + "/sourceFolder";
     protected static String destCollectionPath = tmpFolder + "/destFolder";
-    protected static String sourceFilePath = sourceCollectionPath
-            + "/sourceFile";
+    protected static String sourceFilePath = sourceCollectionPath + "/sourceFile";
     protected static String destFilePath = destCollectionPath + "/destFile";
 
-    protected static String overwritePath = destCollectionPath
-            + "/sourceFolder";
+    protected static String overwritePath = destCollectionPath+ "/sourceFolder";
 
     protected static String[] sourceChildren = new String[] { "sourceFile" };
     protected static String[] destChildren = new String[] { "destFile" };
@@ -100,8 +89,7 @@ public abstract class MockTest extends Assert {
         return so;
     }
 
-    private static StoredObject initStoredObject(boolean isFolder,
-            byte[] resourceContent) {
+    private static StoredObject initStoredObject(boolean isFolder, byte[] resourceContent) {
         StoredObject so = new StoredObject();
         so.setFolder(isFolder);
         so.setCreationDate(new Date());
@@ -128,9 +116,7 @@ public abstract class MockTest extends Assert {
         return so;
     }
 
-    public static LockedObject initLockNullLockedObject(ResourceLocks resLocks,
-            String path) {
-
+    public static LockedObject initLockNullLockedObject(ResourceLocks resLocks, String path) {
         LockedObject lo = new LockedObject(resLocks, path, false);
         lo.setExclusive(true);
 
