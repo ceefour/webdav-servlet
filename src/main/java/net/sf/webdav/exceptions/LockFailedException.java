@@ -2,7 +2,12 @@ package net.sf.webdav.exceptions;
 
 public class LockFailedException extends WebDAVException {
 
-    public LockFailedException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3424181138150125232L;
+
+	public LockFailedException() {
         super();
     }
 

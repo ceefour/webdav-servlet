@@ -298,10 +298,11 @@ public class DoUnlockTest extends MockTest {
                         loId);
                 will(returnValue(lockNullResourceLo));
 
-                String[] owners = lockNullResourceLo.getOwner();
+                String[] owners = (lockNullResourceLo!=null ? lockNullResourceLo.getOwner() : null);
                 String owner = null;
-                if (owners != null)
+                if (owners != null) {
                     owner = owners[0];
+                }
 
                 oneOf(mockResourceLocks).unlock(mockTransaction, loId, owner);
                 will(returnValue(true));

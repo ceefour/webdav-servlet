@@ -320,11 +320,9 @@ public class DoMkcolTest extends MockTest {
                         mkcolPath, "I'am the Lock Owner", 0, 604800);
                 will(returnValue(true));
 
-                lockNullResourceLo = initLockNullLockedObject(resLocks,
-                        mkcolPath);
+                lockNullResourceLo = initLockNullLockedObject(resLocks, mkcolPath);
 
-                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
-                        mkcolPath);
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
                 oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -371,8 +369,7 @@ public class DoMkcolTest extends MockTest {
                 oneOf(mockStore).getStoredObject(mockTransaction, mkcolPath);
                 will(returnValue(lockNullResourceSo));
 
-                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
-                        mkcolPath);
+                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,mkcolPath);
                 will(returnValue(lockNullResourceLo));
 
                 final String ifHeaderLockToken = "(<locktoken:" + loId + ">)";
@@ -380,10 +377,11 @@ public class DoMkcolTest extends MockTest {
                 oneOf(mockReq).getHeader("If");
                 will(returnValue(ifHeaderLockToken));
 
-                String[] owners = lockNullResourceLo.getOwner();
+                String[] owners = (lockNullResourceLo!=null ? lockNullResourceLo.getOwner() : null);
                 String owner = null;
-                if (owners != null)
+                if (owners != null) {
                     owner = owners[0];
+                }
 
                 oneOf(mockResourceLocks).unlock(mockTransaction, loId, owner);
                 will(returnValue(true));

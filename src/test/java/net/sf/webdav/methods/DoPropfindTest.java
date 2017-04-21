@@ -23,7 +23,6 @@ public class DoPropfindTest extends MockTest {
     static HttpServletRequest mockReq;
     static HttpServletResponse mockRes;
     static ITransaction mockTransaction;
-    static PrintWriter printWriter;
     static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
             '/', '>' };
 
@@ -40,6 +39,8 @@ public class DoPropfindTest extends MockTest {
     public void doPropFindOnDirectory() throws Exception {
         final String path = "/";
 
+        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+        
         _mockery.checking(new Expectations() {
             {
                 oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
@@ -71,7 +72,7 @@ public class DoPropfindTest extends MockTest {
                 oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
                 oneOf(mockRes).getWriter();
-                will(returnValue(printWriter));
+                will(returnValue(pw));
 
                 oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
                 will(returnValue("text/xml; charset=UTF-8"));
@@ -130,6 +131,8 @@ public class DoPropfindTest extends MockTest {
     @Test
     public void doPropFindOnFile() throws Exception {
         final String path = "/testFile";
+        
+        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
 
         _mockery.checking(new Expectations() {
             {
@@ -162,7 +165,7 @@ public class DoPropfindTest extends MockTest {
                 oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
                 oneOf(mockRes).getWriter();
-                will(returnValue(printWriter));
+                will(returnValue(pw));
 
                 oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
                 will(returnValue("text/xml; charset=UTF-8"));

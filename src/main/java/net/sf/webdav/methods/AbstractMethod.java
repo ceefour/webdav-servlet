@@ -392,8 +392,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
         if (errorList.size() == 1) {
             int code = errorList.elements().nextElement();
-            if (WebDAVStatus.getStatusText(code) != "") {
-                resp.sendError(code, WebDAVStatus.getStatusText(code));
+            String status = WebDAVStatus.getStatusText(code);
+            if (status != null && !status.isEmpty()) {
+                resp.sendError(code, status);
             } else {
                 resp.sendError(code);
             }
@@ -425,15 +426,15 @@ public abstract class AbstractMethod implements IMethodExecutor {
                 String toAppend = null;
                 if (absoluteUri.endsWith(errorPath)) {
                     toAppend = absoluteUri;
-
                 } else if (absoluteUri.contains(errorPath)) {
-
-                    int endIndex = absoluteUri.indexOf(errorPath)
-                            + errorPath.length();
+                    int endIndex = absoluteUri.indexOf(errorPath) + errorPath.length();
                     toAppend = absoluteUri.substring(0, endIndex);
                 }
-                if (!toAppend.startsWith("/") && !toAppend.startsWith("http:"))
+                if (toAppend == null) {
+                	toAppend = "/";
+                } else if(!toAppend.startsWith("/") && !toAppend.startsWith("http")) {
                     toAppend = "/" + toAppend;
+                }
                 generatedXML.writeText(errorPath);
                 generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
                 generatedXML.writeElement("DAV::status", XMLWriter.OPENING);

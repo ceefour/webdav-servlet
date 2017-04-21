@@ -80,7 +80,7 @@ public class DoLock extends AbstractMethod {
             _path = getRelativePath(req);
             _parentPath = getParentPath(getCleanPath(_path));
 
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+            // Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
             if (!checkLocks(transaction, req, resp, _resourceLocks, _path)) {
                 resp.setStatus(WebDAVStatus.SC_LOCKED);
@@ -99,13 +99,11 @@ public class DoLock extends AbstractMethod {
             if (_userAgent != null && _userAgent.indexOf("Darwin") != -1) {
                 _macLockRequest = true;
 
-                String timeString = new Long(System.currentTimeMillis())
-                        .toString();
+                String timeString = new Long(System.currentTimeMillis()).toString();
                 _lockOwner = _userAgent.concat(timeString);
             }
 
-            String tempLockOwner = "doLock" + System.currentTimeMillis()
-                    + req.toString();
+            String tempLockOwner = "doLock" + System.currentTimeMillis() + req.toString();
             if (_resourceLocks.lock(transaction, _path, tempLockOwner, false,
                     0, TEMP_TIMEOUT, TEMPORARY)) {
                 try {

@@ -381,7 +381,7 @@ public class DoPutTest extends MockTest {
                 oneOf(mockReq).getHeader("If");
                 will(returnValue(ifHeaderLockToken));
 
-                String[] owners = lockNullResourceLo.getOwner();
+                String[] owners = (lockNullResourceLo!=null ? lockNullResourceLo.getOwner() : null);
                 String owner = null;
                 if (owners != null) {
                     owner = owners[0];

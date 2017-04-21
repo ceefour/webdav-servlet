@@ -18,7 +18,12 @@ package net.sf.webdav.exceptions;
 
 public class ObjectNotFoundException extends WebDAVException {
 
-    public ObjectNotFoundException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1803408014024803002L;
+
+	public ObjectNotFoundException() {
         super();
     }
 

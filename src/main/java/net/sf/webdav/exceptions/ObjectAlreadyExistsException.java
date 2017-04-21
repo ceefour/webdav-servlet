@@ -18,7 +18,12 @@ package net.sf.webdav.exceptions;
 
 public class ObjectAlreadyExistsException extends WebDAVException {
 
-    public ObjectAlreadyExistsException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8602101343498032719L;
+
+	public ObjectAlreadyExistsException() {
         super();
     }
 

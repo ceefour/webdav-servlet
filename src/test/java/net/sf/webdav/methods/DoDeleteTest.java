@@ -249,8 +249,7 @@ public class DoDeleteTest extends MockTest {
                 TEMP_TIMEOUT, !TEMPORARY);
         LockedObject lo = resLocks.getLockedObjectByPath(mockTransaction,
                 lockedFolderPath);
-        final String wrongLockToken = "(<opaquelocktoken:" + lo.getID()
-                + "WRONG>)";
+        final String wrongLockToken = "(<opaquelocktoken:" + lo.getID() + "WRONG>)";
 
         final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
 

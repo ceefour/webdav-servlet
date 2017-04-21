@@ -88,7 +88,6 @@ public class DoPut extends AbstractMethod {
                     } else if (parentPath != null && parentSo == null
                             && _lazyFolderCreationOnPut) {
                         _store.createFolder(transaction, parentPath);
-
                     } else if (parentPath != null && parentSo == null
                             && !_lazyFolderCreationOnPut) {
                         errorList.put(parentPath, WebDAVStatus.SC_NOT_FOUND);
@@ -108,12 +107,10 @@ public class DoPut extends AbstractMethod {
                             LockedObject nullResourceLo = _resourceLocks
                                     .getLockedObjectByPath(transaction, path);
                             if (nullResourceLo == null) {
-                                resp
-                                        .sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+                                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                                 return;
                             }
-                            String nullResourceLockToken = nullResourceLo
-                                    .getID();
+                            String nullResourceLockToken = nullResourceLo.getID();
                             String[] lockTokens = getLockIdFromIfHeader(req);
                             String lockToken = null;
                             if (lockTokens != null) {
@@ -126,16 +123,13 @@ public class DoPut extends AbstractMethod {
                                 so.setNullResource(false);
                                 so.setFolder(false);
 
-                                String[] nullResourceLockOwners = nullResourceLo
-                                        .getOwner();
+                                String[] nullResourceLockOwners = nullResourceLo.getOwner();
                                 String owner = null;
                                 if (nullResourceLockOwners != null)
                                     owner = nullResourceLockOwners[0];
 
-                                if (!_resourceLocks.unlock(transaction,
-                                        lockToken, owner)) {
-                                    resp
-                                            .sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+                                if (!_resourceLocks.unlock(transaction, lockToken, owner)) {
+                                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
                                 }
                             } else {
                                 errorList.put(path, WebDAVStatus.SC_LOCKED);
@@ -155,7 +149,6 @@ public class DoPut extends AbstractMethod {
                     if (resourceLength != -1)
                         so.setResourceLength(resourceLength);
                     // Now lets report back what was actually saved
-
                 } catch (AccessDeniedException e) {
                     resp.sendError(WebDAVStatus.SC_FORBIDDEN);
                 } catch (WebDAVException e) {
@@ -170,7 +163,6 @@ public class DoPut extends AbstractMethod {
         } else {
             resp.sendError(WebDAVStatus.SC_FORBIDDEN);
         }
-
     }
 
     /**

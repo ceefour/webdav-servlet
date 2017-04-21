@@ -50,8 +50,7 @@ public class WebDAVServletTest extends MockTest {
         mockReq = new MockHttpServletRequest(mockServletContext);
         mockRes = new MockHttpServletResponse();
 
-        mockPrincipal = new MockPrincipal("Admin", new String[] { "Admin",
-                "Manager" });
+        mockPrincipal = new MockPrincipal("Admin", new String[] {"Admin","Manager" });
 
         mockTransaction = _mockery.mock(ITransaction.class);
     }
