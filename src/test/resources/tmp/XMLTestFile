@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<D:prop xmlns:D="DAV:"><D:lockdiscovery><D:activelock><D:locktype><D:null/></D:locktype>
+<D:lockscope><D:shared/></D:lockscope>
+<D:depth>-1</D:depth>
+<D:owner><D:href>null</D:href>
+</D:owner>
+<D:timeout>Second-604799</D:timeout>
+<D:locktoken><D:href>opaquelocktoken:bd095af6-d35e-436b-aee2-97ba501c32d8</D:href>
+</D:locktoken>
+</D:activelock>
+</D:lockdiscovery>
+</D:prop>
