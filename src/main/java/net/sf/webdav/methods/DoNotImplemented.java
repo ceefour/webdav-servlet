@@ -11,21 +11,20 @@ import net.sf.webdav.WebDAVStatus;
 
 public class DoNotImplemented implements IMethodExecutor {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(DoNotImplemented.class);
-    private boolean _readOnly;
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(DoNotImplemented.class);
+	private boolean _readOnly;
 
-    public DoNotImplemented(boolean readOnly) {
-        _readOnly = readOnly;
-    }
+	public DoNotImplemented(boolean readOnly) {
+		_readOnly = readOnly;
+	}
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException {
-        LOG.trace("-- " + req.getMethod());
+	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		LOG.debug("-- " + req.getMethod());
 
-        if (_readOnly) {
-            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-        } else
-            resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
-    }
+		if (_readOnly) {
+			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+		} else {
+			resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+		}
+	}
 }

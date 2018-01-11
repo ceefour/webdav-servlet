@@ -18,24 +18,24 @@ package net.sf.webdav.exceptions;
 
 public class UnauthenticatedException extends WebDAVException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4247615066812403861L;
 
 	public UnauthenticatedException() {
-        super();
-    }
+		super();
+	}
 
-    public UnauthenticatedException(String message) {
-        super(message);
-    }
+	public UnauthenticatedException(String message) {
+		super(message);
+	}
 
-    public UnauthenticatedException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public UnauthenticatedException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public UnauthenticatedException(Throwable cause) {
-        super(cause);
-    }
+	public UnauthenticatedException(Throwable cause) {
+		super(cause);
+	}
 }

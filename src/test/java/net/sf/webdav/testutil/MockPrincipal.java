@@ -42,63 +42,63 @@ import java.security.Principal;
 
 public class MockPrincipal implements Principal {
 
-    protected String _name = null;
-    protected String[] _roles = null;
+	protected String _name = null;
+	protected String[] _roles = null;
 
-    public MockPrincipal() {
-        super();
-        _name = "";
-        _roles = new String[0];
-    }
+	public MockPrincipal() {
+		super();
+		_name = "";
+		_roles = new String[0];
+	}
 
-    public MockPrincipal(String name) {
-        super();
-        _name = name;
-        _roles = new String[0];
-    }
+	public MockPrincipal(String name) {
+		super();
+		_name = name;
+		_roles = new String[0];
+	}
 
-    public MockPrincipal(String name, String[] roles) {
-        super();
-        _name = name;
-        _roles = roles;
-    }
+	public MockPrincipal(String name, String[] roles) {
+		super();
+		_name = name;
+		_roles = roles;
+	}
 
-    public String getName() {
-        return _name;
-    }
+	public String getName() {
+		return _name;
+	}
 
-    public boolean isUserInRole(String role) {
-        for (int i = 0; i < _roles.length; i++) {
-            if (role.equals(_roles[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public boolean isUserInRole(String role) {
+		for (int i = 0; i < _roles.length; i++) {
+			if (role.equals(_roles[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
 
-        if (!(o instanceof Principal)) {
-            return false;
-        }
+		if (!(o instanceof Principal)) {
+			return false;
+		}
 
-        Principal p = (Principal) o;
-        if (_name == null) {
-            return (p.getName() == null);
-        } else {
-            return (_name.equals(p.getName()));
-        }
-    }
+		Principal p = (Principal) o;
+		if (_name == null) {
+			return (p.getName() == null);
+		} else {
+			return (_name.equals(p.getName()));
+		}
+	}
 
-    public int hashCode() {
-        if (_name == null) {
-            return "".hashCode();
-        } else {
-            return _name.hashCode();
-        }
-    }
+	public int hashCode() {
+		if (_name == null) {
+			return "".hashCode();
+		} else {
+			return _name.hashCode();
+		}
+	}
 
 }

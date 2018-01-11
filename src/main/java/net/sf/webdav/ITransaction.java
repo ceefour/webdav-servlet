@@ -4,6 +4,6 @@ import java.security.Principal;
 
 public interface ITransaction {
 
-    Principal getPrincipal();
+	Principal getPrincipal();
 
 }

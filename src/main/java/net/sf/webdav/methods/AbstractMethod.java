@@ -45,413 +45,404 @@ import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 
 public abstract class AbstractMethod implements IMethodExecutor {
+	
+	private static final String ATTR_INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
 
-    private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
-    private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<DateFormat>();
-    private static final ThreadLocal<DateFormat> thLocalDateFormat = new ThreadLocal<DateFormat>();
-    
-    /**
-     * Array containing the safe characters set.
-     */
-    protected static URLEncoder URL_ENCODER;
+	private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
+	private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<DateFormat>();
+	private static final ThreadLocal<DateFormat> thLocalDateFormat = new ThreadLocal<DateFormat>();
 
-    /**
-     * Default depth is infite.
-     */
-    protected static final int INFINITY = 3;
+	/**
+	 * Array containing the safe characters set.
+	 */
+	protected static URLEncoder URL_ENCODER;
 
-    /**
-     * Simple date format for the creation date ISO 8601 representation
-     * (partial).
-     */
-    protected static final String CREATION_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	/**
+	 * Default depth is infinite.
+	 */
+	protected static final int INFINITY = 3;
 
-    /**
-     * Simple date format for the last modified date. (RFC 822 updated by RFC
-     * 1123)
-     */
-    protected static final String LAST_MODIFIED_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
-    
-    protected static final String LOCAL_DATE_FORMAT = "dd/MM/yy' 'HH:mm:ss";
+	/**
+	 * Simple date format for the creation date ISO 8601 representation (partial).
+	 */
+	protected static final String CREATION_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
-    static {
-        /**
-         * GMT timezone - all HTTP dates are on GMT
-         */
-        URL_ENCODER = new URLEncoder();
-        URL_ENCODER.addSafeCharacter('-');
-        URL_ENCODER.addSafeCharacter('_');
-        URL_ENCODER.addSafeCharacter('.');
-        URL_ENCODER.addSafeCharacter('*');
-        URL_ENCODER.addSafeCharacter('/');
-    }
+	/**
+	 * Simple date format for the last modified date. (RFC 822 updated by RFC 1123)
+	 */
+	protected static final String LAST_MODIFIED_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
 
-    /**
-     * size of the io-buffer
-     */
-    protected static int BUF_SIZE = 65536;
+	protected static final String LOCAL_DATE_FORMAT = "dd/MM/yy' 'HH:mm:ss";
 
-    /**
-     * Default lock timeout value.
-     */
-    protected static final int DEFAULT_TIMEOUT = 3600;
+	static {
+		/**
+		 * GMT timezone - all HTTP dates are on GMT
+		 */
+		URL_ENCODER = new URLEncoder();
+		URL_ENCODER.addSafeCharacter('-');
+		URL_ENCODER.addSafeCharacter('_');
+		URL_ENCODER.addSafeCharacter('.');
+		URL_ENCODER.addSafeCharacter('*');
+		URL_ENCODER.addSafeCharacter('/');
+	}
 
-    /**
-     * Maximum lock timeout.
-     */
-    protected static final int MAX_TIMEOUT = 604800;
+	/**
+	 * size of the io-buffer
+	 */
+	protected static int BUF_SIZE = 65536;
 
-    /**
-     * Boolean value to temporary lock resources (for method locks)
-     */
-    protected static final boolean TEMPORARY = true;
+	/**
+	 * Default lock timeout value.
+	 */
+	protected static final int DEFAULT_TIMEOUT = 3600;
 
-    /**
-     * Timeout for temporary locks
-     */
-    protected static final int TEMP_TIMEOUT = 10;
+	/**
+	 * Maximum lock timeout.
+	 */
+	protected static final int MAX_TIMEOUT = 604800;
 
-    
-    public static String lastModifiedDateFormat(final Date date) {
-        DateFormat df = thLastmodifiedDateFormat.get();
-        if( df == null ) {
-            df = new SimpleDateFormat(LAST_MODIFIED_DATE_FORMAT, Locale.US);
-            df.setTimeZone(TimeZone.getTimeZone("GMT"));
-            thLastmodifiedDateFormat.set( df );
-        }
-        return df.format(date);
-    }
+	/**
+	 * Boolean value to temporary lock resources (for method locks)
+	 */
+	protected static final boolean TEMPORARY = true;
 
-    public static String creationDateFormat(final Date date) {
-        DateFormat df = thCreationDateFormat.get();
-        if( df == null ) {
-            df = new SimpleDateFormat(CREATION_DATE_FORMAT);
-            df.setTimeZone(TimeZone.getTimeZone("GMT"));
-            thCreationDateFormat.set( df );
-        }
-        return df.format(date);
-    }
+	/**
+	 * Timeout for temporary locks
+	 */
+	protected static final int TEMP_TIMEOUT = 10;
 
-    public static String getLocalDateFormat(final Date date, final Locale loc) {
-        DateFormat df = thLocalDateFormat.get();
-        if( df == null ) {
-            df = new SimpleDateFormat(LOCAL_DATE_FORMAT, loc);
-        }
-        return df.format(date);
-    }
+	public static String lastModifiedDateFormat(final Date date) {
+		DateFormat df = thLastmodifiedDateFormat.get();
+		if (df == null) {
+			df = new SimpleDateFormat(LAST_MODIFIED_DATE_FORMAT, Locale.US);
+			df.setTimeZone(TimeZone.getTimeZone("GMT"));
+			thLastmodifiedDateFormat.set(df);
+		}
+		return df.format(date);
+	}
 
-    
-    /**
-     * Return the relative path associated with this servlet.
-     * 
-     * @param request
-     *      The servlet request we are processing
-     */
-    protected String getRelativePath(HttpServletRequest request) {
+	public static String creationDateFormat(final Date date) {
+		DateFormat df = thCreationDateFormat.get();
+		if (df == null) {
+			df = new SimpleDateFormat(CREATION_DATE_FORMAT);
+			df.setTimeZone(TimeZone.getTimeZone("GMT"));
+			thCreationDateFormat.set(df);
+		}
+		return df.format(date);
+	}
 
-        // Are we being processed by a RequestDispatcher.include()?
-        if (request.getAttribute("javax.servlet.include.request_uri") != null) {
-            String result = (String) request
-                    .getAttribute("javax.servlet.include.path_info");
-            // if (result == null)
-            // result = (String) request
-            // .getAttribute("javax.servlet.include.servlet_path");
-            if ((result == null) || (result.equals("")))
-                result = "/";
-            return (result);
-        }
+	public static String getLocalDateFormat(final Date date, final Locale loc) {
+		DateFormat df = thLocalDateFormat.get();
+		if (df == null) {
+			df = new SimpleDateFormat(LOCAL_DATE_FORMAT, loc);
+		}
+		return df.format(date);
+	}
 
-        // No, extract the desired path directly from the request
-        String result = request.getPathInfo();
-        // if (result == null) {
-        // result = request.getServletPath();
-        // }
-        if ((result == null) || (result.equals(""))) {
-            result = "/";
-        }
-        return (result);
+	/**
+	 * Return the relative path associated with this servlet.
+	 * 
+	 * @param request
+	 *            The servlet request we are processing
+	 */
+	protected String getRelativePath(HttpServletRequest request) {
 
-    }
+		// Are we being processed by a RequestDispatcher.include()?
+		if (request.getAttribute(ATTR_INCLUDE_PATH_INFO) != null) {
+			String result = (String) request.getAttribute(ATTR_INCLUDE_PATH_INFO);
+			// if (result == null)
+			// result = (String) request
+			// .getAttribute("javax.servlet.include.servlet_path");
+			if ((result == null) || (result.equals(""))) {
+				result = "/";
+			}
+			return (result);
+		}
 
-    /**
-     * creates the parent path from the given path by removing the last '/' and
-     * everything after that
-     * 
-     * @param path
-     *      the path
-     * @return parent path
-     */
-    protected String getParentPath(String path) {
-        int slash = path.lastIndexOf('/');
-        if (slash != -1) {
-            return path.substring(0, slash);
-        }
-        return null;
-    }
+		// No, extract the desired path directly from the request
+		String result = request.getPathInfo();
+		// if (result == null) {
+		// result = request.getServletPath();
+		// }
+		if ((result == null) || (result.equals(""))) {
+			result = "/";
+		}
+		return (result);
 
-    /**
-     * removes a / at the end of the path string, if present
-     * 
-     * @param path
-     *      the path
-     * @return the path without trailing /
-     */
-    protected String getCleanPath(String path) {
+	}
 
-        if (path.endsWith("/") && path.length() > 1)
-            path = path.substring(0, path.length() - 1);
-        return path;
-    }
+	/**
+	 * creates the parent path from the given path by removing the last '/' and
+	 * everything after that
+	 * 
+	 * @param path
+	 *            the path
+	 * @return parent path
+	 */
+	protected String getParentPath(String path) {
+		int slash = path.lastIndexOf('/');
+		if (slash != -1) {
+			return path.substring(0, slash);
+		}
+		return null;
+	}
 
-    /**
-     * Return JAXP document builder instance.
-     */
-    protected DocumentBuilder getDocumentBuilder() throws ServletException {
-        DocumentBuilder documentBuilder = null;
-        DocumentBuilderFactory documentBuilderFactory = null;
-        try {
-            documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new ServletException("jaxp failed");
-        }
-        return documentBuilder;
-    }
+	/**
+	 * removes a / at the end of the path string, if present
+	 * 
+	 * @param path
+	 *            the path
+	 * @return the path without trailing /
+	 */
+	protected String getCleanPath(String path) {
 
-    /**
-     * reads the depth header from the request and returns it as a int
-     * 
-     * @param req
-     * @return the depth from the depth header
-     */
-    protected int getDepth(HttpServletRequest req) {
-        int depth = INFINITY;
-        String depthStr = req.getHeader("Depth");
-        if (depthStr != null) {
-            if (depthStr.equals("0")) {
-                depth = 0;
-            } else if (depthStr.equals("1")) {
-                depth = 1;
-            }
-        }
-        return depth;
-    }
+		if (path.endsWith("/") && path.length() > 1) {
+			path = path.substring(0, path.length() - 1);
+		}
+		return path;
+	}
 
-    /**
-     * URL rewriter.
-     * 
-     * @param path
-     *      Path which has to be rewiten
-     * @return the rewritten path
-     */
-    protected String rewriteUrl(String path) {
-        return URL_ENCODER.encode(path);
-    }
+	/**
+	 * Return JAXP document builder instance.
+	 */
+	protected DocumentBuilder getDocumentBuilder() throws ServletException {
+		DocumentBuilder documentBuilder = null;
+		DocumentBuilderFactory documentBuilderFactory = null;
+		try {
+			documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setNamespaceAware(true);
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			throw new ServletException("jaxp failed");
+		}
+		return documentBuilder;
+	}
 
-    /**
-     * Get the ETag associated with a file.
-     * 
-     * @param StoredObject
-     *      StoredObject to get resourceLength, lastModified and a hashCode of
-     *      StoredObject
-     * @return the ETag
-     */
-    protected String getETag(StoredObject so) {
+	/**
+	 * reads the depth header from the request and returns it as a int
+	 * 
+	 * @param req
+	 * @return the depth from the depth header
+	 */
+	protected int getDepth(HttpServletRequest req) {
+		int depth = INFINITY;
+		String depthStr = req.getHeader("Depth");
+		if (depthStr != null) {
+			if (depthStr.equals("0")) {
+				depth = 0;
+			} else if (depthStr.equals("1")) {
+				depth = 1;
+			}
+		}
+		return depth;
+	}
 
-        String resourceLength = "";
-        String lastModified = "";
+	/**
+	 * URL rewriter.
+	 * 
+	 * @param path
+	 *            Path which has to be rewiten
+	 * @return the rewritten path
+	 */
+	protected String rewriteUrl(String path) {
+		return URL_ENCODER.encode(path);
+	}
 
-        if (so != null && so.isResource()) {
-            resourceLength = new Long(so.getResourceLength()).toString();
-            lastModified = new Long(so.getLastModified().getTime()).toString();
-        }
+	/**
+	 * Get the ETag associated with a file.
+	 * 
+	 * @param StoredObject
+	 *            StoredObject to get resourceLength, lastModified and a hashCode of
+	 *            StoredObject
+	 * @return the ETag
+	 */
+	protected String getETag(StoredObject so) {
 
-        return "W/\"" + resourceLength + "-" + lastModified + "\"";
+		String resourceLength = "";
+		String lastModified = "";
 
-    }
+		if (so != null && so.isResource()) {
+			resourceLength = new Long(so.getResourceLength()).toString();
+			lastModified = new Long(so.getLastModified().getTime()).toString();
+		}
 
-    protected String[] getLockIdFromIfHeader(HttpServletRequest req) {
-        String[] ids = new String[2];
-        String id = req.getHeader("If");
+		return "W/\"" + resourceLength + "-" + lastModified + "\"";
 
-        if (id != null && !id.equals("")) {
-            if (id.indexOf(">)") == id.lastIndexOf(">)")) {
-                id = id.substring(id.indexOf("(<"), id.indexOf(">)"));
+	}
 
-                if (id.indexOf("locktoken:") != -1) {
-                    id = id.substring(id.indexOf(':') + 1);
-                }
-                ids[0] = id;
-            } else {
-                String firstId = id.substring(id.indexOf("(<"), id
-                        .indexOf(">)"));
-                if (firstId.indexOf("locktoken:") != -1) {
-                    firstId = firstId.substring(firstId.indexOf(':') + 1);
-                }
-                ids[0] = firstId;
+	protected String[] getLockIdFromIfHeader(HttpServletRequest req) {
+		String[] ids = new String[2];
+		String id = req.getHeader("If");
 
-                String secondId = id.substring(id.lastIndexOf("(<"), id
-                        .lastIndexOf(">)"));
-                if (secondId.indexOf("locktoken:") != -1) {
-                    secondId = secondId.substring(secondId.indexOf(':') + 1);
-                }
-                ids[1] = secondId;
-            }
+		if (id != null && !id.equals("")) {
+			if (id.indexOf(">)") == id.lastIndexOf(">)")) {
+				id = id.substring(id.indexOf("(<"), id.indexOf(">)"));
 
-        } else {
-            ids = null;
-        }
-        return ids;
-    }
+				if (id.indexOf("locktoken:") != -1) {
+					id = id.substring(id.indexOf(':') + 1);
+				}
+				ids[0] = id;
+			} else {
+				String firstId = id.substring(id.indexOf("(<"), id.indexOf(">)"));
+				if (firstId.indexOf("locktoken:") != -1) {
+					firstId = firstId.substring(firstId.indexOf(':') + 1);
+				}
+				ids[0] = firstId;
 
-    protected String getLockIdFromLockTokenHeader(HttpServletRequest req) {
-        String id = req.getHeader("Lock-Token");
+				String secondId = id.substring(id.lastIndexOf("(<"), id.lastIndexOf(">)"));
+				if (secondId.indexOf("locktoken:") != -1) {
+					secondId = secondId.substring(secondId.indexOf(':') + 1);
+				}
+				ids[1] = secondId;
+			}
 
-        if (id != null) {
-            id = id.substring(id.indexOf(":") + 1, id.indexOf(">"));
+		} else {
+			ids = null;
+		}
+		return ids;
+	}
 
-        }
+	protected String getLockIdFromLockTokenHeader(HttpServletRequest req) {
+		String id = req.getHeader("Lock-Token");
 
-        return id;
-    }
+		if (id != null) {
+			id = id.substring(id.indexOf(":") + 1, id.indexOf(">"));
 
-    /**
-     * Checks if locks on resources at the given path exists and if so checks
-     * the If-Header to make sure the If-Header corresponds to the locked
-     * resource. Returning true if no lock exists or the If-Header is
-     * corresponding to the locked resource
-     * 
-     * @param req
-     *      Servlet request
-     * @param resp
-     *      Servlet response
-     * @param resourceLocks
-     * @param path
-     *      path to the resource
-     * @param errorList
-     *      List of error to be displayed
-     * @return true if no lock on a resource with the given path exists or if
-     *  the If-Header corresponds to the locked resource
-     * @throws IOException
-     * @throws LockFailedException
-     */
-    protected boolean checkLocks(ITransaction transaction,
-            HttpServletRequest req, HttpServletResponse resp,
-            IResourceLocks resourceLocks, String path) throws IOException,
-            LockFailedException {
+		}
 
-        LockedObject loByPath = resourceLocks.getLockedObjectByPath(
-                transaction, path);
-        if (loByPath != null) {
+		return id;
+	}
 
-            if (loByPath.isShared())
-                return true;
+	/**
+	 * Checks if locks on resources at the given path exists and if so checks the
+	 * If-Header to make sure the If-Header corresponds to the locked resource.
+	 * Returning true if no lock exists or the If-Header is corresponding to the
+	 * locked resource
+	 * 
+	 * @param req
+	 *            Servlet request
+	 * @param resp
+	 *            Servlet response
+	 * @param resourceLocks
+	 * @param path
+	 *            path to the resource
+	 * @param errorList
+	 *            List of error to be displayed
+	 * @return true if no lock on a resource with the given path exists or if the
+	 *         If-Header corresponds to the locked resource
+	 * @throws IOException
+	 * @throws LockFailedException
+	 */
+	protected boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
+			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
 
-            // the resource is locked
-            String[] lockTokens = getLockIdFromIfHeader(req);
-            String lockToken = null;
-            if (lockTokens != null)
-                lockToken = lockTokens[0];
-            else {
-                return false;
-            }
-            if (lockToken != null) {
-                LockedObject loByIf = resourceLocks.getLockedObjectByID(
-                        transaction, lockToken);
-                if (loByIf == null) {
-                    // no locked resource to the given lockToken
-                    return false;
-                }
-                if (!loByIf.equals(loByPath)) {
-                    loByIf = null;
-                    return false;
-                }
-                loByIf = null;
-            }
+		LockedObject loByPath = resourceLocks.getLockedObjectByPath(transaction, path);
+		if (loByPath != null) {
 
-        }
-        loByPath = null;
-        return true;
-    }
+			if (loByPath.isShared()) {
+				return true;
+			}
 
-    /**
-     * Send a multistatus element containing a complete error report to the
-     * client. If the errorList contains only one error, send the error
-     * directly without wrapping it in a multistatus message.
-     * 
-     * @param req
-     *      Servlet request
-     * @param resp
-     *      Servlet response
-     * @param errorList
-     *      List of error to be displayed
-     */
-    protected void sendReport(HttpServletRequest req, HttpServletResponse resp,
-            Hashtable<String, Integer> errorList) throws IOException {
+			// the resource is locked
+			String[] lockTokens = getLockIdFromIfHeader(req);
+			String lockToken = null;
+			if (lockTokens != null) {
+				lockToken = lockTokens[0];
+			} else {
+				return false;
+			}
+			if (lockToken != null) {
+				LockedObject loByIf = resourceLocks.getLockedObjectByID(transaction, lockToken);
+				if (loByIf == null) {
+					// no locked resource to the given lockToken
+					return false;
+				}
+				if (!loByIf.equals(loByPath)) {
+					loByIf = null;
+					return false;
+				}
+				loByIf = null;
+			}
 
-        if (errorList.size() == 1) {
-            int code = errorList.elements().nextElement();
-            String status = WebDAVStatus.getStatusText(code);
-            if (status != null && !status.isEmpty()) {
-                resp.sendError(code, status);
-            } else {
-                resp.sendError(code);
-            }
-        }
-        else
-        {
-            resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
+		}
+		loByPath = null;
+		return true;
+	}
 
-            String absoluteUri = req.getRequestURI();
-            // String relativePath = getRelativePath(req);
+	/**
+	 * Send a multistatus element containing a complete error report to the client.
+	 * If the errorList contains only one error, send the error directly without
+	 * wrapping it in a multistatus message.
+	 * 
+	 * @param req
+	 *            Servlet request
+	 * @param resp
+	 *            Servlet response
+	 * @param errorList
+	 *            List of error to be displayed
+	 */
+	protected void sendReport(HttpServletRequest req, HttpServletResponse resp, Hashtable<String, Integer> errorList)
+			throws IOException {
 
-            HashMap<String, String> namespaces = new HashMap<String, String>();
-            namespaces.put("DAV:", "D");
+		if (errorList.size() == 1) {
+			int code = errorList.elements().nextElement();
+			String status = WebDAVStatus.getStatusText(code);
+			if (status != null && !status.isEmpty()) {
+				resp.sendError(code, status);
+			} else {
+				resp.sendError(code);
+			}
+		} else {
+			resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
-            XMLWriter generatedXML = new XMLWriter(namespaces);
-            generatedXML.writeXMLHeader();
+			String absoluteUri = req.getRequestURI();
+			// String relativePath = getRelativePath(req);
 
-            generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
+			HashMap<String, String> namespaces = new HashMap<String, String>();
+			namespaces.put("DAV:", "D");
 
-            Enumeration<String> pathList = errorList.keys();
-            while (pathList.hasMoreElements()) {
+			XMLWriter generatedXML = new XMLWriter(namespaces);
+			generatedXML.writeXMLHeader();
 
-                String errorPath = (String) pathList.nextElement();
-                int errorCode = ((Integer) errorList.get(errorPath)).intValue();
+			generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
 
-                generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
+			Enumeration<String> pathList = errorList.keys();
+			while (pathList.hasMoreElements()) {
 
-                generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
-                String toAppend = null;
-                if (absoluteUri.endsWith(errorPath)) {
-                    toAppend = absoluteUri;
-                } else if (absoluteUri.contains(errorPath)) {
-                    int endIndex = absoluteUri.indexOf(errorPath) + errorPath.length();
-                    toAppend = absoluteUri.substring(0, endIndex);
-                }
-                if (toAppend == null) {
-                	toAppend = "/";
-                } else if(!toAppend.startsWith("/") && !toAppend.startsWith("http")) {
-                    toAppend = "/" + toAppend;
-                }
-                generatedXML.writeText(errorPath);
-                generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
-                generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
-                generatedXML.writeText("HTTP/1.1 " + errorCode + " "
-                        + WebDAVStatus.getStatusText(errorCode));
-                generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+				String errorPath = (String) pathList.nextElement();
+				int errorCode = ((Integer) errorList.get(errorPath)).intValue();
 
-                generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
 
-            }
+				generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+				String toAppend = null;
+				if (absoluteUri.endsWith(errorPath)) {
+					toAppend = absoluteUri;
+				} else if (absoluteUri.contains(errorPath)) {
+					int endIndex = absoluteUri.indexOf(errorPath) + errorPath.length();
+					toAppend = absoluteUri.substring(0, endIndex);
+				}
+				if (toAppend == null) {
+					toAppend = "/";
+				} else if (!toAppend.startsWith("/") && !toAppend.startsWith("http")) {
+					toAppend = "/" + toAppend;
+				}
+				generatedXML.writeText(errorPath);
+				generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
+				generatedXML.writeText("HTTP/1.1 " + errorCode + " " + WebDAVStatus.getStatusText(errorCode));
+				generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
 
-            generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
 
-            Writer writer = resp.getWriter();
-            writer.write(generatedXML.toString());
-            writer.close();
-        }
-    }
+			}
+
+			generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
+
+			Writer writer = resp.getWriter();
+			writer.write(generatedXML.toString());
+			writer.close();
+		}
+	}
 
 }

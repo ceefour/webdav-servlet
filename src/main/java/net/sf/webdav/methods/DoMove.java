@@ -31,86 +31,74 @@ import net.sf.webdav.locking.ResourceLocks;
 
 public class DoMove extends AbstractMethod {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(DoMove.class);
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(DoMove.class);
 
-    private ResourceLocks _resourceLocks;
-    private DoDelete _doDelete;
-    private DoCopy _doCopy;
-    private boolean _readOnly;
+	private ResourceLocks _resourceLocks;
+	private DoDelete _doDelete;
+	private DoCopy _doCopy;
+	private boolean _readOnly;
 
-    public DoMove(ResourceLocks resourceLocks, DoDelete doDelete,
-            DoCopy doCopy, boolean readOnly) {
-        _resourceLocks = resourceLocks;
-        _doDelete = doDelete;
-        _doCopy = doCopy;
-        _readOnly = readOnly;
-    }
+	public DoMove(ResourceLocks resourceLocks, DoDelete doDelete, DoCopy doCopy, boolean readOnly) {
+		_resourceLocks = resourceLocks;
+		_doDelete = doDelete;
+		_doCopy = doCopy;
+		_readOnly = readOnly;
+	}
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, LockFailedException {
+	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, LockFailedException {
+		LOG.debug("-- " + this.getClass().getName());
 
-        if (!_readOnly) {
-            LOG.trace("-- " + this.getClass().getName());
+		if (!_readOnly) {
+			String sourcePath = getRelativePath(req);
+			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
-            String sourcePath = getRelativePath(req);
-            Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+			if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
+				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				return;
+			}
 
-            if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
-                resp.setStatus(WebDAVStatus.SC_LOCKED);
-                return;
-            }
+			String destinationPath = req.getHeader("Destination");
+			if (destinationPath == null) {
+				resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+				return;
+			}
 
-            String destinationPath = req.getHeader("Destination");
-            if (destinationPath == null) {
-                resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
-                return;
-            }
+			if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
+				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				return;
+			}
 
-            if (!checkLocks(transaction, req, resp, _resourceLocks,
-                    destinationPath)) {
-                resp.setStatus(WebDAVStatus.SC_LOCKED);
-                return;
-            }
+			String tempLockOwner = "doMove" + System.currentTimeMillis() + req.toString();
 
-            String tempLockOwner = "doMove" + System.currentTimeMillis()
-                    + req.toString();
+			if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+				try {
 
-            if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner,
-                    false, 0, TEMP_TIMEOUT, TEMPORARY)) {
-                try {
+					if (_doCopy.copyResource(transaction, req, resp)) {
 
-                    if (_doCopy.copyResource(transaction, req, resp)) {
+						errorList = new Hashtable<String, Integer>();
+						_doDelete.deleteResource(transaction, sourcePath, errorList, req, resp);
+						if (!errorList.isEmpty()) {
+							sendReport(req, resp, errorList);
+						}
+					}
 
-                        errorList = new Hashtable<String, Integer>();
-                        _doDelete.deleteResource(transaction, sourcePath,
-                                errorList, req, resp);
-                        if (!errorList.isEmpty()) {
-                            sendReport(req, resp, errorList);
-                        }
-                    }
-
-                } catch (AccessDeniedException e) {
-                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-                } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
-                            .getRequestURI());
-                } catch (WebDAVException e) {
-                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-                } finally {
-                    _resourceLocks.unlockTemporaryLockedObjects(transaction,
-                            sourcePath, tempLockOwner);
-                }
-            } else {
-                errorList.put(req.getHeader("Destination"),
-                        WebDAVStatus.SC_LOCKED);
-                sendReport(req, resp, errorList);
-            }
-        } else {
-            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-
-        }
-
-    }
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+				} catch (ObjectAlreadyExistsException e) {
+					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+				} catch (WebDAVException e) {
+					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				} finally {
+					_resourceLocks.unlockTemporaryLockedObjects(transaction, sourcePath, tempLockOwner);
+				}
+			} else {
+				errorList.put(req.getHeader("Destination"), WebDAVStatus.SC_LOCKED);
+				sendReport(req, resp, errorList);
+			}
+		} else {
+			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+		}
+	}
 
 }

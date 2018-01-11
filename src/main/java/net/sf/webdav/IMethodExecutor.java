@@ -24,7 +24,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 
 public interface IMethodExecutor {
 
-    void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, LockFailedException;
+	void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, LockFailedException;
 
 }

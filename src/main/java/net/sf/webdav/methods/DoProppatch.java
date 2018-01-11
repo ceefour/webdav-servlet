@@ -31,198 +31,183 @@ import org.xml.sax.InputSource;
 
 public class DoProppatch extends AbstractMethod {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(DoProppatch.class);
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(DoProppatch.class);
 
-    private boolean _readOnly;
-    private IWebDAVStore _store;
-    private ResourceLocks _resourceLocks;
+	private boolean _readOnly;
+	private IWebDAVStore _store;
+	private ResourceLocks _resourceLocks;
 
-    public DoProppatch(IWebDAVStore store, ResourceLocks resLocks,
-            boolean readOnly) {
-        _readOnly = readOnly;
-        _store = store;
-        _resourceLocks = resLocks;
-    }
+	public DoProppatch(IWebDAVStore store, ResourceLocks resLocks, boolean readOnly) {
+		_readOnly = readOnly;
+		_store = store;
+		_resourceLocks = resLocks;
+	}
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, LockFailedException {
-        LOG.trace("-- " + this.getClass().getName());
+	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, LockFailedException {
+		LOG.debug("-- " + this.getClass().getName());
 
-        if (_readOnly) {
-            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            return;
-        }
+		if (_readOnly) {
+			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			return;
+		}
 
-        String path = getRelativePath(req);
-        String parentPath = getParentPath(getCleanPath(path));
+		String path = getRelativePath(req);
+		String parentPath = getParentPath(getCleanPath(path));
 
-        Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+		Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
-        if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-            resp.setStatus(WebDAVStatus.SC_LOCKED);
-            return; // parent is locked
-        }
+		if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
+			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			return; // parent is locked
+		}
 
-        if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-            resp.setStatus(WebDAVStatus.SC_LOCKED);
-            return; // resource is locked
-        }
+		if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
+			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			return; // resource is locked
+		}
 
-        // TODO for now, PROPPATCH just sends a valid response, stating that
-        // everything is fine, but doesn't do anything.
+		// TODO for now, PROPPATCH just sends a valid response, stating that
+		// everything is fine, but doesn't do anything.
 
-        // Retrieve the resources
-        String tempLockOwner = "doProppatch" + System.currentTimeMillis()
-                + req.toString();
+		// Retrieve the resources
+		String tempLockOwner = "doProppatch" + System.currentTimeMillis() + req.toString();
 
-        if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
-                TEMP_TIMEOUT, TEMPORARY)) {
-            StoredObject so = null;
-            LockedObject lo = null;
-            try {
-                so = _store.getStoredObject(transaction, path);
-                lo = _resourceLocks.getLockedObjectByPath(transaction,
-                        getCleanPath(path));
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			StoredObject so = null;
+			LockedObject lo = null;
+			try {
+				so = _store.getStoredObject(transaction, path);
+				lo = _resourceLocks.getLockedObjectByPath(transaction, getCleanPath(path));
 
-                if (so == null) {
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return;
-                    // we do not to continue since there is no root
-                    // resource
-                }
+				if (so == null) {
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+					return;
+					// we do not to continue since there is no root
+					// resource
+				}
 
-                if (so.isNullResource()) {
-                    String methodsAllowed = DeterminableMethod
-                            .determineMethodsAllowed(so);
-                    resp.addHeader("Allow", methodsAllowed);
-                    resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
-                    return;
-                }
+				if (so.isNullResource()) {
+					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
+					resp.addHeader("Allow", methodsAllowed);
+					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+					return;
+				}
 
-                String[] lockTokens = getLockIdFromIfHeader(req);
-                boolean lockTokenMatchesIfHeader = (lockTokens != null && lockTokens[0].equals(lo.getID()));
-                if (lo != null && lo.isExclusive() && !lockTokenMatchesIfHeader) {
-                    // Object on specified path is LOCKED
-                    errorList = new Hashtable<String, Integer>();
-                    errorList.put(path, new Integer(WebDAVStatus.SC_LOCKED));
-                    sendReport(req, resp, errorList);
-                    return;
-                }
+				String[] lockTokens = getLockIdFromIfHeader(req);
+				boolean lockTokenMatchesIfHeader = (lockTokens != null && lockTokens[0].equals(lo.getID()));
+				if (lo != null && lo.isExclusive() && !lockTokenMatchesIfHeader) {
+					// Object on specified path is LOCKED
+					errorList = new Hashtable<String, Integer>();
+					errorList.put(path, new Integer(WebDAVStatus.SC_LOCKED));
+					sendReport(req, resp, errorList);
+					return;
+				}
 
-                List<String> toset = null;
-                List<String> toremove = null;
-                List<String> tochange = new Vector<String>();
-                // contains all properties from
-                // toset and toremove
+				List<String> toset = null;
+				List<String> toremove = null;
+				List<String> tochange = new Vector<String>();
+				// contains all properties from
+				// toset and toremove
 
-                path = getCleanPath(getRelativePath(req));
+				path = getCleanPath(getRelativePath(req));
 
-                Node tosetNode = null;
-                Node toremoveNode = null;
+				Node tosetNode = null;
+				Node toremoveNode = null;
 
-                if (req.getContentLength() != 0) {
-                    DocumentBuilder documentBuilder = getDocumentBuilder();
-                    try {
-                        Document document = documentBuilder
-                                .parse(new InputSource(req.getInputStream()));
-                        // Get the root element of the document
-                        Element rootElement = document.getDocumentElement();
+				if (req.getContentLength() != 0) {
+					DocumentBuilder documentBuilder = getDocumentBuilder();
+					try {
+						Document document = documentBuilder.parse(new InputSource(req.getInputStream()));
+						// Get the root element of the document
+						Element rootElement = document.getDocumentElement();
 
-                        tosetNode = XMLHelper.findSubElement(XMLHelper
-                                .findSubElement(rootElement, "set"), "prop");
-                        toremoveNode = XMLHelper.findSubElement(XMLHelper
-                                .findSubElement(rootElement, "remove"), "prop");
-                    } catch (Exception e) {
-                        resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-                        return;
-                    }
-                } else {
-                    // no content: error
-                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-                    return;
-                }
+						tosetNode = XMLHelper.findSubElement(XMLHelper.findSubElement(rootElement, "set"), "prop");
+						toremoveNode = XMLHelper.findSubElement(XMLHelper.findSubElement(rootElement, "remove"),
+								"prop");
+					} catch (Exception e) {
+						resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+						return;
+					}
+				} else {
+					// no content: error
+					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					return;
+				}
 
-                HashMap<String, String> namespaces = new HashMap<String, String>();
-                namespaces.put("DAV:", "D");
+				HashMap<String, String> namespaces = new HashMap<String, String>();
+				namespaces.put("DAV:", "D");
 
-                if (tosetNode != null) {
-                    toset = XMLHelper.getPropertiesFromXML(tosetNode);
-                    tochange.addAll(toset);
-                }
+				if (tosetNode != null) {
+					toset = XMLHelper.getPropertiesFromXML(tosetNode);
+					tochange.addAll(toset);
+				}
 
-                if (toremoveNode != null) {
-                    toremove = XMLHelper.getPropertiesFromXML(toremoveNode);
-                    tochange.addAll(toremove);
-                }
+				if (toremoveNode != null) {
+					toremove = XMLHelper.getPropertiesFromXML(toremoveNode);
+					tochange.addAll(toremove);
+				}
 
-                resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
-                resp.setContentType("text/xml; charset=UTF-8");
+				resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				resp.setContentType("text/xml; charset=UTF-8");
 
-                // Create multistatus object
-                XMLWriter generatedXML = new XMLWriter(resp.getWriter(),
-                        namespaces);
-                generatedXML.writeXMLHeader();
-                generatedXML
-                        .writeElement("DAV::multistatus", XMLWriter.OPENING);
+				// Create multistatus object
+				XMLWriter generatedXML = new XMLWriter(resp.getWriter(), namespaces);
+				generatedXML.writeXMLHeader();
+				generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
 
-                generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
-                String status = new String("HTTP/1.1 " + WebDAVStatus.SC_OK
-                        + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
+				generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
+				String status = new String(
+						"HTTP/1.1 " + WebDAVStatus.SC_OK + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
 
-                // Generating href element
-                generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+				// Generating href element
+				generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
 
-                String href = req.getContextPath();
-                if ((href.endsWith("/")) && (path.startsWith("/")))
-                    href += path.substring(1);
-                else
-                    href += path;
-                if ((so.isFolder()) && (!href.endsWith("/")))
-                    href += "/";
+				String href = req.getContextPath();
+				if ((href.endsWith("/")) && (path.startsWith("/")))
+					href += path.substring(1);
+				else
+					href += path;
+				if ((so.isFolder()) && (!href.endsWith("/")))
+					href += "/";
 
-                generatedXML.writeText(rewriteUrl(href));
+				generatedXML.writeText(rewriteUrl(href));
 
-                generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
 
-                for (Iterator<String> iter = tochange.iterator(); iter
-                        .hasNext();) {
-                    String property = (String) iter.next();
+				for (Iterator<String> iter = tochange.iterator(); iter.hasNext();) {
+					String property = (String) iter.next();
 
-                    generatedXML.writeElement("DAV::propstat",
-                            XMLWriter.OPENING);
+					generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
 
-                    generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
-                    generatedXML.writeElement(property, XMLWriter.NO_CONTENT);
-                    generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+					generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
+					generatedXML.writeElement(property, XMLWriter.NO_CONTENT);
+					generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
 
-                    generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
-                    generatedXML.writeText(status);
-                    generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+					generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
+					generatedXML.writeText(status);
+					generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
 
-                    generatedXML.writeElement("DAV::propstat",
-                            XMLWriter.CLOSING);
-                }
+					generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
+				}
 
-                generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
 
-                generatedXML
-                        .writeElement("DAV::multistatus", XMLWriter.CLOSING);
+				generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
 
-                generatedXML.sendData();
-            } catch (AccessDeniedException e) {
-                resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            } catch (WebDAVException e) {
-                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-            } catch (ServletException e) {
-                e.printStackTrace(); // To change body of catch statement use
-                // File | Settings | File Templates.
-            } finally {
-                _resourceLocks.unlockTemporaryLockedObjects(transaction, path,
-                        tempLockOwner);
-            }
-        } else {
-            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
+				generatedXML.sendData();
+			} catch (AccessDeniedException e) {
+				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			} catch (WebDAVException e) {
+				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			} catch (ServletException e) {
+				e.printStackTrace(); // To change body of catch statement use
+				// File | Settings | File Templates.
+			} finally {
+				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
+			}
+		} else {
+			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
 }

@@ -22,457 +22,432 @@ import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoLockTest extends MockTest {
 
-    static IWebDAVStore mockStore;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
-    static IResourceLocks mockResourceLocks;
+	static IWebDAVStore mockStore;
+	static HttpServletRequest mockReq;
+	static HttpServletResponse mockRes;
+	static ITransaction mockTransaction;
+	static IResourceLocks mockResourceLocks;
 
-    static boolean exclusive = true;
-    static String depthString = "-1";
-    static int depth = -1;
-    static String timeoutString = "10";
+	static boolean exclusive = true;
+	static String depthString = "-1";
+	static int depth = -1;
+	static String timeoutString = "10";
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebDAVStore.class);
-        mockReq = _mockery.mock(HttpServletRequest.class);
-        mockRes = _mockery.mock(HttpServletResponse.class);
-        mockTransaction = _mockery.mock(ITransaction.class);
-        mockResourceLocks = _mockery.mock(IResourceLocks.class);
-    }
+	@BeforeClass
+	public static void setUp() throws Exception {
+		mockStore = _mockery.mock(IWebDAVStore.class);
+		mockReq = _mockery.mock(HttpServletRequest.class);
+		mockRes = _mockery.mock(HttpServletResponse.class);
+		mockTransaction = _mockery.mock(ITransaction.class);
+		mockResourceLocks = _mockery.mock(IResourceLocks.class);
+	}
 
-    @Test
-    public void testDoLockIfReadOnly() throws Exception {
+	@Test
+	public void testDoLockIfReadOnly() throws Exception {
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
-            }
-        });
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+			}
+		});
 
-        ResourceLocks resLocks = new ResourceLocks();
+		ResourceLocks resLocks = new ResourceLocks();
 
-        DoLock doLock = new DoLock(mockStore, resLocks, readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoRefreshLockOnLockedResource() throws Exception {
+	@Test
+	public void testDoRefreshLockOnLockedResource() throws Exception {
 
-        final String lockPath = "/aFileToLock";
-        final String lockOwner = "owner";
+		final String lockPath = "/aFileToLock";
+		final String lockOwner = "owner";
 
-        ResourceLocks resLocks = new ResourceLocks();
-        resLocks.lock(mockTransaction, lockPath, lockOwner, exclusive, depth,
-                TEMP_TIMEOUT, !TEMPORARY);
+		ResourceLocks resLocks = new ResourceLocks();
+		resLocks.lock(mockTransaction, lockPath, lockOwner, exclusive, depth, TEMP_TIMEOUT, !TEMPORARY);
 
-        LockedObject lo = resLocks.getLockedObjectByPath(mockTransaction,
-                lockPath);
-        String lockTokenString = lo.getID();
-        final String lockToken = "(<opaquelocktoken:" + lockTokenString + ">)";
+		LockedObject lo = resLocks.getLockedObjectByPath(mockTransaction, lockPath);
+		String lockTokenString = lo.getID();
+		final String lockToken = "(<opaquelocktoken:" + lockTokenString + ">)";
 
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(lockToken));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(lockToken));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                exactly(2).of(mockReq).getHeader("If");
-                will(returnValue(lockToken));
+				exactly(2).of(mockReq).getHeader("If");
+				will(returnValue(lockToken));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue("Infinite"));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue("Infinite"));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                oneOf(mockRes).addHeader(
-                        "Lock-Token",
-                        lockToken.substring(lockToken.indexOf("(") + 1,
-                                lockToken.indexOf(")")));
-            }
-        });
+				oneOf(mockRes).addHeader("Lock-Token",
+						lockToken.substring(lockToken.indexOf("(") + 1, lockToken.indexOf(")")));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoExclusiveLockOnResource() throws Exception {
+	@Test
+	public void testDoExclusiveLockOnResource() throws Exception {
 
-        final String lockPath = "/aFileToLock";
+		final String lockPath = "/aFileToLock";
 
-        ResourceLocks resLocks = new ResourceLocks();
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		ResourceLocks resLocks = new ResourceLocks();
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
-                exclusiveLockRequestByteArray);
-        final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
-                baisExclusive);
+		final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(exclusiveLockRequestByteArray);
+		final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(baisExclusive);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(null));
 
-                StoredObject so = initFileStoredObject(resourceContent);
+				StoredObject so = initFileStoredObject(resourceContent);
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(so));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(so));
 
-                oneOf(mockReq).getInputStream();
-                will(returnValue(dsisExclusive));
+				oneOf(mockReq).getInputStream();
+				will(returnValue(dsisExclusive));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue(depthString));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue(depthString));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue(timeoutString));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue(timeoutString));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                // addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
-                oneOf(mockRes).addHeader(with(any(String.class)),
-                        with(any(String.class)));
-            }
-        });
+				// addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
+				oneOf(mockRes).addHeader(with(any(String.class)), with(any(String.class)));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoSharedLockOnResource() throws Exception {
+	@Test
+	public void testDoSharedLockOnResource() throws Exception {
 
-        final String lockPath = "/aFileToLock";
+		final String lockPath = "/aFileToLock";
 
-        ResourceLocks resLocks = new ResourceLocks();
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		ResourceLocks resLocks = new ResourceLocks();
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        final ByteArrayInputStream baisShared = new ByteArrayInputStream(
-                sharedLockRequestByteArray);
-        final DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
-                baisShared);
+		final ByteArrayInputStream baisShared = new ByteArrayInputStream(sharedLockRequestByteArray);
+		final DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(baisShared);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(null));
 
-                StoredObject so = initFileStoredObject(resourceContent);
+				StoredObject so = initFileStoredObject(resourceContent);
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(so));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(so));
 
-                oneOf(mockReq).getInputStream();
-                will(returnValue(dsisShared));
+				oneOf(mockReq).getInputStream();
+				will(returnValue(dsisShared));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue(depthString));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue(depthString));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue(timeoutString));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue(timeoutString));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                // addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
-                oneOf(mockRes).addHeader(with(any(String.class)),
-                        with(any(String.class)));
-            }
-        });
+				// addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
+				oneOf(mockRes).addHeader(with(any(String.class)), with(any(String.class)));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoExclusiveLockOnCollection() throws Exception {
+	@Test
+	public void testDoExclusiveLockOnCollection() throws Exception {
 
-        final String lockPath = "/aFolderToLock";
+		final String lockPath = "/aFolderToLock";
 
-        ResourceLocks resLocks = new ResourceLocks();
+		ResourceLocks resLocks = new ResourceLocks();
 
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
-                exclusiveLockRequestByteArray);
-        final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
-                baisExclusive);
+		final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(exclusiveLockRequestByteArray);
+		final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(baisExclusive);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(null));
 
-                StoredObject so = initFolderStoredObject();
+				StoredObject so = initFolderStoredObject();
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(so));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(so));
 
-                oneOf(mockReq).getInputStream();
-                will(returnValue(dsisExclusive));
+				oneOf(mockReq).getInputStream();
+				will(returnValue(dsisExclusive));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue(depthString));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue(depthString));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue(timeoutString));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue(timeoutString));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                // addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
-                oneOf(mockRes).addHeader(with(any(String.class)),
-                        with(any(String.class)));
-            }
-        });
+				// addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
+				oneOf(mockRes).addHeader(with(any(String.class)), with(any(String.class)));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoSharedLockOnCollection() throws Exception {
+	@Test
+	public void testDoSharedLockOnCollection() throws Exception {
 
-        final String lockPath = "/aFolderToLock";
+		final String lockPath = "/aFolderToLock";
 
-        ResourceLocks resLocks = new ResourceLocks();
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		ResourceLocks resLocks = new ResourceLocks();
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        final ByteArrayInputStream baisShared = new ByteArrayInputStream(
-                sharedLockRequestByteArray);
-        final DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(
-                baisShared);
+		final ByteArrayInputStream baisShared = new ByteArrayInputStream(sharedLockRequestByteArray);
+		final DelegatingServletInputStream dsisShared = new DelegatingServletInputStream(baisShared);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(null));
 
-                StoredObject so = initFolderStoredObject();
+				StoredObject so = initFolderStoredObject();
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(so));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(so));
 
-                oneOf(mockReq).getInputStream();
-                will(returnValue(dsisShared));
+				oneOf(mockReq).getInputStream();
+				will(returnValue(dsisShared));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue(depthString));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue(depthString));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue(timeoutString));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue(timeoutString));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                // addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
-                oneOf(mockRes).addHeader(with(any(String.class)),
-                        with(any(String.class)));
-            }
-        });
+				// addHeader("Lock-Token", "(<opaquelocktoken:xxx-xxx-xxx>)")
+				oneOf(mockRes).addHeader(with(any(String.class)), with(any(String.class)));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testDoLockNullResourceLock() throws Exception {
+	@Test
+	public void testDoLockNullResourceLock() throws Exception {
 
-        final String parentPath = "/parentCollection";
-        final String lockPath = parentPath.concat("/aNullResource");
+		final String parentPath = "/parentCollection";
+		final String lockPath = parentPath.concat("/aNullResource");
 
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-        final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(
-                exclusiveLockRequestByteArray);
-        final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(
-                baisExclusive);
+		final ByteArrayInputStream baisExclusive = new ByteArrayInputStream(exclusiveLockRequestByteArray);
+		final DelegatingServletInputStream dsisExclusive = new DelegatingServletInputStream(baisExclusive);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(lockPath));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(lockPath));
 
-                LockedObject lockNullResourceLo = null;
+				LockedObject lockNullResourceLo = null;
 
-                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
-                        lockPath);
-                will(returnValue(lockNullResourceLo));
+				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, lockPath);
+				will(returnValue(lockNullResourceLo));
 
-                LockedObject parentLo = null;
+				LockedObject parentLo = null;
 
-                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
-                        parentPath);
-                will(returnValue(parentLo));
+				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
+				will(returnValue(parentLo));
 
-                oneOf(mockReq).getHeader("User-Agent");
-                will(returnValue("Goliath"));
+				oneOf(mockReq).getHeader("User-Agent");
+				will(returnValue("Goliath"));
 
-                oneOf(mockResourceLocks).lock(with(any(ITransaction.class)),
-                        with(any(String.class)), with(any(String.class)),
-                        with(any(boolean.class)), with(any(int.class)),
-                        with(any(int.class)), with(any(boolean.class)));
-                will(returnValue(true));
+				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
+						with(any(String.class)), with(any(boolean.class)), with(any(int.class)), with(any(int.class)),
+						with(any(boolean.class)));
+				will(returnValue(true));
 
-                oneOf(mockReq).getHeader("If");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If");
+				will(returnValue(null));
 
-                StoredObject lockNullResourceSo = null;
+				StoredObject lockNullResourceSo = null;
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(lockNullResourceSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(lockNullResourceSo));
 
-                StoredObject parentSo = null;
+				StoredObject parentSo = null;
 
-                oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
-                will(returnValue(parentSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
+				will(returnValue(parentSo));
 
-                oneOf(mockStore).createFolder(mockTransaction, parentPath);
+				oneOf(mockStore).createFolder(mockTransaction, parentPath);
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(lockNullResourceSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(lockNullResourceSo));
 
-                oneOf(mockStore).createResource(mockTransaction, lockPath);
+				oneOf(mockStore).createResource(mockTransaction, lockPath);
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
-                lockNullResourceSo = initLockNullStoredObject();
+				lockNullResourceSo = initLockNullStoredObject();
 
-                oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
-                will(returnValue(lockNullResourceSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(lockNullResourceSo));
 
-                oneOf(mockReq).getInputStream();
-                will(returnValue(dsisExclusive));
+				oneOf(mockReq).getInputStream();
+				will(returnValue(dsisExclusive));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue(("0")));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue(("0")));
 
-                oneOf(mockReq).getHeader("Timeout");
-                will(returnValue("Infinite"));
+				oneOf(mockReq).getHeader("Timeout");
+				will(returnValue("Infinite"));
 
-                ResourceLocks resLocks = ResourceLocks.class.newInstance();
+				ResourceLocks resLocks = ResourceLocks.class.newInstance();
 
-                oneOf(mockResourceLocks).exclusiveLock(mockTransaction, lockPath,
-                        "I'am the Lock Owner", 0, 604800);
-                will(returnValue(true));
+				oneOf(mockResourceLocks).exclusiveLock(mockTransaction, lockPath, "I'am the Lock Owner", 0, 604800);
+				will(returnValue(true));
 
-                lockNullResourceLo = initLockNullLockedObject(resLocks,
-                        lockPath);
+				lockNullResourceLo = initLockNullLockedObject(resLocks, lockPath);
 
-                oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction,
-                        lockPath);
-                will(returnValue(lockNullResourceLo));
+				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, lockPath);
+				will(returnValue(lockNullResourceLo));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                String loId = null;
-                if (lockNullResourceLo != null) {
-                    loId = lockNullResourceLo.getID();
-                }
-                final String lockToken = "<opaquelocktoken:" + loId + ">";
+				String loId = null;
+				if (lockNullResourceLo != null) {
+					loId = lockNullResourceLo.getID();
+				}
+				final String lockToken = "<opaquelocktoken:" + loId + ">";
 
-                oneOf(mockRes).addHeader("Lock-Token", lockToken);
+				oneOf(mockRes).addHeader("Lock-Token", lockToken);
 
-                oneOf(mockResourceLocks).unlockTemporaryLockedObjects(
-                        with(any(ITransaction.class)), with(any(String.class)),
-                        with(any(String.class)));
-            }
-        });
+				oneOf(mockResourceLocks).unlockTemporaryLockedObjects(with(any(ITransaction.class)),
+						with(any(String.class)), with(any(String.class)));
+			}
+		});
 
-        DoLock doLock = new DoLock(mockStore, mockResourceLocks, !readOnly);
-        doLock.execute(mockTransaction, mockReq, mockRes);
+		DoLock doLock = new DoLock(mockStore, mockResourceLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
+		_mockery.assertIsSatisfied();
 
-    }
+	}
 }

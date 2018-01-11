@@ -30,8 +30,7 @@ INSTALLATION & CONFIGURATION
 				net.sf.webdav.LocalFileSystemStore
 			</param-value>
 			<description>
-				name of the class that implements
-				net.sf.webdav.WebdavStore
+				name of the class that implements net.sf.webdav.WebdavStore
 			</description>
 		</init-param>
 		<init-param>
@@ -39,14 +38,6 @@ INSTALLATION & CONFIGURATION
 			<param-value>/tmp/webdav</param-value>
 			<description>
 				folder where webdavcontent on the local filesystem is stored
-			</description>
-		</init-param>
-		<init-param>
-			<param-name>storeDebug</param-name>
-			<param-value>0</param-value>
-			<description>
-				triggers debug output of the
-				ResourceHandlerImplementation (0 = off , 1 = on) off by default
 			</description>
 		</init-param>
 	</servlet>
@@ -62,8 +53,6 @@ INSTALLATION & CONFIGURATION
    and copy your .jar to /WEB-INF/lib/
   -with /* as servlet mapping, every request to the webapp is handled by
    the servlet. change this if you want
-  -with the "storeDebug" parameter you can trigger the reference store implementation
-   to spam at every method call. this parameter is optional and can be omitted
   -authentication is done by the servlet-container. If you need it, you have to
    add the appropriate sections to the web.xml
 
@@ -85,7 +74,6 @@ We want to thank Remy Maucherat for the original webdav-servlet
 and the dependent files that come with tomcat,
 and Oliver Zeigermann for the slide-WCK. Our IWebdavStorage class is modeled
 after his BasicWebdavStore.
- 
  
  
 Thanks for trying WebDAV-Servlet!  

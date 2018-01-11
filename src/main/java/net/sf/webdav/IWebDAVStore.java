@@ -26,8 +26,6 @@ package net.sf.webdav;
 import java.io.InputStream;
 import java.security.Principal;
 
-import net.sf.webdav.exceptions.WebDAVException;
-
 /**
  * Interface for simple implementation of any store for the WebdavServlet
  * <p>
@@ -121,7 +119,7 @@ public interface IWebDAVStore {
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    void createResource(ITransaction transaction, String resourceUri);
+	void createResource(ITransaction transaction, String resourceUri);
 
     /**
      * Gets the content of the resource specified by <code>resourceUri</code>.

@@ -6,8 +6,6 @@ import java.io.IOException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 
-import org.junit.Ignore;
-
 public class TestingOutputStream extends ServletOutputStream {
 
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();

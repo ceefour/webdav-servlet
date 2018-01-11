@@ -115,7 +115,7 @@ public class XMLWriter {
      * @param name
      *      Property name
      */
-    public void writeProperty(String name) {
+	public void writeProperty(String name) {
         writeElement(name, NO_CONTENT);
     }
 

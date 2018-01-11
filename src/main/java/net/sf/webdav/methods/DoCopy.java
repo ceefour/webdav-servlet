@@ -35,452 +35,406 @@ import net.sf.webdav.locking.ResourceLocks;
 
 public class DoCopy extends AbstractMethod {
 
-    private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory
-            .getLogger(DoCopy.class);
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(DoCopy.class);
 
-    private IWebDAVStore _store;
-    private ResourceLocks _resourceLocks;
-    private DoDelete _doDelete;
-    private boolean _readOnly;
+	private IWebDAVStore _store;
+	private ResourceLocks _resourceLocks;
+	private DoDelete _doDelete;
+	private boolean _readOnly;
 
-    public DoCopy(IWebDAVStore store, ResourceLocks resourceLocks,
-            DoDelete doDelete, boolean readOnly) {
-        _store = store;
-        _resourceLocks = resourceLocks;
-        _doDelete = doDelete;
-        _readOnly = readOnly;
-    }
+	public DoCopy(IWebDAVStore store, ResourceLocks resourceLocks, DoDelete doDelete, boolean readOnly) {
+		_store = store;
+		_resourceLocks = resourceLocks;
+		_doDelete = doDelete;
+		_readOnly = readOnly;
+	}
 
-    public void execute(ITransaction transaction, HttpServletRequest req,
-            HttpServletResponse resp) throws IOException, LockFailedException {
-        LOG.trace("-- " + this.getClass().getName());
+	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, LockFailedException {
+		LOG.debug("-- " + this.getClass().getName());
 
-        String path = getRelativePath(req);
-        if (!_readOnly) {
+		String path = getRelativePath(req);
+		if (!_readOnly) {
 
-            String tempLockOwner = "doCopy" + System.currentTimeMillis()
-                    + req.toString();
-            if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0,
-                    TEMP_TIMEOUT, TEMPORARY)) {
-                try {
-                    if (!copyResource(transaction, req, resp))
-                        return;
-                } catch (AccessDeniedException e) {
-                    resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-                } catch (ObjectAlreadyExistsException e) {
-                    resp.sendError(WebDAVStatus.SC_CONFLICT, req
-                            .getRequestURI());
-                } catch (ObjectNotFoundException e) {
-                    resp.sendError(WebDAVStatus.SC_NOT_FOUND, req
-                            .getRequestURI());
-                } catch (WebDAVException e) {
-                    resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-                } finally {
-                    _resourceLocks.unlockTemporaryLockedObjects(transaction,
-                            path, tempLockOwner);
-                }
-            } else {
-                resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-            }
+			String tempLockOwner = "doCopy" + System.currentTimeMillis() + req.toString();
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+				try {
+					if (!copyResource(transaction, req, resp))
+						return;
+				} catch (AccessDeniedException e) {
+					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+				} catch (ObjectAlreadyExistsException e) {
+					resp.sendError(WebDAVStatus.SC_CONFLICT, req.getRequestURI());
+				} catch (ObjectNotFoundException e) {
+					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+				} catch (WebDAVException e) {
+					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				} finally {
+					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
+				}
+			} else {
+				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			}
 
-        } else {
-            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-        }
+		} else {
+			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+		}
 
-    }
+	}
 
-    /**
-     * Copy a resource.
-     * 
-     * @param transaction
-     *      indicates that the method is within the scope of a WebDAV
-     *      transaction
-     * @param req
-     *      Servlet request
-     * @param resp
-     *      Servlet response
-     * @return true if the copy is successful
-     * @throws WebDAVException
-     *      if an error in the underlying store occurs
-     * @throws IOException
-     *      when an error occurs while sending the response
-     * @throws LockFailedException
-     */
-    public boolean copyResource(ITransaction transaction,
-            HttpServletRequest req, HttpServletResponse resp)
-            throws WebDAVException, IOException, LockFailedException {
+	/**
+	 * Copy a resource.
+	 * 
+	 * @param transaction
+	 *            indicates that the method is within the scope of a WebDAV
+	 *            transaction
+	 * @param req
+	 *            Servlet request
+	 * @param resp
+	 *            Servlet response
+	 * @return true if the copy is successful
+	 * @throws WebDAVException
+	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 *             when an error occurs while sending the response
+	 * @throws LockFailedException
+	 */
+	public boolean copyResource(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
+			throws WebDAVException, IOException, LockFailedException {
 
-        // Parsing destination header
-        String destinationPath = parseDestinationHeader(req, resp);
+		// Parsing destination header
+		String destinationPath = parseDestinationHeader(req, resp);
 
-        if (destinationPath == null)
-            return false;
+		if (destinationPath == null) {
+			return false;
+		}
 
-        String path = getRelativePath(req);
+		String path = getRelativePath(req);
 
-        if (path.equals(destinationPath)) {
-            resp.sendError(WebDAVStatus.SC_FORBIDDEN);
-            return false;
-        }
+		if (path.equals(destinationPath)) {
+			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			return false;
+		}
 
-        Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
-        String parentDestinationPath = getParentPath(getCleanPath(destinationPath));
+		Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
+		String parentDestinationPath = getParentPath(getCleanPath(destinationPath));
 
-        if (!checkLocks(transaction, req, resp, _resourceLocks,
-                parentDestinationPath)) {
-            resp.setStatus(WebDAVStatus.SC_LOCKED);
-            return false; // parentDestination is locked
-        }
+		if (!checkLocks(transaction, req, resp, _resourceLocks, parentDestinationPath)) {
+			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			return false; // parentDestination is locked
+		}
 
-        if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
-            resp.setStatus(WebDAVStatus.SC_LOCKED);
-            return false; // destination is locked
-        }
+		if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
+			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			return false; // destination is locked
+		}
 
-        // Parsing overwrite header
+		// Parsing overwrite header
 
-        boolean overwrite = true;
-        String overwriteHeader = req.getHeader("Overwrite");
+		boolean overwrite = true;
+		String overwriteHeader = req.getHeader("Overwrite");
 
-        if (overwriteHeader != null) {
-            overwrite = overwriteHeader.equalsIgnoreCase("T");
-        }
+		if (overwriteHeader != null) {
+			overwrite = overwriteHeader.equalsIgnoreCase("T");
+		}
 
-        // Overwriting the destination
-        String lockOwner = "copyResource" + System.currentTimeMillis()
-                + req.toString();
+		// Overwriting the destination
+		String lockOwner = "copyResource" + System.currentTimeMillis() + req.toString();
 
-        if (_resourceLocks.lock(transaction, destinationPath, lockOwner, false,
-                0, TEMP_TIMEOUT, TEMPORARY)) {
-            StoredObject copySo, destinationSo = null;
-            try {
-                copySo = _store.getStoredObject(transaction, path);
-                // Retrieve the resources
-                if (copySo == null) {
-                    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return false;
-                }
+		if (_resourceLocks.lock(transaction, destinationPath, lockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			StoredObject copySo, destinationSo = null;
+			try {
+				copySo = _store.getStoredObject(transaction, path);
+				// Retrieve the resources
+				if (copySo == null) {
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+					return false;
+				}
 
-                if (copySo.isNullResource()) {
-                    String methodsAllowed = DeterminableMethod
-                            .determineMethodsAllowed(copySo);
-                    resp.addHeader("Allow", methodsAllowed);
-                    resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
-                    return false;
-                }
+				if (copySo.isNullResource()) {
+					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(copySo);
+					resp.addHeader("Allow", methodsAllowed);
+					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+					return false;
+				}
 
-                errorList = new Hashtable<String, Integer>();
+				errorList = new Hashtable<String, Integer>();
 
-                destinationSo = _store.getStoredObject(transaction,
-                        destinationPath);
+				destinationSo = _store.getStoredObject(transaction, destinationPath);
 
-                if (overwrite) {
+				if (overwrite) {
+					// Delete destination resource, if it exists
+					if (destinationSo != null) {
+						_doDelete.deleteResource(transaction, destinationPath, errorList, req, resp);
+					} else {
+						resp.setStatus(WebDAVStatus.SC_CREATED);
+					}
+				} else {
+					// If the destination exists, then it's a conflict
+					if (destinationSo != null) {
+						resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
+						return false;
+					} else {
+						resp.setStatus(WebDAVStatus.SC_CREATED);
+					}
+				}
+				copy(transaction, path, destinationPath, errorList, req, resp);
 
-                    // Delete destination resource, if it exists
-                    if (destinationSo != null) {
-                        _doDelete.deleteResource(transaction, destinationPath,
-                                errorList, req, resp);
+				if (!errorList.isEmpty()) {
+					sendReport(req, resp, errorList);
+				}
+			} finally {
+				_resourceLocks.unlockTemporaryLockedObjects(transaction, destinationPath, lockOwner);
+			}
+		} else {
+			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			return false;
+		}
+		return true;
 
-                    } else {
-                        resp.setStatus(WebDAVStatus.SC_CREATED);
-                    }
-                } else {
+	}
 
-                    // If the destination exists, then it's a conflict
-                    if (destinationSo != null) {
-                        resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
-                        return false;
-                    } else {
-                        resp.setStatus(WebDAVStatus.SC_CREATED);
-                    }
+	/**
+	 * copies the specified resource(s) to the specified destination. preconditions
+	 * must be handled by the caller. Standard status codes must be handled by the
+	 * caller. a multi status report in case of errors is created here.
+	 * 
+	 * @param transaction
+	 *            indicates that the method is within the scope of a WebDAV
+	 *            transaction
+	 * @param sourcePath
+	 *            path from where to read
+	 * @param destinationPath
+	 *            path where to write
+	 * @param req
+	 *            HttpServletRequest
+	 * @param resp
+	 *            HttpServletResponse
+	 * @throws WebDAVException
+	 *             if an error in the underlying store occurs
+	 * @throws IOException
+	 */
+	private void copy(ITransaction transaction, String sourcePath, String destinationPath,
+			Hashtable<String, Integer> errorList, HttpServletRequest req, HttpServletResponse resp)
+			throws WebDAVException, IOException {
 
-                }
-                copy(transaction, path, destinationPath, errorList, req, resp);
+		StoredObject sourceSo = _store.getStoredObject(transaction, sourcePath);
+		if (sourceSo.isResource()) {
+			_store.createResource(transaction, destinationPath);
+			long resourceLength = _store.setResourceContent(transaction, destinationPath,
+					_store.getResourceContent(transaction, sourcePath), null, null);
 
-                if (!errorList.isEmpty()) {
-                    sendReport(req, resp, errorList);
-                }
+			if (resourceLength != -1) {
+				StoredObject destinationSo = _store.getStoredObject(transaction, destinationPath);
+				destinationSo.setResourceLength(resourceLength);
+			}
+		} else {
+			if (sourceSo.isFolder()) {
+				copyFolder(transaction, sourcePath, destinationPath, errorList, req, resp);
+			} else {
+				resp.sendError(WebDAVStatus.SC_NOT_FOUND);
+			}
+		}
+	}
 
-            } finally {
-                _resourceLocks.unlockTemporaryLockedObjects(transaction,
-                        destinationPath, lockOwner);
-            }
-        } else {
-            resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-            return false;
-        }
-        return true;
+	/**
+	 * helper method of copy() recursively copies the FOLDER at source path to
+	 * destination path
+	 * 
+	 * @param transaction
+	 *            indicates that the method is within the scope of a WebDAV
+	 *            transaction
+	 * @param sourcePath
+	 *            where to read
+	 * @param destinationPath
+	 *            where to write
+	 * @param errorList
+	 *            all errors that ocurred
+	 * @param req
+	 *            HttpServletRequest
+	 * @param resp
+	 *            HttpServletResponse
+	 * @throws WebDAVException
+	 *             if an error in the underlying store occurs
+	 */
+	private void copyFolder(ITransaction transaction, String sourcePath, String destinationPath,
+			Hashtable<String, Integer> errorList, HttpServletRequest req, HttpServletResponse resp)
+			throws WebDAVException {
 
-    }
+		_store.createFolder(transaction, destinationPath);
+		boolean infiniteDepth = true;
+		String depth = req.getHeader("Depth");
+		if (depth != null) {
+			if (depth.equals("0")) {
+				infiniteDepth = false;
+			}
+		}
+		if (infiniteDepth) {
+			String[] children = _store.getChildrenNames(transaction, sourcePath);
+			children = children == null ? new String[] {} : children;
 
-    /**
-     * copies the specified resource(s) to the specified destination.
-     * preconditions must be handled by the caller. Standard status codes must
-     * be handled by the caller. a multi status report in case of errors is
-     * created here.
-     * 
-     * @param transaction
-     *      indicates that the method is within the scope of a WebDAV
-     *      transaction
-     * @param sourcePath
-     *      path from where to read
-     * @param destinationPath
-     *      path where to write
-     * @param req
-     *      HttpServletRequest
-     * @param resp
-     *      HttpServletResponse
-     * @throws WebDAVException
-     *      if an error in the underlying store occurs
-     * @throws IOException
-     */
-    private void copy(ITransaction transaction, String sourcePath,
-            String destinationPath, Hashtable<String, Integer> errorList,
-            HttpServletRequest req, HttpServletResponse resp)
-            throws WebDAVException, IOException {
+			StoredObject childSo;
+			for (int i = children.length - 1; i >= 0; i--) {
+				children[i] = "/" + children[i];
+				try {
+					childSo = _store.getStoredObject(transaction, (sourcePath + children[i]));
+					if (childSo.isResource()) {
+						_store.createResource(transaction, destinationPath + children[i]);
+						long resourceLength = _store.setResourceContent(transaction, destinationPath + children[i],
+								_store.getResourceContent(transaction, sourcePath + children[i]), null, null);
 
-        StoredObject sourceSo = _store.getStoredObject(transaction, sourcePath);
-        if (sourceSo.isResource()) {
-            _store.createResource(transaction, destinationPath);
-            long resourceLength = _store.setResourceContent(transaction,
-                    destinationPath, _store.getResourceContent(transaction,
-                            sourcePath), null, null);
+						if (resourceLength != -1) {
+							StoredObject destinationSo = _store.getStoredObject(transaction,
+									destinationPath + children[i]);
+							destinationSo.setResourceLength(resourceLength);
+						}
 
-            if (resourceLength != -1) {
-                StoredObject destinationSo = _store.getStoredObject(
-                        transaction, destinationPath);
-                destinationSo.setResourceLength(resourceLength);
-            }
+					} else {
+						copyFolder(transaction, sourcePath + children[i], destinationPath + children[i], errorList, req,
+								resp);
+					}
+				} catch (AccessDeniedException e) {
+					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_FORBIDDEN));
+				} catch (ObjectNotFoundException e) {
+					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_NOT_FOUND));
+				} catch (ObjectAlreadyExistsException e) {
+					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_CONFLICT));
+				} catch (WebDAVException e) {
+					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
+				}
+			}
+		}
+	}
 
-        } else {
+	/**
+	 * Parses and normalizes the destination header.
+	 * 
+	 * @param req
+	 *            Servlet request
+	 * @param resp
+	 *            Servlet response
+	 * @return destinationPath
+	 * @throws IOException
+	 *             if an error occurs while sending response
+	 */
+	private String parseDestinationHeader(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String destinationPath = req.getHeader("Destination");
 
-            if (sourceSo.isFolder()) {
-                copyFolder(transaction, sourcePath, destinationPath, errorList,
-                        req, resp);
-            } else {
-                resp.sendError(WebDAVStatus.SC_NOT_FOUND);
-            }
-        }
-    }
+		if (destinationPath == null) {
+			resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+			return null;
+		}
 
-    /**
-     * helper method of copy() recursively copies the FOLDER at source path to
-     * destination path
-     * 
-     * @param transaction
-     *      indicates that the method is within the scope of a WebDAV
-     *      transaction
-     * @param sourcePath
-     *      where to read
-     * @param destinationPath
-     *      where to write
-     * @param errorList
-     *      all errors that ocurred
-     * @param req
-     *      HttpServletRequest
-     * @param resp
-     *      HttpServletResponse
-     * @throws WebDAVException
-     *      if an error in the underlying store occurs
-     */
-    private void copyFolder(ITransaction transaction, String sourcePath,
-            String destinationPath, Hashtable<String, Integer> errorList,
-            HttpServletRequest req, HttpServletResponse resp)
-            throws WebDAVException {
+		// Remove url encoding from destination
+		destinationPath = RequestUtil.URLDecode(destinationPath, "UTF8");
 
-        _store.createFolder(transaction, destinationPath);
-        boolean infiniteDepth = true;
-        String depth = req.getHeader("Depth");
-        if (depth != null) {
-            if (depth.equals("0")) {
-                infiniteDepth = false;
-            }
-        }
-        if (infiniteDepth) {
-            String[] children = _store
-                    .getChildrenNames(transaction, sourcePath);
-            children = children == null ? new String[] {} : children;
+		int protocolIndex = destinationPath.indexOf("://");
+		if (protocolIndex >= 0) {
+			// if the Destination URL contains the protocol, we can safely
+			// trim everything upto the first "/" character after "://"
+			int firstSeparator = destinationPath.indexOf("/", protocolIndex + 4);
+			if (firstSeparator < 0) {
+				destinationPath = "/";
+			} else {
+				destinationPath = destinationPath.substring(firstSeparator);
+			}
+		} else {
+			String hostName = req.getServerName();
+			if ((hostName != null) && (destinationPath.startsWith(hostName))) {
+				destinationPath = destinationPath.substring(hostName.length());
+			}
 
-            StoredObject childSo;
-            for (int i = children.length - 1; i >= 0; i--) {
-                children[i] = "/" + children[i];
-                try {
-                    childSo = _store.getStoredObject(transaction,
-                            (sourcePath + children[i]));
-                    if (childSo.isResource()) {
-                        _store.createResource(transaction, destinationPath
-                                + children[i]);
-                        long resourceLength = _store.setResourceContent(
-                                transaction, destinationPath + children[i],
-                                _store.getResourceContent(transaction,
-                                        sourcePath + children[i]), null, null);
+			int portIndex = destinationPath.indexOf(":");
+			if (portIndex >= 0) {
+				destinationPath = destinationPath.substring(portIndex);
+			}
 
-                        if (resourceLength != -1) {
-                            StoredObject destinationSo = _store
-                                    .getStoredObject(transaction,
-                                            destinationPath + children[i]);
-                            destinationSo.setResourceLength(resourceLength);
-                        }
+			if (destinationPath.startsWith(":")) {
+				int firstSeparator = destinationPath.indexOf("/");
+				if (firstSeparator < 0) {
+					destinationPath = "/";
+				} else {
+					destinationPath = destinationPath.substring(firstSeparator);
+				}
+			}
+		}
 
-                    } else {
-                        copyFolder(transaction, sourcePath + children[i],
-                                destinationPath + children[i], errorList, req,
-                                resp);
-                    }
-                } catch (AccessDeniedException e) {
-                    errorList.put(destinationPath + children[i], new Integer(
-                            WebDAVStatus.SC_FORBIDDEN));
-                } catch (ObjectNotFoundException e) {
-                    errorList.put(destinationPath + children[i], new Integer(
-                            WebDAVStatus.SC_NOT_FOUND));
-                } catch (ObjectAlreadyExistsException e) {
-                    errorList.put(destinationPath + children[i], new Integer(
-                            WebDAVStatus.SC_CONFLICT));
-                } catch (WebDAVException e) {
-                    errorList.put(destinationPath + children[i], new Integer(
-                            WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
-                }
-            }
-        }
-    }
+		// Normalize destination path (remove '.' and' ..')
+		destinationPath = normalize(destinationPath);
 
-    /**
-     * Parses and normalizes the destination header.
-     * 
-     * @param req
-     *      Servlet request
-     * @param resp
-     *      Servlet response
-     * @return destinationPath
-     * @throws IOException
-     *      if an error occurs while sending response
-     */
-    private String parseDestinationHeader(HttpServletRequest req,
-            HttpServletResponse resp) throws IOException {
-        String destinationPath = req.getHeader("Destination");
+		String contextPath = req.getContextPath();
+		if ((contextPath != null) && (destinationPath.startsWith(contextPath))) {
+			destinationPath = destinationPath.substring(contextPath.length());
+		}
 
-        if (destinationPath == null) {
-            resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
-            return null;
-        }
+		String pathInfo = req.getPathInfo();
+		if (pathInfo != null) {
+			String servletPath = req.getServletPath();
+			if ((servletPath != null) && (destinationPath.startsWith(servletPath))) {
+				destinationPath = destinationPath.substring(servletPath.length());
+			}
+		}
 
-        // Remove url encoding from destination
-        destinationPath = RequestUtil.URLDecode(destinationPath, "UTF8");
+		return destinationPath;
+	}
 
-        int protocolIndex = destinationPath.indexOf("://");
-        if (protocolIndex >= 0) {
-            // if the Destination URL contains the protocol, we can safely
-            // trim everything upto the first "/" character after "://"
-            int firstSeparator = destinationPath
-                    .indexOf("/", protocolIndex + 4);
-            if (firstSeparator < 0) {
-                destinationPath = "/";
-            } else {
-                destinationPath = destinationPath.substring(firstSeparator);
-            }
-        } else {
-            String hostName = req.getServerName();
-            if ((hostName != null) && (destinationPath.startsWith(hostName))) {
-                destinationPath = destinationPath.substring(hostName.length());
-            }
+	/**
+	 * Return a context-relative path, beginning with a "/", that represents the
+	 * canonical version of the specified path after ".." and "." elements are
+	 * resolved out. If the specified path attempts to go outside the boundaries of
+	 * the current context (i.e. too many ".." path elements are present), return
+	 * <code>null</code> instead.
+	 * 
+	 * @param path
+	 *            Path to be normalized
+	 * @return normalized path
+	 */
+	protected String normalize(String path) {
 
-            int portIndex = destinationPath.indexOf(":");
-            if (portIndex >= 0) {
-                destinationPath = destinationPath.substring(portIndex);
-            }
+		if (path == null)
+			return null;
 
-            if (destinationPath.startsWith(":")) {
-                int firstSeparator = destinationPath.indexOf("/");
-                if (firstSeparator < 0) {
-                    destinationPath = "/";
-                } else {
-                    destinationPath = destinationPath.substring(firstSeparator);
-                }
-            }
-        }
+		// Create a place for the normalized path
+		String normalized = path;
 
-        // Normalize destination path (remove '.' and' ..')
-        destinationPath = normalize(destinationPath);
+		if (normalized.equals("/."))
+			return "/";
 
-        String contextPath = req.getContextPath();
-        if ((contextPath != null) && (destinationPath.startsWith(contextPath))) {
-            destinationPath = destinationPath.substring(contextPath.length());
-        }
+		// Normalize the slashes and add leading slash if necessary
+		if (normalized.indexOf('\\') >= 0)
+			normalized = normalized.replace('\\', '/');
+		if (!normalized.startsWith("/"))
+			normalized = "/" + normalized;
 
-        String pathInfo = req.getPathInfo();
-        if (pathInfo != null) {
-            String servletPath = req.getServletPath();
-            if ((servletPath != null)
-                    && (destinationPath.startsWith(servletPath))) {
-                destinationPath = destinationPath.substring(servletPath
-                        .length());
-            }
-        }
+		// Resolve occurrences of "//" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("//");
+			if (index < 0)
+				break;
+			normalized = normalized.substring(0, index) + normalized.substring(index + 1);
+		}
 
-        return destinationPath;
-    }
+		// Resolve occurrences of "/./" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("/./");
+			if (index < 0)
+				break;
+			normalized = normalized.substring(0, index) + normalized.substring(index + 2);
+		}
 
-    /**
-     * Return a context-relative path, beginning with a "/", that represents the
-     * canonical version of the specified path after ".." and "." elements are
-     * resolved out. If the specified path attempts to go outside the boundaries
-     * of the current context (i.e. too many ".." path elements are present),
-     * return <code>null</code> instead.
-     * 
-     * @param path
-     *      Path to be normalized
-     * @return normalized path
-     */
-    protected String normalize(String path) {
+		// Resolve occurrences of "/../" in the normalized path
+		while (true) {
+			int index = normalized.indexOf("/../");
+			if (index < 0)
+				break;
+			if (index == 0)
+				return (null); // Trying to go outside our context
+			int index2 = normalized.lastIndexOf('/', index - 1);
+			normalized = normalized.substring(0, index2) + normalized.substring(index + 3);
+		}
 
-        if (path == null)
-            return null;
-
-        // Create a place for the normalized path
-        String normalized = path;
-
-        if (normalized.equals("/."))
-            return "/";
-
-        // Normalize the slashes and add leading slash if necessary
-        if (normalized.indexOf('\\') >= 0)
-            normalized = normalized.replace('\\', '/');
-        if (!normalized.startsWith("/"))
-            normalized = "/" + normalized;
-
-        // Resolve occurrences of "//" in the normalized path
-        while (true) {
-            int index = normalized.indexOf("//");
-            if (index < 0)
-                break;
-            normalized = normalized.substring(0, index)
-                    + normalized.substring(index + 1);
-        }
-
-        // Resolve occurrences of "/./" in the normalized path
-        while (true) {
-            int index = normalized.indexOf("/./");
-            if (index < 0)
-                break;
-            normalized = normalized.substring(0, index)
-                    + normalized.substring(index + 2);
-        }
-
-        // Resolve occurrences of "/../" in the normalized path
-        while (true) {
-            int index = normalized.indexOf("/../");
-            if (index < 0)
-                break;
-            if (index == 0)
-                return (null); // Trying to go outside our context
-            int index2 = normalized.lastIndexOf('/', index - 1);
-            normalized = normalized.substring(0, index2)
-                    + normalized.substring(index + 3);
-        }
-
-        // Return the normalized path that we have completed
-        return (normalized);
-
-    }
+		// Return the normalized path that we have completed
+		return (normalized);
+	}
 
 }

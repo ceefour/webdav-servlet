@@ -18,24 +18,24 @@ package net.sf.webdav.exceptions;
 
 public class WebDAVException extends RuntimeException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 4749158538342091145L;
 
 	public WebDAVException() {
-        super();
-    }
+		super();
+	}
 
-    public WebDAVException(String message) {
-        super(message);
-    }
+	public WebDAVException(String message) {
+		super(message);
+	}
 
-    public WebDAVException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public WebDAVException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public WebDAVException(Throwable cause) {
-        super(cause);
-    }
+	public WebDAVException(Throwable cause) {
+		super(cause);
+	}
 }

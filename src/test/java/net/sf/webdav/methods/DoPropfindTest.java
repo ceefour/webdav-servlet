@@ -18,212 +18,206 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class DoPropfindTest extends MockTest {
-    static IWebDAVStore mockStore;
-    static IMimeTyper mockMimeTyper;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static ITransaction mockTransaction;
-    static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
-            '/', '>' };
+	static IWebDAVStore mockStore;
+	static IMimeTyper mockMimeTyper;
+	static HttpServletRequest mockReq;
+	static HttpServletResponse mockRes;
+	static ITransaction mockTransaction;
+	static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o', '/', '>' };
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebDAVStore.class);
-        mockMimeTyper = _mockery.mock(IMimeTyper.class);
-        mockReq = _mockery.mock(HttpServletRequest.class);
-        mockRes = _mockery.mock(HttpServletResponse.class);
-        mockTransaction = _mockery.mock(ITransaction.class);
-    }
+	@BeforeClass
+	public static void setUp() throws Exception {
+		mockStore = _mockery.mock(IWebDAVStore.class);
+		mockMimeTyper = _mockery.mock(IMimeTyper.class);
+		mockReq = _mockery.mock(HttpServletRequest.class);
+		mockRes = _mockery.mock(HttpServletResponse.class);
+		mockTransaction = _mockery.mock(ITransaction.class);
+	}
 
-    @Test
-    public void doPropFindOnDirectory() throws Exception {
-        final String path = "/";
+	@Test
+	public void doPropFindOnDirectory() throws Exception {
+		final String path = "/";
 
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
-        
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(path));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue("infinity"));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
 
-                StoredObject rootSo = initFolderStoredObject();
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue("infinity"));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path);
-                will(returnValue(rootSo));
+				StoredObject rootSo = initFolderStoredObject();
 
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+				oneOf(mockStore).getStoredObject(mockTransaction, path);
+				will(returnValue(rootSo));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(path));
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getContentLength();
-                will(returnValue(0));
-                // no content, which means it is a allprop request
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockReq).getContentLength();
+				will(returnValue(0));
+				// no content, which means it is a allprop request
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
-                will(returnValue("text/xml; charset=UTF-8"));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path);
-                will(returnValue(rootSo));
+				oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
+				will(returnValue("text/xml; charset=UTF-8"));
 
-                oneOf(mockReq).getContextPath();
-                will(returnValue(""));
+				oneOf(mockStore).getStoredObject(mockTransaction, path);
+				will(returnValue(rootSo));
 
-                oneOf(mockReq).getServletPath();
-                will(returnValue(path));
+				oneOf(mockReq).getContextPath();
+				will(returnValue(""));
 
-                oneOf(mockStore).getChildrenNames(mockTransaction, path);
-                will(returnValue(new String[] { "file1", "file2" }));
+				oneOf(mockReq).getServletPath();
+				will(returnValue(path));
 
-                StoredObject file1So = initFileStoredObject(resourceContent);
+				oneOf(mockStore).getChildrenNames(mockTransaction, path);
+				will(returnValue(new String[] { "file1", "file2" }));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path + "file1");
-                will(returnValue(file1So));
+				StoredObject file1So = initFileStoredObject(resourceContent);
 
-                oneOf(mockReq).getContextPath();
-                will(returnValue(""));
+				oneOf(mockStore).getStoredObject(mockTransaction, path + "file1");
+				will(returnValue(file1So));
 
-                oneOf(mockReq).getServletPath();
-                will(returnValue(path));
+				oneOf(mockReq).getContextPath();
+				will(returnValue(""));
 
-                oneOf(mockStore)
-                        .getChildrenNames(mockTransaction, path + "file1");
-                will(returnValue(new String[] {}));
+				oneOf(mockReq).getServletPath();
+				will(returnValue(path));
 
-                StoredObject file2So = initFileStoredObject(resourceContent);
+				oneOf(mockStore).getChildrenNames(mockTransaction, path + "file1");
+				will(returnValue(new String[] {}));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path + "file2");
-                will(returnValue(file2So));
+				StoredObject file2So = initFileStoredObject(resourceContent);
 
-                oneOf(mockReq).getContextPath();
-                will(returnValue(""));
+				oneOf(mockStore).getStoredObject(mockTransaction, path + "file2");
+				will(returnValue(file2So));
 
-                oneOf(mockReq).getServletPath();
-                will(returnValue(path));
+				oneOf(mockReq).getContextPath();
+				will(returnValue(""));
 
-                oneOf(mockStore)
-                        .getChildrenNames(mockTransaction, path + "file2");
-                will(returnValue(new String[] {}));
-            }
-        });
+				oneOf(mockReq).getServletPath();
+				will(returnValue(path));
 
-        DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(),
-                mockMimeTyper);
-        doPropfind.execute(mockTransaction, mockReq, mockRes);
+				oneOf(mockStore).getChildrenNames(mockTransaction, path + "file2");
+				will(returnValue(new String[] {}));
+			}
+		});
 
-        _mockery.assertIsSatisfied();
-    }
+		DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(), mockMimeTyper);
+		doPropfind.execute(mockTransaction, mockReq, mockRes);
 
-    @Test
-    public void doPropFindOnFile() throws Exception {
-        final String path = "/testFile";
-        
-        final PrintWriter pw = new PrintWriter(tmpFolder+"/XMLTestFile");
+		_mockery.assertIsSatisfied();
+	}
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+	@Test
+	public void doPropFindOnFile() throws Exception {
+		final String path = "/testFile";
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(path));
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue("0"));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                StoredObject fileSo = initFolderStoredObject();
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path);
-                will(returnValue(fileSo));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue("0"));
 
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+				StoredObject fileSo = initFolderStoredObject();
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(path));
+				oneOf(mockStore).getStoredObject(mockTransaction, path);
+				will(returnValue(fileSo));
 
-                oneOf(mockReq).getContentLength();
-                will(returnValue(0));
-                // no content, which means it is a allprop request
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				oneOf(mockReq).getContentLength();
+				will(returnValue(0));
+				// no content, which means it is a allprop request
 
-                oneOf(mockRes).getWriter();
-                will(returnValue(pw));
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
-                oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
-                will(returnValue("text/xml; charset=UTF-8"));
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path);
-                will(returnValue(fileSo));
+				oneOf(mockRes).getWriter();
+				will(returnValue(pw));
 
-                oneOf(mockReq).getContextPath();
-                will(returnValue(""));
+				oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
+				will(returnValue("text/xml; charset=UTF-8"));
 
-                oneOf(mockReq).getServletPath();
-                will(returnValue("/"));
-            }
-        });
+				oneOf(mockStore).getStoredObject(mockTransaction, path);
+				will(returnValue(fileSo));
 
-        DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(),
-                mockMimeTyper);
+				oneOf(mockReq).getContextPath();
+				will(returnValue(""));
 
-        doPropfind.execute(mockTransaction, mockReq, mockRes);
+				oneOf(mockReq).getServletPath();
+				will(returnValue("/"));
+			}
+		});
 
-        _mockery.assertIsSatisfied();
-    }
+		DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(), mockMimeTyper);
 
-    @Test
-    public void doPropFindOnNonExistingResource() throws Exception {
-        final String path = "/notExists";
+		doPropfind.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.assertIsSatisfied();
+	}
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue(path));
+	@Test
+	public void doPropFindOnNonExistingResource() throws Exception {
+		final String path = "/notExists";
 
-                oneOf(mockReq).getHeader("Depth");
-                will(returnValue("0"));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                StoredObject notExistingSo = null;
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
 
-                oneOf(mockStore).getStoredObject(mockTransaction, path);
-                will(returnValue(notExistingSo));
+				oneOf(mockReq).getHeader("Depth");
+				will(returnValue("0"));
 
-                oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				StoredObject notExistingSo = null;
 
-                oneOf(mockReq).getRequestURI();
-                will(returnValue(path));
+				oneOf(mockStore).getStoredObject(mockTransaction, path);
+				will(returnValue(notExistingSo));
 
-                oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND, path);
-            }
-        });
+				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
-        DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(),
-                mockMimeTyper);
+				oneOf(mockReq).getRequestURI();
+				will(returnValue(path));
 
-        doPropfind.execute(mockTransaction, mockReq, mockRes);
+				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND, path);
+			}
+		});
 
-        _mockery.assertIsSatisfied();
-    }
+		DoPropfind doPropfind = new DoPropfind(mockStore, new ResourceLocks(), mockMimeTyper);
+
+		doPropfind.execute(mockTransaction, mockReq, mockRes);
+
+		_mockery.assertIsSatisfied();
+	}
 
 }

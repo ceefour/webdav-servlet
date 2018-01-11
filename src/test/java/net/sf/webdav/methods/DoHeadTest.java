@@ -18,122 +18,117 @@ import org.junit.Test;
 
 public class DoHeadTest extends MockTest {
 
-    static IWebDAVStore mockStore;
-    static IMimeTyper mockMimeTyper;
-    static HttpServletRequest mockReq;
-    static HttpServletResponse mockRes;
-    static TestingOutputStream tos;
-    static ITransaction mockTransaction;
-    static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o',
-            '/', '>' };
+	static IWebDAVStore mockStore;
+	static IMimeTyper mockMimeTyper;
+	static HttpServletRequest mockReq;
+	static HttpServletResponse mockRes;
+	static TestingOutputStream tos;
+	static ITransaction mockTransaction;
+	static byte[] resourceContent = new byte[] { '<', 'h', 'e', 'l', 'l', 'o', '/', '>' };
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        mockStore = _mockery.mock(IWebDAVStore.class);
-        mockMimeTyper = _mockery.mock(IMimeTyper.class);
-        mockReq = _mockery.mock(HttpServletRequest.class);
-        mockRes = _mockery.mock(HttpServletResponse.class);
-        tos = new TestingOutputStream();
-        mockTransaction = _mockery.mock(ITransaction.class);
-    }
+	@BeforeClass
+	public static void setUp() throws Exception {
+		mockStore = _mockery.mock(IWebDAVStore.class);
+		mockMimeTyper = _mockery.mock(IMimeTyper.class);
+		mockReq = _mockery.mock(HttpServletRequest.class);
+		mockRes = _mockery.mock(HttpServletResponse.class);
+		tos = new TestingOutputStream();
+		mockTransaction = _mockery.mock(ITransaction.class);
+	}
 
-    @Test
-    public void testAccessOfaMissingPageResultsIn404() throws Exception {
+	@Test
+	public void testAccessOfaMissingPageResultsIn404() throws Exception {
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue("/index.html"));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue("/index.html"));
 
-                StoredObject indexSo = null;
+				StoredObject indexSo = null;
 
-                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
-                will(returnValue(indexSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
+				will(returnValue(indexSo));
 
-                oneOf(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
-            }
-        });
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
+			}
+		});
 
-        DoHead doHead = new DoHead(mockStore, null, null, new ResourceLocks(),
-                mockMimeTyper, 0);
-        doHead.execute(mockTransaction, mockReq, mockRes);
+		DoHead doHead = new DoHead(mockStore, null, null, new ResourceLocks(), mockMimeTyper, 0);
+		doHead.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testAccessOfaPageResultsInPage() throws Exception {
+	@Test
+	public void testAccessOfaPageResultsInPage() throws Exception {
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue("/index.html"));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue("/index.html"));
 
-                StoredObject indexSo = initFileStoredObject(resourceContent);
+				StoredObject indexSo = initFileStoredObject(resourceContent);
 
-                oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
-                will(returnValue(indexSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
+				will(returnValue(indexSo));
 
-                oneOf(mockReq).getHeader("If-None-Match");
-                will(returnValue(null));
+				oneOf(mockReq).getHeader("If-None-Match");
+				will(returnValue(null));
 
-                oneOf(mockRes).setDateHeader("last-modified",indexSo.getLastModified().getTime());
+				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());
 
-                oneOf(mockRes).addHeader(with(any(String.class)),with(any(String.class)));
+				oneOf(mockRes).addHeader(with(any(String.class)), with(any(String.class)));
 
-                oneOf(mockMimeTyper).getMimeType(mockTransaction, "/index.html");
-                will(returnValue("text/foo"));
+				oneOf(mockMimeTyper).getMimeType(mockTransaction, "/index.html");
+				will(returnValue("text/foo"));
 
-                oneOf(mockRes).setContentType("text/foo");
-            }
-        });
+				oneOf(mockRes).setContentType("text/foo");
+			}
+		});
 
-        DoHead doHead = new DoHead(mockStore, null, null, new ResourceLocks(),
-                mockMimeTyper, 0);
+		DoHead doHead = new DoHead(mockStore, null, null, new ResourceLocks(), mockMimeTyper, 0);
 
-        doHead.execute(mockTransaction, mockReq, mockRes);
+		doHead.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
-    @Test
-    public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent()
-            throws Exception {
+	@Test
+	public void testAccessOfaDirectoryResultsInRedirectIfDefaultIndexFilePresent() throws Exception {
 
-        _mockery.checking(new Expectations() {
-            {
-                oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
-                will(returnValue(null));
+		_mockery.checking(new Expectations() {
+			{
+				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				will(returnValue(null));
 
-                oneOf(mockReq).getPathInfo();
-                will(returnValue("/foo/"));
+				oneOf(mockReq).getPathInfo();
+				will(returnValue("/foo/"));
 
-                StoredObject fooSo = initFolderStoredObject();
+				StoredObject fooSo = initFolderStoredObject();
 
-                oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
-                will(returnValue(fooSo));
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
+				will(returnValue(fooSo));
 
-                oneOf(mockReq).getRequestURI();
-                will(returnValue("/foo/"));
+				oneOf(mockReq).getRequestURI();
+				will(returnValue("/foo/"));
 
-                oneOf(mockRes).encodeRedirectURL("/foo//indexFile");
+				oneOf(mockRes).encodeRedirectURL("/foo//indexFile");
 
-                oneOf(mockRes).sendRedirect("");
-            }
-        });
+				oneOf(mockRes).sendRedirect("");
+			}
+		});
 
-        DoHead doHead = new DoHead(mockStore, "/indexFile", null,
-                new ResourceLocks(), mockMimeTyper, 0);
+		DoHead doHead = new DoHead(mockStore, "/indexFile", null, new ResourceLocks(), mockMimeTyper, 0);
 
-        doHead.execute(mockTransaction, mockReq, mockRes);
+		doHead.execute(mockTransaction, mockReq, mockRes);
 
-        _mockery.assertIsSatisfied();
-    }
+		_mockery.assertIsSatisfied();
+	}
 
 }
