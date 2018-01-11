@@ -23,6 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -210,9 +213,18 @@ public class LocalFileSystemStore implements IWebDAVStore {
         if (file.exists()) {
             so = new StoredObject();
             so.setFolder(file.isDirectory());
+            so.setResourceLength(getResourceLength(transaction, uri));
             so.setLastModified(new Date(file.lastModified()));
             so.setCreationDate(new Date(file.lastModified()));
-            so.setResourceLength(getResourceLength(transaction, uri));
+            // set as many attributes as possible using nio
+        	try {
+				BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+				// so.setCreationDate(new Date(attr.creationTime().toMillis()));
+				so.setCreationDate(new Date(attr.creationTime().toMillis()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        	
         }
 
         return so;
