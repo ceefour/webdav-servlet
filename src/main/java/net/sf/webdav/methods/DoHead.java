@@ -140,7 +140,6 @@ public class DoHead extends AbstractMethod {
 									resp.setContentType("text/html");
 								}
 							}
-
 							doBody(transaction, resp, path);
 						}
 					} else {

@@ -1,6 +1,7 @@
 package net.sf.webdav.testutil;
 
 import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
 import java.util.Date;
 
 import org.junit.Assert;
@@ -73,20 +74,20 @@ public abstract class MockTest extends Assert {
 		_mockery = null;
 	}
 
-	public static StoredObject initFolderStoredObject() {
+	public static StoredObject initFolderStoredObject() throws MalformedURLException {
 		StoredObject so = initStoredObject(true, null);
 
 		return so;
 	}
 
-	public static StoredObject initFileStoredObject(byte[] resourceContent) {
+	public static StoredObject initFileStoredObject(byte[] resourceContent) throws MalformedURLException {
 		StoredObject so = initStoredObject(false, resourceContent);
 
 		return so;
 	}
 
-	private static StoredObject initStoredObject(boolean isFolder, byte[] resourceContent) {
-		StoredObject so = new StoredObject();
+	private static StoredObject initStoredObject(boolean isFolder, byte[] resourceContent) throws MalformedURLException {
+		StoredObject so = new StoredObject("/");
 		so.setFolder(isFolder);
 		so.setCreationDate(new Date());
 		so.setLastModified(new Date());
@@ -100,8 +101,8 @@ public abstract class MockTest extends Assert {
 		return so;
 	}
 
-	public static StoredObject initLockNullStoredObject() {
-		StoredObject so = new StoredObject();
+	public static StoredObject initLockNullStoredObject() throws MalformedURLException {
+		StoredObject so = new StoredObject("/");
 		so.setNullResource(true);
 		so.setFolder(false);
 		so.setCreationDate(null);

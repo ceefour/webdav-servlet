@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.sf.webdav.fromcatalina;
+package net.sf.webdav.util;
 
 /**
  * Encode an MD5 digest into a String.

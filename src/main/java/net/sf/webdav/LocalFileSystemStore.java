@@ -105,7 +105,6 @@ public class LocalFileSystemStore implements IWebDAVStore {
 
 	public long setResourceContent(ITransaction transaction, String uri, InputStream is, String contentType,
 			String characterEncoding) throws WebDAVException {
-
 		LOG.debug("LocalFileSystemStore.setResourceContent(" + uri + ")");
 		File file = new File(_root, uri);
 		try {
@@ -182,25 +181,22 @@ public class LocalFileSystemStore implements IWebDAVStore {
 	}
 
 	public StoredObject getStoredObject(ITransaction transaction, String uri) {
-
+		LOG.debug("LocalFileSystemStore.getStoredObject(" + uri + ")");
 		StoredObject so = null;
-
 		File file = new File(_root, uri);
 		if (file.exists()) {
-			so = new StoredObject();
-			so.setFolder(file.isDirectory());
-			so.setResourceLength(getResourceLength(transaction, uri));
-			so.setLastModified(new Date(file.lastModified()));
-			so.setCreationDate(new Date(file.lastModified()));
-			// set as many attributes as possible using nio
 			try {
+				so = new StoredObject(uri);
+				so.setFolder(file.isDirectory());
+				so.setResourceLength(getResourceLength(transaction, uri));
+				so.setLastModified(new Date(file.lastModified()));
+				// set as many attributes as possible using nio
 				BasicFileAttributes attr = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
 				so.setCreationDate(new Date(attr.creationTime().toMillis()));
 			} catch (IOException e) {
-				LOG.error("Files.readAttributes(" + uri + ") failed",e);
+				LOG.error("LocalFileSystemStore.getStoredObject(" + uri + ") failed",e);
 			}
 		}
-
 		return so;
 	}
 	

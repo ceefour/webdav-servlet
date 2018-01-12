@@ -34,11 +34,11 @@ import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
-import net.sf.webdav.fromcatalina.URLEncoder;
-import net.sf.webdav.fromcatalina.XMLHelper;
-import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.URLEncoder;
+import net.sf.webdav.util.XMLHelper;
+import net.sf.webdav.util.XMLWriter;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -108,9 +108,8 @@ public class DoPropfind extends AbstractMethod {
 				Node propNode = null;
 
 				if (req.getContentLength() != 0) {
-					DocumentBuilder documentBuilder = getDocumentBuilder();
 					try {
-						Document document = documentBuilder.parse(new InputSource(req.getInputStream()));
+						Document document = getDocument(req);
 						// Get the root element of the document
 						Element rootElement = document.getDocumentElement();
 
@@ -161,9 +160,6 @@ public class DoPropfind extends AbstractMethod {
 			} catch (WebDAVException e) {
 				LOG.warn("Sending internal error!");
 				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-			} catch (ServletException e) {
-				e.printStackTrace(); // To change body of catch statement use
-				// File | Settings | File Templates.
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
@@ -526,7 +522,7 @@ public class DoPropfind extends AbstractMethod {
 			generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
 
 			generatedXML.writeElement("DAV::depth", XMLWriter.OPENING);
-			if (_depth == INFINITY) {
+			if (_depth == DEPTH_INFINITY) {
 				generatedXML.writeText("Infinity");
 			} else {
 				generatedXML.writeText(String.valueOf(_depth));

@@ -21,7 +21,12 @@ package net.sf.webdav;
 
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
+
 public class StoredObject {
+	
+	private final String url;
+	private final String name;
 
     private boolean isFolder;
     private Date lastModified;
@@ -30,8 +35,71 @@ public class StoredObject {
     private String  mimeType;
 
     private boolean isNullRessource;
+    
+    public StoredObject(String relativeUrl) {
+    	this.url = relativeUrl;
+    	this.name = getResourceName(relativeUrl);
+    }
 
     /**
+	 * Gets the date of the creation
+	 * 
+	 * @return creation Date
+	 */
+	public Date getCreationDate() {
+	    return (creationDate);
+	}
+
+	/**
+	 * Gets the date of the last modification
+	 * 
+	 * @return last modification Date
+	 */
+	public Date getLastModified() {
+	    return (lastModified);
+	}
+
+	/**
+	 * Retrieve the myme type from the store object.
+	 * Can also return NULL if the store does not handle
+	 * mime type stuff.
+	 * In that case the mime type is determined by the servletcontext
+	 *
+	 * @return the mimeType
+	 */
+	public String getMimeType() {
+	    return mimeType;
+	}
+	
+	/**
+	 * Gets the name of the resource 
+	 * 
+	 * @return name of the resource
+	 */
+	public String getName() {
+	    return name;
+	}
+
+
+	/**
+	 * Gets the length of the resource content
+	 * 
+	 * @return length of the resource content
+	 */
+	public long getResourceLength() {
+	    return (contentLength);
+	}
+
+	/**
+	 * Gets the relative uri of the resource 
+	 * 
+	 * @return relative uri of the resource
+	 */
+	public String getUrl() {
+		return url;
+	}
+
+	/**
      * Determines whether the StoredObject is a folder or a resource
      * 
      * @return true if the StoredObject is a collection
@@ -41,6 +109,15 @@ public class StoredObject {
     }
 
     /**
+	 * Gets the state of the resource
+	 * 
+	 * @return true if the resource is in lock-null state
+	 */
+	public boolean isNullResource() {
+	    return isNullRessource;
+	}
+
+	/**
      * Determines whether the StoredObject is a folder or a resource
      * 
      * @return true if the StoredObject is a resource
@@ -50,6 +127,16 @@ public class StoredObject {
     }
 
     /**
+	 * Sets the date of the creation
+	 * 
+	 * @param d
+	 *      date of the creation
+	 */
+	public void setCreationDate(Date c) {
+	    this.creationDate = c;
+	}
+
+	/**
      * Sets a new StoredObject as a collection or resource
      * 
      * @param f
@@ -57,15 +144,6 @@ public class StoredObject {
      */
     public void setFolder(boolean f) {
         this.isFolder = f;
-    }
-
-    /**
-     * Gets the date of the last modification
-     * 
-     * @return last modification Date
-     */
-    public Date getLastModified() {
-        return (lastModified);
     }
 
     /**
@@ -79,34 +157,31 @@ public class StoredObject {
     }
 
     /**
-     * Gets the date of the creation
-     * 
-     * @return creation Date
-     */
-    public Date getCreationDate() {
-        return (creationDate);
-    }
+	 * Set the mime type of this object
+	 * 
+	 * @param mimeType the mimeType to set
+	 */
+	public void setMimeType(String mimeType) {
+	    this.mimeType = mimeType;
+	}
 
-    /**
-     * Sets the date of the creation
-     * 
-     * @param d
-     *      date of the creation
-     */
-    public void setCreationDate(Date c) {
-        this.creationDate = c;
-    }
+	/**
+	 * Sets a StoredObject as a lock-null resource
+	 * 
+	 * @param f
+	 *      true to set the resource as lock-null resource
+	 */
+	public void setNullResource(boolean f) {
+	    this.isNullRessource = f;
+	    this.isFolder = false;
+	    this.creationDate = null;
+	    this.lastModified = null;
+	    // this.content = null;
+	    this.contentLength = 0;
+	    this.mimeType= null;
+	}
 
-    /**
-     * Gets the length of the resource content
-     * 
-     * @return length of the resource content
-     */
-    public long getResourceLength() {
-        return (contentLength);
-    }
-
-    /**
+	/**
      * Sets the length of the resource content
      * 
      * @param l
@@ -116,50 +191,15 @@ public class StoredObject {
         this.contentLength = l;
     }
 
-    /**
-     * Gets the state of the resource
-     * 
-     * @return true if the resource is in lock-null state
-     */
-    public boolean isNullResource() {
-        return isNullRessource;
-    }
-
-    /**
-     * Sets a StoredObject as a lock-null resource
-     * 
-     * @param f
-     *      true to set the resource as lock-null resource
-     */
-    public void setNullResource(boolean f) {
-        this.isNullRessource = f;
-        this.isFolder = false;
-        this.creationDate = null;
-        this.lastModified = null;
-        // this.content = null;
-        this.contentLength = 0;
-        this.mimeType= null;
-    }
-
-    /**
-     * Retrieve the myme type from the store object.
-     * Can also return NULL if the store does not handle
-     * mime type stuff.
-     * In that case the mime type is determined by the servletcontext
-     *
-     * @return the mimeType
-     */
-    public String getMimeType() {
-        return mimeType;
-    }
-
-    /**
-     * Set the mime type of this object
-     * 
-     * @param mimeType the mimeType to set
-     */
-    public void setMimeType(String mimeType) {
-        this.mimeType = mimeType;
-    }
+	private static String getResourceName(String relativeUrl) {
+		String retval = null;
+		if(StringUtils.isNotEmpty(relativeUrl)) {
+			String[] s = relativeUrl.split("/");
+			if(s.length>0) {
+				retval = s[s.length-1];
+			}
+		}
+		return retval;
+	}
 
 }

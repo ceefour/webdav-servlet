@@ -30,8 +30,8 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.WebDAVException;
-import net.sf.webdav.fromcatalina.RequestUtil;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.RequestUtil;
 
 public class DoCopy extends AbstractMethod {
 

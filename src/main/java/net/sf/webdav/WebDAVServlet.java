@@ -20,6 +20,8 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import javax.servlet.ServletException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.app.Velocity;
+
 import net.sf.webdav.exceptions.WebDAVException;
 
 /**
@@ -44,8 +46,8 @@ public class WebDAVServlet extends WebDAVServletBean {
 	private static final String INIT_PARAM_NO_CONTENT_LENGTH_HEADERS = "no-content-length-headers";
 	private static final String INIT_PARAM_RESOURCE_HANDLER_IMPL = "ResourceHandlerImplementation";
 	private static final String INIT_PARAM_ROOTPATH = "rootpath";
-	private static final String INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE = "*WAR-FILE-ROOT*";	
-	
+	private static final String INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE = "*WAR-FILE-ROOT*";
+
 	public void init() throws ServletException {
 
 		// Parameters from web.xml
@@ -62,6 +64,16 @@ public class WebDAVServlet extends WebDAVServletBean {
 		String dftIndexFile = getInitParameter(INIT_PARAM_DEFAULT_INDEX_FILE);
 		String insteadOf404 = getInitParameter(INIT_PARAM_INSTEAD_OF_404);
 		int noContentLengthHeader = getIntInitParameter(INIT_PARAM_NO_CONTENT_LENGTH_HEADERS, -1);
+		
+		/**
+		 *  Use singletron pattern to create and initialize the Velocity engine
+		 */
+		Velocity.setProperty("resource.loader", "webapp");
+		Velocity.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
+		Velocity.setProperty("webapp.resource.loader.path", "/WEB-INF/velocity/");
+		Velocity.setApplicationAttribute("javax.servlet.ServletContext", getServletConfig().getServletContext());
+		Velocity.init();	
+
 
 		super.init(webdavStore, dftIndexFile, insteadOf404, noContentLengthHeader, lazyFolderCreationOnPut);
 	}

@@ -14,12 +14,30 @@
  * limitations under the License.
  */
 
-package net.sf.webdav.fromcatalina;
+package net.sf.webdav.util;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
 
 /**
  * XMLWriter helper class.
@@ -28,6 +46,8 @@ import java.util.Map;
  */
 public class XMLWriter {
 
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(XMLWriter.class);
+	
     // -------------------------------------------------------------- Constants
 
     /**
@@ -66,6 +86,9 @@ public class XMLWriter {
      * Is true until the root element is written
      */
     protected boolean _isRootElement = true;
+    
+    
+    private final static String XMLNS = "xmlns";
 
     // ----------------------------------------------------------- Constructors
 
@@ -128,48 +151,74 @@ public class XMLWriter {
      *      Element type
      */
     public void writeElement(String name, int type) {
-        StringBuffer nsdecl = new StringBuffer();
+    	// validate for namespace
+        int pos = name.lastIndexOf(CharsetUtil.CHAR_COLON);
+        if (pos >= 0) {
+            // split namespace and localname
+            String fullns = name.substring(0, pos);
+            name = name.substring(pos + 1);
+            writeElement(fullns,name,type);
+        } else {
+            throw new IllegalArgumentException("All XML elements must have a namespace");
+        }
+    }
+    
+    /**
+     * Write an element.
+     * 
+     * @param fullns
+     *      Element namespave
+     * @param name
+     *      Element name
+     * @param type
+     *      Element type
+     */
+    public void writeElement(String fullns, String name, int type) {
+    	// validate namespace presence
+    	if(StringUtils.isEmpty(fullns)) {
+            throw new IllegalArgumentException("All XML elements must have a namespace");
+    	}
 
+        // start writing the buffer
+        StringBuffer nsdecl = new StringBuffer();
+        // when rootelement, add namespace declarations
         if (_isRootElement) {
-            for (Iterator<String> iter = _namespaces.keySet().iterator(); iter
-                    .hasNext();) {
+            for (Iterator<String> iter = _namespaces.keySet().iterator(); iter.hasNext();) {
                 String fullName = (String) iter.next();
                 String abbrev = (String) _namespaces.get(fullName);
-                nsdecl.append(" xmlns:").append(abbrev).append("=\"").append(
-                        fullName).append("\"");
+                nsdecl.append(CharsetUtil.CHAR_SPACE).append(XMLNS).append(CharsetUtil.CHAR_COLON).append(abbrev).append(CharsetUtil.CHAR_EQUALS).append(CharsetUtil.DQUOTE).append(fullName).append(CharsetUtil.DQUOTE);
             }
             _isRootElement = false;
         }
-
-        int pos = name.lastIndexOf(':');
+        
+    	// validate localname
+        int pos = name.lastIndexOf(CharsetUtil.CHAR_COLON);
+        // we may still have a namespace in the localname 
         if (pos >= 0) {
             // lookup prefix for namespace
-            String fullns = name.substring(0, pos);
             String prefix = (String) _namespaces.get(fullns);
             if (prefix == null) {
                 // there is no prefix for this namespace
                 name = name.substring(pos + 1);
-                nsdecl.append(" xmlns=\"").append(fullns).append("\"");
+                // add namesapce declaration to tag
+                nsdecl.append(CharsetUtil.CHAR_SPACE).append(XMLNS).append(CharsetUtil.CHAR_EQUALS).append(CharsetUtil.DQUOTE).append(fullns).append(CharsetUtil.DQUOTE);
             } else {
                 // there is a prefix
-                name = prefix + ":" + name.substring(pos + 1);
+                name = prefix + CharsetUtil.CHAR_COLON + name.substring(pos + 1);
             }
-        } else {
-            throw new IllegalArgumentException(
-                    "All XML elements must have a namespace");
         }
 
         switch (type) {
-        case OPENING:
-            _buffer.append("<" + name + nsdecl + ">");
-            break;
-        case CLOSING:
-            _buffer.append("</" + name + ">\n");
-            break;
-        case NO_CONTENT:
-        default:
-            _buffer.append("<" + name + nsdecl + "/>");
-            break;
+	        case OPENING:
+	            _buffer.append(CharsetUtil.LESS_THAN + name + nsdecl + CharsetUtil.GREATER_THAN);
+	            break;
+	        case CLOSING:
+	            _buffer.append(CharsetUtil.LESS_THAN + CharsetUtil.FORWARD_SLASH + name + CharsetUtil.GREATER_THAN +"\n");
+	            break;
+	        case NO_CONTENT:
+	        default:
+	            _buffer.append(CharsetUtil.LESS_THAN + name + nsdecl + CharsetUtil.FORWARD_SLASH + CharsetUtil.GREATER_THAN);
+	            break;
         }
     }
 
@@ -205,7 +254,28 @@ public class XMLWriter {
      */
     public void sendData() throws IOException {
         if (_writer != null) {
-            _writer.write(_buffer.toString());
+        	if(LOG.isDebugEnabled()) {
+        		String data = _buffer.toString();
+        		try {
+					DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
+					
+					Transformer transformer = TransformerFactory.newInstance().newTransformer();
+					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+					transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+					transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+					
+					StreamResult result = new StreamResult(new StringWriter());
+					DOMSource source = new DOMSource(documentBuilder.parse(IOUtils.toInputStream(data,java.nio.charset.StandardCharsets.UTF_8.name())));
+					transformer.transform(source, result);
+					
+	        		LOG.debug(result.getWriter().toString());
+				} catch (ServletException | ParserConfigurationException | TransformerFactoryConfigurationError | SAXException | TransformerException e) {
+					e.printStackTrace();
+				}
+        		_writer.write(data);
+        	} else {
+        		_writer.write(_buffer.toString());
+        	}
             _writer.flush();
             _buffer = new StringBuffer();
         }

@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.webdav.exceptions.UnauthenticatedException;
 import net.sf.webdav.exceptions.WebDAVException;
-import net.sf.webdav.fromcatalina.MD5Encoder;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.methods.DoCopy;
 import net.sf.webdav.methods.DoDelete;
@@ -29,6 +28,7 @@ import net.sf.webdav.methods.DoPropfind;
 import net.sf.webdav.methods.DoProppatch;
 import net.sf.webdav.methods.DoPut;
 import net.sf.webdav.methods.DoUnlock;
+import net.sf.webdav.util.MD5Encoder;
 
 public class WebDAVServletBean extends HttpServlet {
 
@@ -196,7 +196,7 @@ public class WebDAVServletBean extends HttpServlet {
 
 	private void debugRequest(String methodName, HttpServletRequest req) {
 		LOG.debug("-----------");
-		LOG.debug("WebDAVServlet\n request: methodName = " + methodName);
+		LOG.debug("Request: methodName = " + methodName);
 		LOG.debug("time: " + System.currentTimeMillis());
 		LOG.debug("path: " + req.getRequestURI());
 		LOG.debug("-----------");

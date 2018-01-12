@@ -34,17 +34,27 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import net.sf.webdav.IMethodExecutor;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.LockFailedException;
-import net.sf.webdav.fromcatalina.URLEncoder;
-import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
+import net.sf.webdav.util.CharsetUtil;
+import net.sf.webdav.util.URLEncoder;
+import net.sf.webdav.util.XMLHelper;
+import net.sf.webdav.util.XMLWriter;
 
 public abstract class AbstractMethod implements IMethodExecutor {
+	
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractMethod.class);
 	
 	private static final String ATTR_INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
 
@@ -57,10 +67,6 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 */
 	protected static URLEncoder URL_ENCODER;
 
-	/**
-	 * Default depth is infinite.
-	 */
-	protected static final int INFINITY = 3;
 
 	/**
 	 * Simple date format for the creation date ISO 8601 representation (partial).
@@ -73,17 +79,47 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final String LAST_MODIFIED_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss z";
 
 	protected static final String LOCAL_DATE_FORMAT = "dd/MM/yy' 'HH:mm:ss";
+		
+	protected static final String FORWARD_SLASH = "/"; 
+
+	protected static final int DEPTH_RESOURCE = 0; 
+	protected static final int DEPTH_RESOURCE_WITH_CHLDREN = 1; 
+	/**
+	 * Default depth is infinite.
+	 */	
+	protected static final int DEPTH_INFINITY = -1; 
+	protected static final String S_DEPTH_RESOURCE = "0"; 
+	protected static final String S_DEPTH_RESOURCE_WITH_CHLDREN = "1"; 
+	protected static final String S_DEPTH_INFINITY = "infinity"; 
+
+	protected static final String HEADER_DEPTH = "Depth"; 
+	protected static final String HEADER_IF = "If"; 
+	protected static final String HEADER_LOCK_TOKEN = "Lock-Token";
+
+	protected static final String PARAM_LOCKTOKEN = "locktoken";
+
+	protected static final String NS_DAV_FULLNAME = "DAV:";
+	protected static final String NS_DAV_PREFIX = "D";
+
+	protected static final String TAG_HREF = "href";
+	protected static final String TAG_MULTISTATUS = "multistatus";
+	protected static final String TAG_RESPONSE = "response";
+	protected static final String TAG_STATUS = "status";
+	
+	private static final String PROTOCOL_HTTP = "http";
+
+	/**
+	 * GMT timezone - all HTTP dates are on GMT
+	 */
+	protected static final String TIMEZONE_GMT = "GMT"; 
 
 	static {
-		/**
-		 * GMT timezone - all HTTP dates are on GMT
-		 */
 		URL_ENCODER = new URLEncoder();
-		URL_ENCODER.addSafeCharacter('-');
-		URL_ENCODER.addSafeCharacter('_');
-		URL_ENCODER.addSafeCharacter('.');
-		URL_ENCODER.addSafeCharacter('*');
-		URL_ENCODER.addSafeCharacter('/');
+		URL_ENCODER.addSafeCharacter(CharsetUtil.CHAR_DASH);
+		URL_ENCODER.addSafeCharacter(CharsetUtil.CHAR_UNDERSCORE);
+		URL_ENCODER.addSafeCharacter(CharsetUtil.CHAR_DOT);
+		URL_ENCODER.addSafeCharacter(CharsetUtil.CHAR_ASTERIX);
+		URL_ENCODER.addSafeCharacter(CharsetUtil.CHAR_FORWARD_SLASH);
 	}
 
 	/**
@@ -110,12 +146,14 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * Timeout for temporary locks
 	 */
 	protected static final int TEMP_TIMEOUT = 10;
-
+	
+	protected static boolean useVelocity = true;
+	
 	public static String lastModifiedDateFormat(final Date date) {
 		DateFormat df = thLastmodifiedDateFormat.get();
 		if (df == null) {
 			df = new SimpleDateFormat(LAST_MODIFIED_DATE_FORMAT, Locale.US);
-			df.setTimeZone(TimeZone.getTimeZone("GMT"));
+			df.setTimeZone(TimeZone.getTimeZone(TIMEZONE_GMT));
 			thLastmodifiedDateFormat.set(df);
 		}
 		return df.format(date);
@@ -125,7 +163,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 		DateFormat df = thCreationDateFormat.get();
 		if (df == null) {
 			df = new SimpleDateFormat(CREATION_DATE_FORMAT);
-			df.setTimeZone(TimeZone.getTimeZone("GMT"));
+			df.setTimeZone(TimeZone.getTimeZone(TIMEZONE_GMT));
 			thCreationDateFormat.set(df);
 		}
 		return df.format(date);
@@ -146,26 +184,24 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 *            The servlet request we are processing
 	 */
 	protected String getRelativePath(HttpServletRequest request) {
-
 		// Are we being processed by a RequestDispatcher.include()?
 		if (request.getAttribute(ATTR_INCLUDE_PATH_INFO) != null) {
 			String result = (String) request.getAttribute(ATTR_INCLUDE_PATH_INFO);
 			// if (result == null)
 			// result = (String) request
 			// .getAttribute("javax.servlet.include.servlet_path");
-			if ((result == null) || (result.equals(""))) {
-				result = "/";
+			if (StringUtils.isEmpty(result)) {
+				result = FORWARD_SLASH;
 			}
 			return (result);
 		}
-
 		// No, extract the desired path directly from the request
 		String result = request.getPathInfo();
 		// if (result == null) {
 		// result = request.getServletPath();
 		// }
-		if ((result == null) || (result.equals(""))) {
-			result = "/";
+		if (StringUtils.isEmpty(result)) {
+			result = FORWARD_SLASH;
 		}
 		return (result);
 
@@ -180,7 +216,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @return parent path
 	 */
 	protected String getParentPath(String path) {
-		int slash = path.lastIndexOf('/');
+		int slash = path.lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH);
 		if (slash != -1) {
 			return path.substring(0, slash);
 		}
@@ -196,26 +232,28 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 */
 	protected String getCleanPath(String path) {
 
-		if (path.endsWith("/") && path.length() > 1) {
+		if (path.endsWith(FORWARD_SLASH) && path.length() > 1) {
 			path = path.substring(0, path.length() - 1);
 		}
 		return path;
 	}
 
 	/**
-	 * Return JAXP document builder instance.
+	 * Return W3C document 
+	 * @throws IOException 
+	 * @throws SAXException 
+	 * @throws ServletException 
+	 * @throws ParserConfigurationException 
 	 */
-	protected DocumentBuilder getDocumentBuilder() throws ServletException {
-		DocumentBuilder documentBuilder = null;
-		DocumentBuilderFactory documentBuilderFactory = null;
-		try {
-			documentBuilderFactory = DocumentBuilderFactory.newInstance();
-			documentBuilderFactory.setNamespaceAware(true);
-			documentBuilder = documentBuilderFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			throw new ServletException("jaxp failed");
+	protected Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
+		DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
+		if(LOG.isDebugEnabled()) {
+			String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
+			LOG.debug(xml);
+			return documentBuilder.parse(IOUtils.toInputStream(xml,java.nio.charset.StandardCharsets.UTF_8.name()));
+		} else {
+			return documentBuilder.parse(new InputSource(request.getInputStream()));
 		}
-		return documentBuilder;
 	}
 
 	/**
@@ -225,13 +263,13 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @return the depth from the depth header
 	 */
 	protected int getDepth(HttpServletRequest req) {
-		int depth = INFINITY;
-		String depthStr = req.getHeader("Depth");
+		int depth = DEPTH_INFINITY;
+		String depthStr = req.getHeader(HEADER_DEPTH);
 		if (depthStr != null) {
-			if (depthStr.equals("0")) {
-				depth = 0;
-			} else if (depthStr.equals("1")) {
-				depth = 1;
+			if (depthStr.equals(S_DEPTH_RESOURCE)) {
+				depth = DEPTH_RESOURCE;
+			} else if (depthStr.equals(S_DEPTH_RESOURCE_WITH_CHLDREN)) {
+				depth = DEPTH_RESOURCE_WITH_CHLDREN;
 			}
 		}
 		return depth;
@@ -257,41 +295,38 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @return the ETag
 	 */
 	protected String getETag(StoredObject so) {
-
 		String resourceLength = "";
 		String lastModified = "";
-
 		if (so != null && so.isResource()) {
-			resourceLength = new Long(so.getResourceLength()).toString();
-			lastModified = new Long(so.getLastModified().getTime()).toString();
+			resourceLength = Long.toString(so.getResourceLength());
+			lastModified = Long.toString(so.getLastModified().getTime());
 		}
-
-		return "W/\"" + resourceLength + "-" + lastModified + "\"";
-
+		return "W/"+CharsetUtil.DQUOTE + resourceLength + CharsetUtil.CHAR_DASH + lastModified + CharsetUtil.DQUOTE;
 	}
 
 	protected String[] getLockIdFromIfHeader(HttpServletRequest req) {
 		String[] ids = new String[2];
-		String id = req.getHeader("If");
+		String id = req.getHeader(HEADER_IF);
 
-		if (id != null && !id.equals("")) {
-			if (id.indexOf(">)") == id.lastIndexOf(">)")) {
-				id = id.substring(id.indexOf("(<"), id.indexOf(">)"));
+		if (StringUtils.isNotEmpty(id)) {
+			// only one locktoken between parenthesis
+			if (id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS) == id.lastIndexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS)) {
+				id = id.substring(id.indexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
 
-				if (id.indexOf("locktoken:") != -1) {
-					id = id.substring(id.indexOf(':') + 1);
+				if (id.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+					id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[0] = id;
 			} else {
-				String firstId = id.substring(id.indexOf("(<"), id.indexOf(">)"));
-				if (firstId.indexOf("locktoken:") != -1) {
-					firstId = firstId.substring(firstId.indexOf(':') + 1);
+				String firstId = id.substring(id.indexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
+				if (firstId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+					firstId = firstId.substring(firstId.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[0] = firstId;
 
-				String secondId = id.substring(id.lastIndexOf("(<"), id.lastIndexOf(">)"));
-				if (secondId.indexOf("locktoken:") != -1) {
-					secondId = secondId.substring(secondId.indexOf(':') + 1);
+				String secondId = id.substring(id.lastIndexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.lastIndexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
+				if (secondId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+					secondId = secondId.substring(secondId.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[1] = secondId;
 			}
@@ -303,13 +338,11 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	}
 
 	protected String getLockIdFromLockTokenHeader(HttpServletRequest req) {
-		String id = req.getHeader("Lock-Token");
-
+		String id = req.getHeader(HEADER_LOCK_TOKEN);
 		if (id != null) {
-			id = id.substring(id.indexOf(":") + 1, id.indexOf(">"));
+			id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1, id.indexOf(CharsetUtil.CHAR_GREATER_THAN));
 
 		}
-
 		return id;
 	}
 
@@ -381,7 +414,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @param errorList
 	 *            List of error to be displayed
 	 */
-	protected void sendReport(HttpServletRequest req, HttpServletResponse resp, Hashtable<String, Integer> errorList)
+	protected void sendReport(HttpServletRequest req, HttpServletResponse resp, Hashtable<String,Integer> errorList)
 			throws IOException {
 
 		if (errorList.size() == 1) {
@@ -399,12 +432,12 @@ public abstract class AbstractMethod implements IMethodExecutor {
 			// String relativePath = getRelativePath(req);
 
 			HashMap<String, String> namespaces = new HashMap<String, String>();
-			namespaces.put("DAV:", "D");
+			namespaces.put(NS_DAV_FULLNAME, NS_DAV_PREFIX);
 
 			XMLWriter generatedXML = new XMLWriter(namespaces);
 			generatedXML.writeXMLHeader();
 
-			generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
+			generatedXML.writeElement(NS_DAV_FULLNAME,TAG_MULTISTATUS,XMLWriter.OPENING);
 
 			Enumeration<String> pathList = errorList.keys();
 			while (pathList.hasMoreElements()) {
@@ -412,9 +445,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
 				String errorPath = (String) pathList.nextElement();
 				int errorCode = ((Integer) errorList.get(errorPath)).intValue();
 
-				generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_RESPONSE,XMLWriter.OPENING);
 
-				generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_HREF,XMLWriter.OPENING);
 				String toAppend = null;
 				if (absoluteUri.endsWith(errorPath)) {
 					toAppend = absoluteUri;
@@ -422,22 +455,22 @@ public abstract class AbstractMethod implements IMethodExecutor {
 					int endIndex = absoluteUri.indexOf(errorPath) + errorPath.length();
 					toAppend = absoluteUri.substring(0, endIndex);
 				}
-				if (toAppend == null) {
-					toAppend = "/";
-				} else if (!toAppend.startsWith("/") && !toAppend.startsWith("http")) {
-					toAppend = "/" + toAppend;
+				if (StringUtils.isEmpty(toAppend)) {
+					toAppend = CharsetUtil.FORWARD_SLASH;
+				} else if (!toAppend.startsWith(CharsetUtil.FORWARD_SLASH) && !toAppend.startsWith(PROTOCOL_HTTP)) {
+					toAppend = CharsetUtil.FORWARD_SLASH + toAppend;
 				}
 				generatedXML.writeText(errorPath);
-				generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
-				generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_HREF,XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_STATUS,XMLWriter.OPENING);
 				generatedXML.writeText("HTTP/1.1 " + errorCode + " " + WebDAVStatus.getStatusText(errorCode));
-				generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_STATUS,XMLWriter.CLOSING);
 
-				generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_RESPONSE,XMLWriter.CLOSING);
 
 			}
 
-			generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
+			generatedXML.writeElement(NS_DAV_FULLNAME,TAG_MULTISTATUS,XMLWriter.CLOSING);
 
 			Writer writer = resp.getWriter();
 			writer.write(generatedXML.toString());

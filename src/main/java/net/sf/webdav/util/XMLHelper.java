@@ -1,11 +1,32 @@
-package net.sf.webdav.fromcatalina;
+package net.sf.webdav.util;
 
 import java.util.Vector;
+
+import javax.servlet.ServletException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class XMLHelper {
+	
+	private static DocumentBuilder documentBuilder;
+	
+	/**
+	 * Return JAXP document builder instance.
+	 * @throws ParserConfigurationException 
+	 */
+	public static DocumentBuilder getDocumentBuilder() throws ServletException, ParserConfigurationException {
+		if(documentBuilder == null) {
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setNamespaceAware(true);
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+		}
+		return documentBuilder;
+	}
+	
 
 	public static Node findSubElement(Node parent, String localName) {
 		if (parent == null) {

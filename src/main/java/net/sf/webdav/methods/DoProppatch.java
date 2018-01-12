@@ -19,10 +19,10 @@ import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.AccessDeniedException;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
-import net.sf.webdav.fromcatalina.XMLHelper;
-import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.XMLHelper;
+import net.sf.webdav.util.XMLWriter;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -116,9 +116,8 @@ public class DoProppatch extends AbstractMethod {
 				Node toremoveNode = null;
 
 				if (req.getContentLength() != 0) {
-					DocumentBuilder documentBuilder = getDocumentBuilder();
 					try {
-						Document document = documentBuilder.parse(new InputSource(req.getInputStream()));
+						Document document = getDocument(req);
 						// Get the root element of the document
 						Element rootElement = document.getDocumentElement();
 
@@ -200,9 +199,6 @@ public class DoProppatch extends AbstractMethod {
 				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
 				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
-			} catch (ServletException e) {
-				e.printStackTrace(); // To change body of catch statement use
-				// File | Settings | File Templates.
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}

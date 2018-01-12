@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
@@ -30,9 +31,9 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
-import net.sf.webdav.fromcatalina.XMLWriter;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
+import net.sf.webdav.util.XMLWriter;
 
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -300,12 +301,8 @@ public class DoLock extends AbstractMethod {
 			throws ServletException, IOException {
 
 		Node lockInfoNode = null;
-		DocumentBuilder documentBuilder = null;
-
-		documentBuilder = getDocumentBuilder();
 		try {
-			Document document = documentBuilder.parse(new InputSource(req.getInputStream()));
-
+			Document document = getDocument(req);
 			// Get the root element of the document
 			Element rootElement = document.getDocumentElement();
 
@@ -409,7 +406,7 @@ public class DoLock extends AbstractMethod {
 			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
 			LOG.error("DOM exception", e);
 			return false;
-		} catch (SAXException e) {
+		} catch (SAXException | ParserConfigurationException e) {
 			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
 			LOG.error("SAX exception", e);
 			return false;
@@ -490,7 +487,7 @@ public class DoLock extends AbstractMethod {
 		int depth = lo.getLockDepth();
 
 		generatedXML.writeElement("DAV::depth", XMLWriter.OPENING);
-		if (depth == INFINITY) {
+		if (depth == DEPTH_INFINITY) {
 			generatedXML.writeText("Infinity");
 		} else {
 			generatedXML.writeText(String.valueOf(depth));
