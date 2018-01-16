@@ -191,7 +191,7 @@ public class DoPropfind extends AbstractMethod {
 
 		parseProperties(transaction, req, generatedXML, currentPath, propertyFindType, properties, mimeType);
 
-		if (depth > 0) {
+		if (depth != 0) {
 			// no need to get name if depth is already zero
 			String[] names = _store.getChildrenNames(transaction, currentPath);
 			names = names == null ? new String[] {} : names;
