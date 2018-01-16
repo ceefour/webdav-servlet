@@ -47,6 +47,8 @@ public class WebDAVServlet extends WebDAVServletBean {
 	private static final String INIT_PARAM_RESOURCE_HANDLER_IMPL = "ResourceHandlerImplementation";
 	private static final String INIT_PARAM_ROOTPATH = "rootpath";
 	private static final String INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE = "*WAR-FILE-ROOT*";
+	
+	public static boolean useVelocity = false;
 
 	public void init() throws ServletException {
 
@@ -68,12 +70,13 @@ public class WebDAVServlet extends WebDAVServletBean {
 		/**
 		 *  Use singletron pattern to create and initialize the Velocity engine
 		 */
-		Velocity.setProperty("resource.loader", "webapp");
-		Velocity.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
-		Velocity.setProperty("webapp.resource.loader.path", "/WEB-INF/velocity/");
-		Velocity.setApplicationAttribute("javax.servlet.ServletContext", getServletConfig().getServletContext());
-		Velocity.init();	
-
+		if(useVelocity) {
+			Velocity.setProperty("resource.loader", "webapp");
+			Velocity.setProperty("webapp.resource.loader.class", "org.apache.velocity.tools.view.WebappResourceLoader");
+			Velocity.setProperty("webapp.resource.loader.path", "/WEB-INF/velocity/");
+			Velocity.setApplicationAttribute("javax.servlet.ServletContext", getServletConfig().getServletContext());
+			Velocity.init();	
+		}
 
 		super.init(webdavStore, dftIndexFile, insteadOf404, noContentLengthHeader, lazyFolderCreationOnPut);
 	}

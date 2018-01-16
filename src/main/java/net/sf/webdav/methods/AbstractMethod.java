@@ -56,7 +56,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	
 	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractMethod.class);
 	
-	private static final String ATTR_INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
+	public static final String ATTR_INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
 
 	private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
 	private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<DateFormat>();
@@ -146,8 +146,6 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * Timeout for temporary locks
 	 */
 	protected static final int TEMP_TIMEOUT = 10;
-	
-	protected static boolean useVelocity = true;
 	
 	public static String lastModifiedDateFormat(final Date date) {
 		DateFormat df = thLastmodifiedDateFormat.get();
@@ -310,22 +308,22 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
 		if (StringUtils.isNotEmpty(id)) {
 			// only one locktoken between parenthesis
-			if (id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS) == id.lastIndexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS)) {
-				id = id.substring(id.indexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
+			if (id.indexOf(CharsetUtil.GREATER_THAN+CharsetUtil.RIGHT_PARENTHESIS) == id.lastIndexOf(CharsetUtil.GREATER_THAN+CharsetUtil.RIGHT_PARENTHESIS)) {
+				id = id.substring(id.indexOf(CharsetUtil.LEFT_PARENTHESIS+CharsetUtil.LESS_THAN), id.indexOf(CharsetUtil.GREATER_THAN+CharsetUtil.RIGHT_PARENTHESIS));
 
-				if (id.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+				if (id.indexOf(PARAM_LOCKTOKEN+CharsetUtil.COLON) != -1) {
 					id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[0] = id;
 			} else {
-				String firstId = id.substring(id.indexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.indexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
-				if (firstId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+				String firstId = id.substring(id.indexOf(CharsetUtil.LEFT_PARENTHESIS+CharsetUtil.LESS_THAN), id.indexOf(CharsetUtil.GREATER_THAN+CharsetUtil.RIGHT_PARENTHESIS));
+				if (firstId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.COLON) != -1) {
 					firstId = firstId.substring(firstId.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[0] = firstId;
 
-				String secondId = id.substring(id.lastIndexOf(CharsetUtil.CHAR_LEFT_PARENTHESIS+CharsetUtil.CHAR_LESS_THAN), id.lastIndexOf(CharsetUtil.CHAR_GREATER_THAN+CharsetUtil.CHAR_RIGHT_PARENTHESIS));
-				if (secondId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.CHAR_COLON) != -1) {
+				String secondId = id.substring(id.lastIndexOf(CharsetUtil.LEFT_PARENTHESIS+CharsetUtil.LESS_THAN), id.lastIndexOf(CharsetUtil.GREATER_THAN+CharsetUtil.RIGHT_PARENTHESIS));
+				if (secondId.indexOf(PARAM_LOCKTOKEN+CharsetUtil.COLON) != -1) {
 					secondId = secondId.substring(secondId.indexOf(CharsetUtil.CHAR_COLON) + 1);
 				}
 				ids[1] = secondId;

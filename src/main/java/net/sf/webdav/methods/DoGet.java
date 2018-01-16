@@ -35,6 +35,7 @@ import net.sf.webdav.IMimeTyper;
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebDAVStore;
 import net.sf.webdav.StoredObject;
+import net.sf.webdav.WebDAVServlet;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 
@@ -116,7 +117,7 @@ public class DoGet extends DoHead {
 				
 				String css = getCSS();
 				
-				if(useVelocity) {
+				if(WebDAVServlet.useVelocity) {
 					Template t = Velocity.getTemplate("webdav.vm");
 					VelocityContext context = new VelocityContext();
 					context.put("path", path);

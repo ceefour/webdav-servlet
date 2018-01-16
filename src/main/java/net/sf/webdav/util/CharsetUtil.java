@@ -14,8 +14,11 @@ public class CharsetUtil {
 	public static final char CHAR_SPACE = ' ';
 	public static final char CHAR_UNDERSCORE = '_';
 		
+	public static final String COLON = ":";
 	public static final String DQUOTE = "\"";
 	public static final String FORWARD_SLASH = "/";
 	public static final String GREATER_THAN = ">";
+	public static final String LEFT_PARENTHESIS = "(";
 	public static final String LESS_THAN = "<";
+	public static final String RIGHT_PARENTHESIS = ")";
 }
