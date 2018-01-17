@@ -70,7 +70,7 @@ public class DoUnlockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -110,7 +110,7 @@ public class DoUnlockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -138,7 +138,7 @@ public class DoUnlockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -171,7 +171,7 @@ public class DoUnlockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -262,7 +262,7 @@ public class DoUnlockTest extends MockTest {
 				// -----LOCK on a non-existing resource successful------
 				// ----------------now try to unlock it-----------------
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();

@@ -59,7 +59,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -104,14 +104,20 @@ public class DoPutTest extends MockTest {
 		_mockery.assertIsSatisfied();
 	}
 
+	/**
+	 * https://tools.ietf.org/html/rfc4918#page-50 
+	 * A PUT that would result in the creation of a resource without an appropriately scoped parent collection MUST fail with a 409 (Conflict).
+	 * 
+	 * @throws Exception
+	 */
 	@Test
 	public void testDoPutIfLazyFolderCreationOnPutIsFalse() throws Exception {
 
-		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
+		// final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -125,13 +131,13 @@ public class DoPutTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, parentPath);
 				will(returnValue(parentSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockRes).sendError(WebDAVStatus.SC_CONFLICT,WebDAVStatus.getStatusText(WebDAVStatus.SC_CONFLICT));
 
-				oneOf(mockReq).getRequestURI();
-				will(returnValue("http://foo.bar".concat(path)));
-
-				oneOf(mockRes).getWriter();
-				will(returnValue(pw));
+//				oneOf(mockReq).getRequestURI();
+//				will(returnValue("http://foo.bar".concat(path)));
+//
+//				oneOf(mockRes).getWriter();
+//				will(returnValue(pw));
 
 			}
 		});
@@ -147,7 +153,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -197,7 +203,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -228,7 +234,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -321,7 +327,7 @@ public class DoPutTest extends MockTest {
 				// // -----LOCK on a non-existing resource successful------
 				// // --------now doPUT on the lock-null resource----------
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();

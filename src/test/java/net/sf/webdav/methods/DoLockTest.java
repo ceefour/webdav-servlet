@@ -76,7 +76,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -125,7 +125,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -182,7 +182,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -240,7 +240,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -297,7 +297,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -354,7 +354,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();

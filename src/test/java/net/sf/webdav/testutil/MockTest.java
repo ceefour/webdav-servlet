@@ -92,8 +92,12 @@ public abstract class MockTest extends Assert {
 		so.setCreationDate(new Date());
 		so.setLastModified(new Date());
 		if (!isFolder) {
-			// so.setResourceContent(resourceContent);
-			so.setResourceLength(resourceContent.length);
+			if(resourceContent!=null) {
+				// so.setResourceContent(resourceContent);
+				so.setResourceLength(resourceContent.length);
+			} else {
+				so.setResourceLength(0L);
+			}
 		} else {
 			so.setResourceLength(0L);
 		}

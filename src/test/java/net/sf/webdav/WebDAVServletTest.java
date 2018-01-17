@@ -82,15 +82,13 @@ public class WebDAVServletTest extends MockTest {
 
                 allowing(servletContext).log("webdav-servlet: init");
 
-                oneOf(servletConfig).getInitParameter(
-                        "ResourceHandlerImplementation");
+                oneOf(servletConfig).getInitParameter("ResourceHandlerImplementation");
                 will(returnValue(""));
 
                 oneOf(servletConfig).getInitParameter("rootpath");
                 will(returnValue("./target/tmpTestData/"));
 
-                exactly(2).of(servletConfig).getInitParameter(
-                        "lazyFolderCreationOnPut");
+                exactly(2).of(servletConfig).getInitParameter("lazyFolderCreationOnPut");
                 will(returnValue("1"));
 
                 oneOf(servletConfig).getInitParameter("default-index-file");
@@ -99,8 +97,7 @@ public class WebDAVServletTest extends MockTest {
                 oneOf(servletConfig).getInitParameter("instead-of-404");
                 will(returnValue(""));
 
-                exactly(2).of(servletConfig).getInitParameter(
-                        "no-content-length-headers");
+                exactly(2).of(servletConfig).getInitParameter("no-content-length-headers");
                 will(returnValue("0"));
             }
         });

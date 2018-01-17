@@ -42,7 +42,7 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -56,7 +56,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(rootSo));
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -64,7 +64,7 @@ public class DoPropfindTest extends MockTest {
 
 				oneOf(mockReq).getContentLength();
 				will(returnValue(0));
-				// no content, which means it is a allprop request
+				// no content, which means it is a all-prop request
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
 
@@ -132,7 +132,7 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -146,7 +146,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(fileSo));
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -190,7 +190,7 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();

@@ -61,7 +61,7 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -90,18 +90,21 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				StoredObject testFileSo = initFileStoredObject(resourceContent);
+				StoredObject testFileSo = initFileStoredObject(null);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				will(returnValue(null));
+				
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -129,7 +132,7 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -139,8 +142,11 @@ public class DoProppatchTest extends MockTest {
 
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
+				
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				will(returnValue(null));
 
-				oneOf(mockReq).getAttribute("javax.servlet.include.request_uri");
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
