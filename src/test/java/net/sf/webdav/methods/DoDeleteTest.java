@@ -247,13 +247,13 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getHeader("If");
 				will(returnValue(wrongLockToken));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockRes).setStatus(WebDAVStatus.SC_LOCKED);
 
-				oneOf(mockReq).getRequestURI();
-				will(returnValue("http://foo.bar".concat(lockedFolderPath)));
+//				oneOf(mockReq).getRequestURI();
+//				will(returnValue("http://foo.bar".concat(lockedFolderPath)));
 
-				oneOf(mockRes).getWriter();
-				will(returnValue(pw));
+//				oneOf(mockRes).getWriter();
+//				will(returnValue(pw));
 
 			}
 		});

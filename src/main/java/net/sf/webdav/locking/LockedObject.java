@@ -2,6 +2,8 @@ package net.sf.webdav.locking;
 
 import java.util.UUID;
 
+import net.sf.webdav.util.CharsetUtil;
+
 /**
  * a helper class for ResourceLocks, represents the Locks
  * 
@@ -168,7 +170,7 @@ public class LockedObject {
 	 * 
 	 */
 	public void removeLockedObject() {
-		if (this != _resourceLocks._root && !this.getPath().equals("/")) {
+		if (this != _resourceLocks._root && !this.getPath().equals(CharsetUtil.FORWARD_SLASH)) {
 
 			int size = _parent._children.length;
 			for (int i = 0; i < size; i++) {
@@ -257,11 +259,14 @@ public class LockedObject {
 	 * helper of checkLocks(). looks if the parents are locked
 	 * 
 	 * @param exclusive
-	 *            wheather the new lock should be exclusive
+	 *            whether the new lock should be exclusive
 	 * @return true if no locks at the parent path are forbidding a new lock
 	 */
 	private boolean checkParents(boolean exclusive) {
-		if (_path.equals("/")) {
+		// return true when there is no parent possible because we are at the first level of tree
+		if (_path.equals(CharsetUtil.FORWARD_SLASH)
+				|| (_path.lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH) == -1)
+			) {
 			return true;
 		} else {
 			if (_owner == null) {
