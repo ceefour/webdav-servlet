@@ -58,7 +58,7 @@ public class DoMove extends AbstractMethod {
 				return;
 			}
 
-			String destinationPath = req.getHeader("Destination");
+			String destinationPath = req.getHeader(HEADER_DESTINATION);
 			if (destinationPath == null) {
 				resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
 				return;
@@ -93,7 +93,7 @@ public class DoMove extends AbstractMethod {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, sourcePath, tempLockOwner);
 				}
 			} else {
-				errorList.put(req.getHeader("Destination"), WebDAVStatus.SC_LOCKED);
+				errorList.put(req.getHeader(HEADER_DESTINATION), WebDAVStatus.SC_LOCKED);
 				sendReport(req, resp, errorList);
 			}
 		} else {

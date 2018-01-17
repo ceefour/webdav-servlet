@@ -95,7 +95,7 @@ public class DoHead extends AbstractMethod {
 			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
 
-					String eTagMatch = req.getHeader("If-None-Match");
+					String eTagMatch = req.getHeader(HEADER_IF_NONE_MATCH);
 					if (eTagMatch != null) {
 						if (eTagMatch.equals(getETag(so))) {
 							resp.setStatus(WebDAVStatus.SC_NOT_MODIFIED);

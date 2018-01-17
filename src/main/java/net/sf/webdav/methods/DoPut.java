@@ -57,7 +57,7 @@ public class DoPut extends AbstractMethod {
 			String path = getRelativePath(req);
 			String parentPath = getParentPath(path);
 
-			_userAgent = req.getHeader("User-Agent");
+			_userAgent = req.getHeader(HEADER_USER_AGENT);
 
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
@@ -79,11 +79,12 @@ public class DoPut extends AbstractMethod {
 					if (parentPath != null && parentSo != null && parentSo.isResource()) {
 						resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 						return;
-
 					} else if (parentPath != null && parentSo == null && _lazyFolderCreationOnPut) {
 						_store.createFolder(transaction, parentPath);
 					} else if (parentPath != null && parentSo == null && !_lazyFolderCreationOnPut) {
-						errorList.put(parentPath, WebDAVStatus.SC_NOT_FOUND);
+						// https://tools.ietf.org/html/rfc4918#page-50 
+						// A PUT that would result in the creation of a resource without an appropriately scoped parent collection MUST fail with a 409 (Conflict).
+						errorList.put(parentPath, WebDAVStatus.SC_CONFLICT);
 						sendReport(req, resp, errorList);
 						return;
 					}
@@ -133,12 +134,12 @@ public class DoPut extends AbstractMethod {
 					doUserAgentWorkaround(resp);
 
 					// setting resourceContent
-					long resourceLength = _store.setResourceContent(transaction, path, req.getInputStream(), null,
-							null);
+					long resourceLength = _store.setResourceContent(transaction, path, req.getInputStream(), null, null);
 
 					so = _store.getStoredObject(transaction, path);
-					if (resourceLength != -1)
+					if (resourceLength != -1) {
 						so.setResourceLength(resourceLength);
+					}
 					// Now lets report back what was actually saved
 				} catch (AccessDeniedException e) {
 					resp.sendError(WebDAVStatus.SC_FORBIDDEN);

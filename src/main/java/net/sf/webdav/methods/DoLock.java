@@ -94,7 +94,7 @@ public class DoLock extends AbstractMethod {
 			// Mac OS Finder (whether 10.4.x or 10.5) can't store files
 			// because executing a LOCK without lock information causes a
 			// SC_BAD_REQUEST
-			_userAgent = req.getHeader("User-Agent");
+			_userAgent = req.getHeader(HEADER_USER_AGENT);
 			if (_userAgent != null && _userAgent.indexOf("Darwin") != -1) {
 				_macLockRequest = true;
 
@@ -421,7 +421,7 @@ public class DoLock extends AbstractMethod {
 	private int getTimeout(ITransaction transaction, HttpServletRequest req) {
 
 		int lockDuration = DEFAULT_TIMEOUT;
-		String lockDurationStr = req.getHeader("Timeout");
+		String lockDurationStr = req.getHeader(HEADER_TIMEOUT);
 
 		if (lockDurationStr == null) {
 			lockDuration = DEFAULT_TIMEOUT;

@@ -132,7 +132,7 @@ public class DoCopy extends AbstractMethod {
 		// Parsing overwrite header
 
 		boolean overwrite = true;
-		String overwriteHeader = req.getHeader("Overwrite");
+		String overwriteHeader = req.getHeader(HEADER_OVERWRITE);
 
 		if (overwriteHeader != null) {
 			overwrite = overwriteHeader.equalsIgnoreCase("T");
@@ -263,7 +263,7 @@ public class DoCopy extends AbstractMethod {
 
 		_store.createFolder(transaction, destinationPath);
 		boolean infiniteDepth = true;
-		String depth = req.getHeader("Depth");
+		String depth = req.getHeader(HEADER_DEPTH);
 		if (depth != null) {
 			if (depth.equals("0")) {
 				infiniteDepth = false;
@@ -318,7 +318,7 @@ public class DoCopy extends AbstractMethod {
 	 *             if an error occurs while sending response
 	 */
 	private String parseDestinationHeader(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String destinationPath = req.getHeader("Destination");
+		String destinationPath = req.getHeader(HEADER_DESTINATION);
 
 		if (destinationPath == null) {
 			resp.sendError(WebDAVStatus.SC_BAD_REQUEST);

@@ -31,7 +31,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
@@ -93,8 +92,13 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final String S_DEPTH_INFINITY = "infinity"; 
 
 	protected static final String HEADER_DEPTH = "Depth"; 
+	protected static final String HEADER_DESTINATION = "Destination"; 
 	protected static final String HEADER_IF = "If"; 
+	protected static final String HEADER_IF_NONE_MATCH = "If-None-Match"; 
 	protected static final String HEADER_LOCK_TOKEN = "Lock-Token";
+	protected static final String HEADER_OVERWRITE = "Overwrite"; 
+	protected static final String HEADER_TIMEOUT = "Timeout"; 
+	protected static final String HEADER_USER_AGENT = "User-Agent"; 
 
 	protected static final String PARAM_LOCKTOKEN = "locktoken";
 
