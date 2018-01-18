@@ -47,10 +47,13 @@ public class DoMove extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String sourcePath = getRelativePath(req);
+		String destinationPath = req.getHeader(HEADER_DESTINATION);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+sourcePath+" -> "+destinationPath);
+		}
 
 		if (!_readOnly) {
-			String sourcePath = getRelativePath(req);
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
@@ -58,7 +61,6 @@ public class DoMove extends AbstractMethod {
 				return;
 			}
 
-			String destinationPath = req.getHeader(HEADER_DESTINATION);
 			if (destinationPath == null) {
 				resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
 				return;

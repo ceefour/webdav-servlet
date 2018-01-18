@@ -21,6 +21,8 @@ import java.util.Hashtable;
 
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.exceptions.LockFailedException;
+import net.sf.webdav.util.CharsetUtil;
+import net.sf.webdav.util.URLUtil;
 
 /**
  * simple locking management for concurrent data access, NOT the webdav locking.
@@ -71,14 +73,16 @@ public class ResourceLocks implements IResourceLocks {
 	private boolean _temporary = true;
 
 	public ResourceLocks() {
-		_root = new LockedObject(this, "/", true);
-		_tempRoot = new LockedObject(this, "/", false);
+		_root = new LockedObject(this, CharsetUtil.FORWARD_SLASH, true);
+		_tempRoot = new LockedObject(this, CharsetUtil.FORWARD_SLASH, false);
 	}
 
 	public synchronized boolean lock(ITransaction transaction, String path, String owner, boolean exclusive, int depth,
 			int timeout, boolean temporary) throws LockFailedException {
 
 		LockedObject lo = null;
+		
+		path = URLUtil.getCleanPath(path);
 
 		if (temporary) {
 			lo = generateTempLockedObjects(transaction, path);
@@ -142,6 +146,8 @@ public class ResourceLocks implements IResourceLocks {
 	}
 
 	public synchronized void unlockTemporaryLockedObjects(ITransaction transaction, String path, String owner) {
+		path = URLUtil.getCleanPath(path);
+		
 		if (_tempLocks.containsKey(path)) {
 			LockedObject lo = _tempLocks.get(path);
 			lo.removeLockedObjectOwner(owner);
@@ -158,7 +164,6 @@ public class ResourceLocks implements IResourceLocks {
 		}
 
 		checkTimeouts(transaction, _temporary);
-
 	}
 
 	public void checkTimeouts(ITransaction transaction, boolean temporary) {
@@ -181,7 +186,6 @@ public class ResourceLocks implements IResourceLocks {
 				}
 			}
 		}
-
 	}
 
 	public boolean exclusiveLock(ITransaction transaction, String path, String owner, int depth, int timeout)
@@ -203,6 +207,7 @@ public class ResourceLocks implements IResourceLocks {
 	}
 
 	public LockedObject getLockedObjectByPath(ITransaction transaction, String path) {
+		path = URLUtil.getCleanPath(path);
 		if (_locks.containsKey(path)) {
 			return (LockedObject) this._locks.get(path);
 		} else {
@@ -219,6 +224,7 @@ public class ResourceLocks implements IResourceLocks {
 	}
 
 	public LockedObject getTempLockedObjectByPath(ITransaction transaction, String path) {
+		path = URLUtil.getCleanPath(path);
 		if (_tempLocks.containsKey(path)) {
 			return (LockedObject) this._tempLocks.get(path);
 		} else {
@@ -236,9 +242,10 @@ public class ResourceLocks implements IResourceLocks {
 	 * @return the LockedObject for path.
 	 */
 	private LockedObject generateLockedObjects(ITransaction transaction, String path) {
+		path = URLUtil.getCleanPath(path);
 		if (!_locks.containsKey(path)) {
 			LockedObject returnObject = new LockedObject(this, path, !_temporary);
-			String parentPath = getParentPath(path);
+			String parentPath = URLUtil.getParentPath(path);
 			if (parentPath != null) {
 				LockedObject parentLockedObject = generateLockedObjects(transaction, parentPath);
 				parentLockedObject.addChild(returnObject);
@@ -249,7 +256,6 @@ public class ResourceLocks implements IResourceLocks {
 			// there is already a LockedObject on the specified path
 			return (LockedObject) this._locks.get(path);
 		}
-
 	}
 
 	/**
@@ -262,9 +268,10 @@ public class ResourceLocks implements IResourceLocks {
 	 * @return the LockedObject for path.
 	 */
 	private LockedObject generateTempLockedObjects(ITransaction transaction, String path) {
+		path = URLUtil.getCleanPath(path);
 		if (!_tempLocks.containsKey(path)) {
 			LockedObject returnObject = new LockedObject(this, path, _temporary);
-			String parentPath = getParentPath(path);
+			String parentPath = URLUtil.getParentPath(path);
 			if (parentPath != null) {
 				LockedObject parentLockedObject = generateTempLockedObjects(transaction, parentPath);
 				parentLockedObject.addChild(returnObject);
@@ -275,7 +282,6 @@ public class ResourceLocks implements IResourceLocks {
 			// there is already a LockedObject on the specified path
 			return (LockedObject) this._tempLocks.get(path);
 		}
-
 	}
 
 	/**
@@ -330,28 +336,6 @@ public class ResourceLocks implements IResourceLocks {
 				}
 			} else {
 				return false;
-			}
-		}
-	}
-
-	/**
-	 * creates the parent path from the given path by removing the last '/' and
-	 * everything after that
-	 * 
-	 * @param path
-	 *            the path
-	 * @return parent path
-	 */
-	private String getParentPath(String path) {
-		int slash = path.lastIndexOf('/');
-		if (slash == -1) {
-			return null;
-		} else {
-			if (slash == 0) {
-				// return "root" if parent path is empty string
-				return "/";
-			} else {
-				return path.substring(0, slash);
 			}
 		}
 	}

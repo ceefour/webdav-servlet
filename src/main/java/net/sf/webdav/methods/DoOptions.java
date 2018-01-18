@@ -43,10 +43,12 @@ public class DoOptions extends DeterminableMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 
 		String tempLockOwner = "doOptions" + System.currentTimeMillis() + req.toString();
-		String path = getRelativePath(req);
 		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 			StoredObject so = null;
 			try {

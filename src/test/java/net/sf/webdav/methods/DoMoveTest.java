@@ -11,6 +11,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
+import net.sf.webdav.util.URLUtil;
 
 import org.jmock.Expectations;
 import org.junit.BeforeClass;
@@ -50,6 +51,15 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				will(returnValue(null));
+
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(sourceFilePath));
+				
+				oneOf(mockReq).getHeader("Destination");
+				will(returnValue(destFilePath));
+				
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
 			}
 		});
@@ -102,38 +112,38 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
 				StoredObject destFileSo = null;
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).createResource(mockTransaction, destFilePath);
+				oneOf(mockStore).createResource(mockTransaction, URLUtil.getCleanPath(destFilePath));
 
-				oneOf(mockStore).getResourceContent(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getResourceContent(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(dsis));
 
-				oneOf(mockStore).setResourceContent(mockTransaction, destFilePath, dsis, null, null);
+				oneOf(mockStore).setResourceContent(mockTransaction, URLUtil.getCleanPath(destFilePath), dsis, null, null);
 				will(returnValue(8L));
 
 				destFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 			}
 		});
 
@@ -185,12 +195,12 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
 				StoredObject destFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
@@ -246,41 +256,41 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
 				StoredObject destFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, destFilePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).createResource(mockTransaction, destFilePath);
+				oneOf(mockStore).createResource(mockTransaction, URLUtil.getCleanPath(destFilePath));
 
-				oneOf(mockStore).getResourceContent(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getResourceContent(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(dsis));
 
-				oneOf(mockStore).setResourceContent(mockTransaction, destFilePath, dsis, null, null);
+				oneOf(mockStore).setResourceContent(mockTransaction, URLUtil.getCleanPath(destFilePath), dsis, null, null);
 				will(returnValue(8L));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 			}
 		});
 
@@ -332,7 +342,7 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceFileSo = null;
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
@@ -359,10 +369,10 @@ public class DoMoveTest extends MockTest {
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
-				will(returnValue(destFilePath));
+				will(returnValue(sourceFilePath));
 
 				exactly(2).of(mockReq).getHeader("Destination");
-				will(returnValue(destFilePath));
+				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServerName();
 				will(returnValue("server_name"));
@@ -371,7 +381,7 @@ public class DoMoveTest extends MockTest {
 				will(returnValue(""));
 
 				oneOf(mockReq).getPathInfo();
-				will(returnValue(destFilePath));
+				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
@@ -380,7 +390,7 @@ public class DoMoveTest extends MockTest {
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
-				will(returnValue(destFilePath));
+				will(returnValue(sourceFilePath));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
 			}
@@ -434,64 +444,64 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				StoredObject destCollectionSo = null;
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 				will(returnValue(destCollectionSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
-				oneOf(mockStore).createFolder(mockTransaction, destCollectionPath);
+				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 
 				oneOf(mockReq).getHeader("Depth");
 				will(returnValue(null));
 
 				String[] sourceChildren = new String[] { "sourceFile" };
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceChildren));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath + "/sourceFile");
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath,"/sourceFile"));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).createResource(mockTransaction, destCollectionPath + "/sourceFile");
+				oneOf(mockStore).createResource(mockTransaction, URLUtil.getCleanPath(destCollectionPath,"/sourceFile"));
 
-				oneOf(mockStore).getResourceContent(mockTransaction, sourceCollectionPath + "/sourceFile");
+				oneOf(mockStore).getResourceContent(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath,"/sourceFile"));
 				will(returnValue(dsis));
 
-				oneOf(mockStore).setResourceContent(mockTransaction, destCollectionPath + "/sourceFile", dsis, null,
+				oneOf(mockStore).setResourceContent(mockTransaction, URLUtil.getCleanPath(destCollectionPath,"/sourceFile"), dsis, null,
 						null);
 				will(returnValue(8L));
 
 				StoredObject movedSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destCollectionPath + "/sourceFile");
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath,"/sourceFile"));
 				will(returnValue(movedSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				sourceChildren = new String[] { "sourceFile" };
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceChildren));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 			}
 		});
 
@@ -543,12 +553,12 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				StoredObject destCollectionSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, destCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 				will(returnValue(destCollectionSo));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
@@ -603,75 +613,75 @@ public class DoMoveTest extends MockTest {
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				StoredObject destCollectionSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, overwritePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath));
 				will(returnValue(destCollectionSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, overwritePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath));
 				will(returnValue(destCollectionSo));
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, overwritePath);
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(overwritePath));
 				will(returnValue(destChildren));
 
 				StoredObject destFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, overwritePath + "/destFile");
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath,"/destFile"));
 				will(returnValue(destFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, overwritePath + "/destFile");
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(overwritePath,"/destFile"));
 
-				oneOf(mockStore).removeObject(mockTransaction, overwritePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(overwritePath));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
-				oneOf(mockStore).createFolder(mockTransaction, overwritePath);
+				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(overwritePath));
 
 				oneOf(mockReq).getHeader("Depth");
 				will(returnValue(null));
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceChildren));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).createResource(mockTransaction, overwritePath + "/sourceFile");
+				oneOf(mockStore).createResource(mockTransaction, URLUtil.getCleanPath(overwritePath,"/sourceFile"));
 
-				oneOf(mockStore).getResourceContent(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getResourceContent(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(dsis));
 
-				oneOf(mockStore).setResourceContent(mockTransaction, overwritePath + "/sourceFile", dsis, null, null);
+				oneOf(mockStore).setResourceContent(mockTransaction, URLUtil.getCleanPath(overwritePath,"/sourceFile"), dsis, null, null);
 
 				StoredObject movedSo = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, overwritePath + "/sourceFile");
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath,"/sourceFile"));
 				will(returnValue(movedSo));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				sourceChildren = new String[] { "sourceFile" };
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceChildren));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceFilePath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 
-				oneOf(mockStore).removeObject(mockTransaction, sourceCollectionPath);
+				oneOf(mockStore).removeObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 			}
 		});
 

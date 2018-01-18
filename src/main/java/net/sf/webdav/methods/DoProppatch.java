@@ -21,6 +21,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.URLUtil;
 import net.sf.webdav.util.XMLHelper;
 import net.sf.webdav.util.XMLWriter;
 
@@ -45,15 +46,17 @@ public class DoProppatch extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 
 		if (_readOnly) {
 			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			return;
 		}
 
-		String path = getRelativePath(req);
-		String parentPath = getParentPath(getCleanPath(path));
+		String parentPath = URLUtil.getParentPath(path);
 
 		Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
@@ -78,7 +81,7 @@ public class DoProppatch extends AbstractMethod {
 			LockedObject lo = null;
 			try {
 				so = _store.getStoredObject(transaction, path);
-				lo = _resourceLocks.getLockedObjectByPath(transaction, getCleanPath(path));
+				lo = _resourceLocks.getLockedObjectByPath(transaction, path);
 
 				if (so == null) {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -110,7 +113,7 @@ public class DoProppatch extends AbstractMethod {
 				// contains all properties from
 				// toset and toremove
 
-				path = getCleanPath(getRelativePath(req));
+				path = getRelativePath(req);
 
 				Node tosetNode = null;
 				Node toremoveNode = null;

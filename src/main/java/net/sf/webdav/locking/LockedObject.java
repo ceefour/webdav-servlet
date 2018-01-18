@@ -3,6 +3,7 @@ package net.sf.webdav.locking;
 import java.util.UUID;
 
 import net.sf.webdav.util.CharsetUtil;
+import net.sf.webdav.util.URLUtil;
 
 /**
  * a helper class for ResourceLocks, represents the Locks
@@ -63,7 +64,7 @@ public class LockedObject {
 	 *            indicates if the LockedObject should be temporary or not
 	 */
 	public LockedObject(ResourceLocks resLocks, String path, boolean temporary) {
-		_path = path;
+		_path = URLUtil.getCleanPath(path);
 		_id = UUID.randomUUID().toString();
 		_resourceLocks = resLocks;
 

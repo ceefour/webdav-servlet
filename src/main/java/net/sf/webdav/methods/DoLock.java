@@ -33,6 +33,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
+import net.sf.webdav.util.URLUtil;
 import net.sf.webdav.util.XMLWriter;
 
 import org.w3c.dom.DOMException;
@@ -70,14 +71,16 @@ public class DoLock extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		_path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+_path);
+		}
 
 		if (_readOnly) {
 			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			return;
 		} else {
-			_path = getRelativePath(req);
-			_parentPath = getParentPath(getCleanPath(_path));
+			_parentPath = URLUtil.getParentPath(_path);
 
 			// Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 

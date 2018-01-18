@@ -112,13 +112,13 @@ public class DoHeadTest extends MockTest {
 
 				StoredObject fooSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
 				oneOf(mockReq).getRequestURI();
 				will(returnValue("/foo/"));
 
-				oneOf(mockRes).encodeRedirectURL("/foo//indexFile");
+				oneOf(mockRes).encodeRedirectURL("/foo/indexFile");
 
 				oneOf(mockRes).sendRedirect("");
 			}

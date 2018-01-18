@@ -30,6 +30,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
+import net.sf.webdav.util.URLUtil;
 
 public class DoMkcol extends AbstractMethod {
 
@@ -47,11 +48,13 @@ public class DoMkcol extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 
 		if (!_readOnly) {
-			String path = getRelativePath(req);
-			String parentPath = getParentPath(getCleanPath(path));
+			String parentPath = URLUtil.getParentPath(path);
 
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 

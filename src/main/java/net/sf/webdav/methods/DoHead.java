@@ -31,6 +31,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.URLUtil;
 
 public class DoHead extends AbstractMethod {
 
@@ -55,12 +56,12 @@ public class DoHead extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
-
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 		// determines if the uri exists.
 		boolean bUriExists = false;
-
-		String path = getRelativePath(req);
 
 		StoredObject so;
 		try {
@@ -80,7 +81,7 @@ public class DoHead extends AbstractMethod {
 		if (so != null) {
 			if (so.isFolder()) {
 				if (_dftIndexFile != null && !_dftIndexFile.trim().equals("")) {
-					resp.sendRedirect(resp.encodeRedirectURL(req.getRequestURI() + this._dftIndexFile));
+					resp.sendRedirect(resp.encodeRedirectURL(URLUtil.getCleanPath(req.getRequestURI(),this._dftIndexFile)));
 					return;
 				}
 			} else if (so.isNullResource()) {

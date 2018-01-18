@@ -40,9 +40,16 @@ public class DoProppatchTest extends MockTest {
 
 	@Test
 	public void doProppatchIfReadOnly() throws Exception {
-
+		final String path = "/readinly";
+		
 		_mockery.checking(new Expectations() {
 			{
+				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				will(returnValue(null));
+
+				oneOf(mockReq).getPathInfo();
+				will(returnValue(path));
+				
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
 			}
 		});

@@ -12,6 +12,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.testutil.MockTest;
+import net.sf.webdav.util.URLUtil;
 
 import org.jmock.Expectations;
 import org.junit.BeforeClass;
@@ -90,7 +91,7 @@ public class DoPropfindTest extends MockTest {
 
 				StoredObject file1So = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, path + "file1");
+				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(path,"file1"));
 				will(returnValue(file1So));
 
 				oneOf(mockReq).getContextPath();
@@ -99,7 +100,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue(path));
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, path + "file1");
+				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(path,"file1"));
 				will(returnValue(new String[] {}));
 
 				StoredObject file2So = initFileStoredObject(resourceContent);

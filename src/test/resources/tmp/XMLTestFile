@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<D:prop xmlns:D="DAV:"><D:lockdiscovery><D:activelock><D:locktype><D:null/></D:locktype>
-<D:lockscope><D:shared/></D:lockscope>
-<D:depth>-1</D:depth>
-<D:owner><D:href>null</D:href>
-</D:owner>
-<D:timeout>Second-604799</D:timeout>
-<D:locktoken><D:href>opaquelocktoken:bd095af6-d35e-436b-aee2-97ba501c32d8</D:href>
-</D:locktoken>
-</D:activelock>
-</D:lockdiscovery>
-</D:prop>
+<prop xmlns:D="DAV:"><lockdiscovery><activelock><locktype><null/></locktype>
+<lockscope><shared/></lockscope>
+<depth>Infinity</depth>
+<owner><href>null</href>
+</owner>
+<timeout>Second-604800</timeout>
+<locktoken><href>opaquelocktoken:e4eceba6-38ae-4e4e-9168-69d05254f2e1</href>
+</locktoken>
+</activelock>
+</lockdiscovery>
+</prop>

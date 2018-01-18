@@ -32,6 +32,7 @@ import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
 import net.sf.webdav.util.RequestUtil;
+import net.sf.webdav.util.URLUtil;
 
 public class DoCopy extends AbstractMethod {
 
@@ -51,11 +52,11 @@ public class DoCopy extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
-
 		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 		if (!_readOnly) {
-
 			String tempLockOwner = "doCopy" + System.currentTimeMillis() + req.toString();
 			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
@@ -110,14 +111,20 @@ public class DoCopy extends AbstractMethod {
 		}
 
 		String path = getRelativePath(req);
-
+		
 		if (path.equals(destinationPath)) {
 			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			return false;
 		}
 
 		Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
-		String parentDestinationPath = getParentPath(getCleanPath(destinationPath));
+		String parentPath = URLUtil.getParentPath(path);
+		String parentDestinationPath = URLUtil.getParentPath(destinationPath);
+
+		if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
+			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			return false; // parent is locked
+		}
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, parentDestinationPath)) {
 			resp.setStatus(WebDAVStatus.SC_LOCKED);
@@ -275,32 +282,30 @@ public class DoCopy extends AbstractMethod {
 
 			StoredObject childSo;
 			for (int i = children.length - 1; i >= 0; i--) {
-				children[i] = "/" + children[i];
+				String childSourcePath = URLUtil.getCleanPath(sourcePath,  children[i]);
+				String destinationSourcePath = URLUtil.getCleanPath(destinationPath,  children[i]);
 				try {
-					childSo = _store.getStoredObject(transaction, (sourcePath + children[i]));
+					childSo = _store.getStoredObject(transaction, childSourcePath);
 					if (childSo.isResource()) {
-						_store.createResource(transaction, destinationPath + children[i]);
-						long resourceLength = _store.setResourceContent(transaction, destinationPath + children[i],
-								_store.getResourceContent(transaction, sourcePath + children[i]), null, null);
+						_store.createResource(transaction, destinationSourcePath);
+						long resourceLength = _store.setResourceContent(transaction,destinationSourcePath,
+								_store.getResourceContent(transaction, childSourcePath), null, null);
 
 						if (resourceLength != -1) {
-							StoredObject destinationSo = _store.getStoredObject(transaction,
-									destinationPath + children[i]);
+							StoredObject destinationSo = _store.getStoredObject(transaction,destinationSourcePath);
 							destinationSo.setResourceLength(resourceLength);
 						}
-
 					} else {
-						copyFolder(transaction, sourcePath + children[i], destinationPath + children[i], errorList, req,
-								resp);
+						copyFolder(transaction, childSourcePath, destinationSourcePath, errorList, req, resp);
 					}
 				} catch (AccessDeniedException e) {
-					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_FORBIDDEN));
+					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_FORBIDDEN));
 				} catch (ObjectNotFoundException e) {
-					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_NOT_FOUND));
+					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_NOT_FOUND));
 				} catch (ObjectAlreadyExistsException e) {
-					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_CONFLICT));
+					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_CONFLICT));
 				} catch (WebDAVException e) {
-					errorList.put(destinationPath + children[i], new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
+					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
 				}
 			}
 		}

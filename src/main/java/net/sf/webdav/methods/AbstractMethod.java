@@ -48,6 +48,7 @@ import net.sf.webdav.locking.IResourceLocks;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.URLEncoder;
+import net.sf.webdav.util.URLUtil;
 import net.sf.webdav.util.XMLHelper;
 import net.sf.webdav.util.XMLWriter;
 
@@ -79,8 +80,6 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
 	protected static final String LOCAL_DATE_FORMAT = "dd/MM/yy' 'HH:mm:ss";
 		
-	protected static final String FORWARD_SLASH = "/"; 
-
 	protected static final int DEPTH_RESOURCE = 0; 
 	protected static final int DEPTH_RESOURCE_WITH_CHLDREN = 1; 
 	/**
@@ -185,61 +184,25 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @param request
 	 *            The servlet request we are processing
 	 */
-	protected String getRelativePath(HttpServletRequest request) {
+	protected static String getRelativePath(HttpServletRequest request) {
+		String path = null;
 		// Are we being processed by a RequestDispatcher.include()?
 		if (request.getAttribute(ATTR_INCLUDE_PATH_INFO) != null) {
-			String result = (String) request.getAttribute(ATTR_INCLUDE_PATH_INFO);
-			// if (result == null)
-			// result = (String) request
-			// .getAttribute("javax.servlet.include.servlet_path");
-			if (StringUtils.isEmpty(result)) {
-				result = FORWARD_SLASH;
-			}
-			return (result);
+			path = (String) request.getAttribute(ATTR_INCLUDE_PATH_INFO);
+//			if (StringUtils.isEmpty(path)) {
+//				path = (String) request.getAttribute("javax.servlet.include.servlet_path");
+//			}
 		}
-		// No, extract the desired path directly from the request
-		String result = request.getPathInfo();
-		// if (result == null) {
-		// result = request.getServletPath();
-		// }
-		if (StringUtils.isEmpty(result)) {
-			result = FORWARD_SLASH;
+		if(StringUtils.isEmpty(path)) {
+			// No, extract the desired path directly from the request
+			path = request.getPathInfo();
+//			if (StringUtils.isEmpty(path)) {
+//				path = request.getServletPath();
+//			}
 		}
-		return (result);
-
+		return URLUtil.getRelativePath(path);
 	}
-
-	/**
-	 * creates the parent path from the given path by removing the last '/' and
-	 * everything after that
-	 * 
-	 * @param path
-	 *            the path
-	 * @return parent path
-	 */
-	protected String getParentPath(String path) {
-		int slash = path.lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH);
-		if (slash != -1) {
-			return path.substring(0, slash);
-		}
-		return null;
-	}
-
-	/**
-	 * removes a / at the end of the path string, if present
-	 * 
-	 * @param path
-	 *            the path
-	 * @return the path without trailing /
-	 */
-	protected String getCleanPath(String path) {
-
-		if (path.endsWith(FORWARD_SLASH) && path.length() > 1) {
-			path = path.substring(0, path.length() - 1);
-		}
-		return path;
-	}
-
+	
 	/**
 	 * Return W3C document 
 	 * @throws IOException 
@@ -247,7 +210,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @throws ServletException 
 	 * @throws ParserConfigurationException 
 	 */
-	protected Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
+	protected static Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
 		DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
 		if(LOG.isDebugEnabled()) {
 			String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
@@ -264,7 +227,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @param req
 	 * @return the depth from the depth header
 	 */
-	protected int getDepth(HttpServletRequest req) {
+	protected static int getDepth(HttpServletRequest req) {
 		int depth = DEPTH_INFINITY;
 		String depthStr = req.getHeader(HEADER_DEPTH);
 		if (depthStr != null) {
@@ -284,7 +247,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 *            Path which has to be rewiten
 	 * @return the rewritten path
 	 */
-	protected String rewriteUrl(String path) {
+	protected static String rewriteUrl(String path) {
 		return URL_ENCODER.encode(path);
 	}
 
@@ -296,7 +259,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 *            StoredObject
 	 * @return the ETag
 	 */
-	protected String getETag(StoredObject so) {
+	protected static String getETag(StoredObject so) {
 		String resourceLength = "";
 		String lastModified = "";
 		if (so != null && so.isResource()) {
@@ -306,7 +269,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 		return "W/"+CharsetUtil.DQUOTE + resourceLength + CharsetUtil.CHAR_DASH + lastModified + CharsetUtil.DQUOTE;
 	}
 
-	protected String[] getLockIdFromIfHeader(HttpServletRequest req) {
+	protected static String[] getLockIdFromIfHeader(HttpServletRequest req) {
 		String[] ids = new String[2];
 		String id = req.getHeader(HEADER_IF);
 
@@ -339,7 +302,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 		return ids;
 	}
 
-	protected String getLockIdFromLockTokenHeader(HttpServletRequest req) {
+	protected static String getLockIdFromLockTokenHeader(HttpServletRequest req) {
 		String id = req.getHeader(HEADER_LOCK_TOKEN);
 		if (id != null) {
 			id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1, id.indexOf(CharsetUtil.CHAR_GREATER_THAN));
@@ -368,7 +331,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @throws IOException
 	 * @throws LockFailedException
 	 */
-	protected boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
+	protected static boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
 			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
 
 		LockedObject loByPath = resourceLocks.getLockedObjectByPath(transaction, path);
@@ -416,7 +379,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @param errorList
 	 *            List of error to be displayed
 	 */
-	protected void sendReport(HttpServletRequest req, HttpServletResponse resp, Hashtable<String,Integer> errorList)
+	protected static void sendReport(HttpServletRequest req, HttpServletResponse resp, Hashtable<String,Integer> errorList)
 			throws IOException {
 
 		if (errorList.size() == 1) {

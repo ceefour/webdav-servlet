@@ -83,10 +83,12 @@ public class DoPropfind extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 
 		// Retrieve the resources
-		String path = getCleanPath(getRelativePath(req));
 		String tempLockOwner = "doPropfind" + System.currentTimeMillis() + req.toString();
 		_depth = getDepth(req);
 
@@ -102,7 +104,7 @@ public class DoPropfind extends AbstractMethod {
 				}
 
 				Vector<String> properties = null;
-				path = getCleanPath(getRelativePath(req));
+				path = getRelativePath(req);
 
 				int propertyFindType = FIND_ALL_PROP;
 				Node propNode = null;

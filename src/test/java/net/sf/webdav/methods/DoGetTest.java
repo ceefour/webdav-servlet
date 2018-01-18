@@ -138,13 +138,13 @@ public class DoGetTest extends MockTest {
 				StoredObject aaa = initFolderStoredObject();
 				StoredObject bbb = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
 				oneOf(mockReq).getHeader("If-None-Match");
 				will(returnValue(null));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
 				oneOf(mockReq).getLocale();
@@ -158,13 +158,13 @@ public class DoGetTest extends MockTest {
 				oneOf(mockRes).getOutputStream();
 				will(returnValue(tos));
 
-				oneOf(mockStore).getChildrenNames(mockTransaction, "/foo/");
+				oneOf(mockStore).getChildrenNames(mockTransaction, "/foo");
 				will(returnValue(new String[] { "AAA", "BBB" }));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo//AAA");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/AAA");
 				will(returnValue(aaa));
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo//BBB");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/BBB");
 				will(returnValue(bbb));
 
 			}
@@ -192,13 +192,13 @@ public class DoGetTest extends MockTest {
 
 				StoredObject fooSo = initFolderStoredObject();
 
-				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/");
+				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
 				oneOf(mockReq).getRequestURI();
 				will(returnValue("/foo/"));
 
-				oneOf(mockRes).encodeRedirectURL("/foo//indexFile");
+				oneOf(mockRes).encodeRedirectURL("/foo/indexFile");
 
 				oneOf(mockRes).sendRedirect("");
 			}

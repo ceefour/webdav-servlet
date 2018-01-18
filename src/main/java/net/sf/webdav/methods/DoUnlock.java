@@ -29,14 +29,15 @@ public class DoUnlock extends DeterminableMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 
 		if (_readOnly) {
 			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			return;
 		} else {
-
-			String path = getRelativePath(req);
 			String tempLockOwner = "doUnlock" + System.currentTimeMillis() + req.toString();
 			try {
 				if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {

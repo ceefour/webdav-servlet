@@ -30,7 +30,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.web.util.UriUtils;
+
 import net.sf.webdav.exceptions.WebDAVException;
+import net.sf.webdav.util.URLUtil;
 
 /**
  * Reference Implementation of WebdavStore
@@ -181,6 +184,10 @@ public class LocalFileSystemStore implements IWebDAVStore {
 	}
 
 	public StoredObject getStoredObject(ITransaction transaction, String uri) {
+		uri = URLUtil.getCleanPath(uri);
+		if(uri.contains("//")) {
+			LOG.debug("ERROR: LocalFileSystemStore.getStoredObject(" + uri + ")");
+		}
 		LOG.debug("LocalFileSystemStore.getStoredObject(" + uri + ")");
 		StoredObject so = null;
 		File file = new File(_root, uri);

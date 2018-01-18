@@ -31,6 +31,7 @@ import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.URLUtil;
 
 public class DoDelete extends AbstractMethod {
 
@@ -48,11 +49,12 @@ public class DoDelete extends AbstractMethod {
 
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
-		LOG.debug("-- " + this.getClass().getName());
-
+		String path = getRelativePath(req);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("-- " + this.getClass().getName()+" "+path);
+		}
 		if (!_readOnly) {
-			String path = getRelativePath(req);
-			String parentPath = getParentPath(getCleanPath(path));
+			String parentPath = URLUtil.getParentPath(path);
 
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
