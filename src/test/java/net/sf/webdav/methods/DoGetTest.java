@@ -89,7 +89,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockReq).getHeader("If-None-Match");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());
@@ -141,7 +141,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
-				oneOf(mockReq).getHeader("If-None-Match");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
@@ -232,7 +232,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/alternative");
 				will(returnValue(alternativeSo));
 
-				oneOf(mockReq).getHeader("If-None-Match");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", alternativeSo.getLastModified().getTime());

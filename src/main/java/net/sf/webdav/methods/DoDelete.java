@@ -164,14 +164,14 @@ public class DoDelete extends AbstractMethod {
 		children = children == null ? new String[] {} : children;
 		StoredObject so = null;
 		for (int i = children.length - 1; i >= 0; i--) {
-			children[i] = "/" + children[i];
+			String childPath = URLUtil.getCleanPath(path, children[i]);
 			try {
-				so = _store.getStoredObject(transaction, path + children[i]);
+				so = _store.getStoredObject(transaction, childPath);
 				if (so.isResource()) {
-					_store.removeObject(transaction, path + children[i]);
+					_store.removeObject(transaction, childPath);
 				} else {
-					deleteFolder(transaction, path + children[i], errorList, req, resp);
-					_store.removeObject(transaction, path + children[i]);
+					deleteFolder(transaction, childPath, errorList, req, resp);
+					_store.removeObject(transaction, childPath);
 				}
 			} catch (AccessDeniedException e) {
 				errorList.put(path + children[i], new Integer(WebDAVStatus.SC_FORBIDDEN));

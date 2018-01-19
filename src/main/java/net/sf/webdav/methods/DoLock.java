@@ -108,7 +108,7 @@ public class DoLock extends AbstractMethod {
 			String tempLockOwner = "doLock" + System.currentTimeMillis() + req.toString();
 			if (_resourceLocks.lock(transaction, _path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
-					if (req.getHeader("If") != null) {
+					if (req.getHeader(AbstractMethod.HEADER_IF) != null) {
 						doRefreshLock(transaction, req, resp);
 					} else {
 						doLock(transaction, req, resp);

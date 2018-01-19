@@ -251,7 +251,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(fileInLockedFolderPath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(wrongLockToken));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_LOCKED);
@@ -292,7 +292,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(rightLockToken));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);

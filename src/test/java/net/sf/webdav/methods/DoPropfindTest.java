@@ -49,7 +49,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue("infinity"));
 
 				StoredObject rootSo = initFolderStoredObject();
@@ -139,7 +139,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue("0"));
 
 				StoredObject fileSo = initFolderStoredObject();
@@ -197,7 +197,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue("0"));
 
 				StoredObject notExistingSo = null;

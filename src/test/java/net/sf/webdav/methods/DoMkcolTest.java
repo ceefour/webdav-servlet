@@ -182,7 +182,7 @@ public class DoMkcolTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(mkcolPath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(rightLockToken));
 
 				StoredObject parentSo = initFolderStoredObject();
@@ -223,7 +223,7 @@ public class DoMkcolTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(mkcolPath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(wrongLockToken));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
@@ -262,7 +262,7 @@ public class DoMkcolTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -270,7 +270,7 @@ public class DoMkcolTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -302,10 +302,10 @@ public class DoMkcolTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
@@ -364,7 +364,7 @@ public class DoMkcolTest extends MockTest {
 
 				final String ifHeaderLockToken = "(<locktoken:" + loId + ">)";
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(ifHeaderLockToken));
 
 				String[] owners = (lockNullResourceLo != null ? lockNullResourceLo.getOwner() : null);

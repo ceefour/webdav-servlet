@@ -23,6 +23,8 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
+import net.sf.webdav.util.CharsetUtil;
+
 public class StoredObject {
 	
 	private final String url;
@@ -194,7 +196,7 @@ public class StoredObject {
 	private static String getResourceName(String relativeUrl) {
 		String retval = null;
 		if(StringUtils.isNotEmpty(relativeUrl)) {
-			String[] s = relativeUrl.split("/");
+			String[] s = relativeUrl.split(CharsetUtil.FORWARD_SLASH);
 			if(s.length>0) {
 				retval = s[s.length-1];
 			}

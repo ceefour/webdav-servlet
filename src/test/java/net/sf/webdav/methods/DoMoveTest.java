@@ -57,7 +57,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 				
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 				
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
@@ -86,7 +86,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -107,7 +107,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -169,7 +169,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -190,7 +190,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -230,7 +230,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -251,7 +251,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -316,7 +316,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -337,7 +337,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = null;
@@ -371,7 +371,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -418,7 +418,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -439,7 +439,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -459,7 +459,7 @@ public class DoMoveTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(null));
 
 				String[] sourceChildren = new String[] { "sourceFile" };
@@ -527,7 +527,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -548,7 +548,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -587,7 +587,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader("Destination");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(overwritePath));
 
 				oneOf(mockReq).getServerName();
@@ -608,7 +608,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -643,7 +643,7 @@ public class DoMoveTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(overwritePath));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));

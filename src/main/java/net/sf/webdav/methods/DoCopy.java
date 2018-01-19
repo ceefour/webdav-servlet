@@ -31,6 +31,7 @@ import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.ObjectNotFoundException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.RequestUtil;
 import net.sf.webdav.util.URLUtil;
 
@@ -333,13 +334,13 @@ public class DoCopy extends AbstractMethod {
 		// Remove url encoding from destination
 		destinationPath = RequestUtil.URLDecode(destinationPath, "UTF8");
 
-		int protocolIndex = destinationPath.indexOf("://");
+		int protocolIndex = destinationPath.indexOf(CharsetUtil.COLON+CharsetUtil.FORWARD_SLASH+CharsetUtil.FORWARD_SLASH);
 		if (protocolIndex >= 0) {
 			// if the Destination URL contains the protocol, we can safely
 			// trim everything upto the first "/" character after "://"
-			int firstSeparator = destinationPath.indexOf("/", protocolIndex + 4);
+			int firstSeparator = destinationPath.indexOf(CharsetUtil.CHAR_FORWARD_SLASH, protocolIndex + 4);
 			if (firstSeparator < 0) {
-				destinationPath = "/";
+				destinationPath = CharsetUtil.FORWARD_SLASH;
 			} else {
 				destinationPath = destinationPath.substring(firstSeparator);
 			}
@@ -349,15 +350,15 @@ public class DoCopy extends AbstractMethod {
 				destinationPath = destinationPath.substring(hostName.length());
 			}
 
-			int portIndex = destinationPath.indexOf(":");
+			int portIndex = destinationPath.indexOf(CharsetUtil.CHAR_COLON);
 			if (portIndex >= 0) {
 				destinationPath = destinationPath.substring(portIndex);
 			}
 
-			if (destinationPath.startsWith(":")) {
-				int firstSeparator = destinationPath.indexOf("/");
+			if (destinationPath.startsWith(CharsetUtil.COLON)) {
+				int firstSeparator = destinationPath.indexOf(CharsetUtil.CHAR_FORWARD_SLASH);
 				if (firstSeparator < 0) {
-					destinationPath = "/";
+					destinationPath = CharsetUtil.FORWARD_SLASH;
 				} else {
 					destinationPath = destinationPath.substring(firstSeparator);
 				}
@@ -365,7 +366,7 @@ public class DoCopy extends AbstractMethod {
 		}
 
 		// Normalize destination path (remove '.' and' ..')
-		destinationPath = normalize(destinationPath);
+		destinationPath = URLUtil.normalize(destinationPath);
 
 		String contextPath = req.getContextPath();
 		if ((contextPath != null) && (destinationPath.startsWith(contextPath))) {
@@ -383,63 +384,6 @@ public class DoCopy extends AbstractMethod {
 		return destinationPath;
 	}
 
-	/**
-	 * Return a context-relative path, beginning with a "/", that represents the
-	 * canonical version of the specified path after ".." and "." elements are
-	 * resolved out. If the specified path attempts to go outside the boundaries of
-	 * the current context (i.e. too many ".." path elements are present), return
-	 * <code>null</code> instead.
-	 * 
-	 * @param path
-	 *            Path to be normalized
-	 * @return normalized path
-	 */
-	protected String normalize(String path) {
 
-		if (path == null)
-			return null;
-
-		// Create a place for the normalized path
-		String normalized = path;
-
-		if (normalized.equals("/."))
-			return "/";
-
-		// Normalize the slashes and add leading slash if necessary
-		if (normalized.indexOf('\\') >= 0)
-			normalized = normalized.replace('\\', '/');
-		if (!normalized.startsWith("/"))
-			normalized = "/" + normalized;
-
-		// Resolve occurrences of "//" in the normalized path
-		while (true) {
-			int index = normalized.indexOf("//");
-			if (index < 0)
-				break;
-			normalized = normalized.substring(0, index) + normalized.substring(index + 1);
-		}
-
-		// Resolve occurrences of "/./" in the normalized path
-		while (true) {
-			int index = normalized.indexOf("/./");
-			if (index < 0)
-				break;
-			normalized = normalized.substring(0, index) + normalized.substring(index + 2);
-		}
-
-		// Resolve occurrences of "/../" in the normalized path
-		while (true) {
-			int index = normalized.indexOf("/../");
-			if (index < 0)
-				break;
-			if (index == 0)
-				return (null); // Trying to go outside our context
-			int index2 = normalized.lastIndexOf('/', index - 1);
-			normalized = normalized.substring(0, index2) + normalized.substring(index + 3);
-		}
-
-		// Return the normalized path that we have completed
-		return (normalized);
-	}
 
 }

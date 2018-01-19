@@ -31,6 +31,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.ObjectAlreadyExistsException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.URLUtil;
 
 public class DoHead extends AbstractMethod {
@@ -106,7 +107,7 @@ public class DoHead extends AbstractMethod {
 
 					if (so.isResource()) {
 						// path points to a file but ends with / or \
-						if (path.endsWith("/") || (path.endsWith("\\"))) {
+						if (path.endsWith(CharsetUtil.FORWARD_SLASH) || (path.endsWith(CharsetUtil.BACKSLASH))) {
 							resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 						} else {
 

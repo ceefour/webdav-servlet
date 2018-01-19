@@ -142,16 +142,16 @@ public final class RequestUtil {
 		// Create a place for the normalized path
 		String normalized = path;
 
-		if (normalized.equals("/."))
-			return "/";
+		if (normalized.equals(CharsetUtil.FORWARD_SLASH + CharsetUtil.DOT))
+			return CharsetUtil.FORWARD_SLASH;
 
-		// Add a leading "/" if necessary
-		if (!normalized.startsWith("/"))
-			normalized = "/" + normalized;
+		// Add a leading / if necessary
+		if (!normalized.startsWith(CharsetUtil.FORWARD_SLASH))
+			normalized = CharsetUtil.FORWARD_SLASH + normalized;
 
 		// Resolve occurrences of "//" in the normalized path
 		while (true) {
-			int index = normalized.indexOf("//");
+			int index = normalized.indexOf(CharsetUtil.FORWARD_SLASH + CharsetUtil.FORWARD_SLASH);
 			if (index < 0)
 				break;
 			normalized = normalized.substring(0, index) + normalized.substring(index + 1);
@@ -159,7 +159,7 @@ public final class RequestUtil {
 
 		// Resolve occurrences of "/./" in the normalized path
 		while (true) {
-			int index = normalized.indexOf("/./");
+			int index = normalized.indexOf(CharsetUtil.FORWARD_SLASH + CharsetUtil.DOT+CharsetUtil.FORWARD_SLASH);
 			if (index < 0)
 				break;
 			normalized = normalized.substring(0, index) + normalized.substring(index + 2);
@@ -167,12 +167,12 @@ public final class RequestUtil {
 
 		// Resolve occurrences of "/../" in the normalized path
 		while (true) {
-			int index = normalized.indexOf("/../");
+			int index = normalized.indexOf(CharsetUtil.FORWARD_SLASH + CharsetUtil.DOT+CharsetUtil.DOT+CharsetUtil.FORWARD_SLASH);
 			if (index < 0)
 				break;
 			if (index == 0)
 				return (null); // Trying to go outside our context
-			int index2 = normalized.lastIndexOf('/', index - 1);
+			int index2 = normalized.lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH, index - 1);
 			normalized = normalized.substring(0, index2) + normalized.substring(index + 3);
 		}
 
@@ -197,11 +197,11 @@ public final class RequestUtil {
 		if (start < 0)
 			return (null);
 		String encoding = contentType.substring(start + 8);
-		int end = encoding.indexOf(';');
+		int end = encoding.indexOf(CharsetUtil.CHAR_SEMICOLON);
 		if (end >= 0)
 			encoding = encoding.substring(0, end);
 		encoding = encoding.trim();
-		if ((encoding.length() > 2) && (encoding.startsWith("\"")) && (encoding.endsWith("\"")))
+		if ((encoding.length() > 2) && (encoding.startsWith(CharsetUtil.DQUOTE)) && (encoding.endsWith(CharsetUtil.DQUOTE)))
 			encoding = encoding.substring(1, encoding.length() - 1);
 		return (encoding.trim());
 

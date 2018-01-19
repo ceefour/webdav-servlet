@@ -90,16 +90,16 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
-				exactly(2).of(mockReq).getHeader("If");
+				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue("Infinite"));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -139,10 +139,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -153,10 +153,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -196,10 +196,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -210,10 +210,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -254,10 +254,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -268,10 +268,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -311,10 +311,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -325,10 +325,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -378,7 +378,7 @@ public class DoLockTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -386,7 +386,7 @@ public class DoLockTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -416,10 +416,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();

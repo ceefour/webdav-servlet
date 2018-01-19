@@ -82,7 +82,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue("/destination"));
 
 				oneOf(mockReq).getServerName();
@@ -106,7 +106,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(rightLockToken));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject so = initLockNullStoredObject();
@@ -148,7 +148,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -169,7 +169,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(wrongLockToken));
 				
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_LOCKED);
@@ -203,7 +203,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -224,10 +224,10 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(rightLockToken));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -280,7 +280,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(null));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_BAD_REQUEST);
@@ -308,7 +308,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -355,7 +355,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -376,7 +376,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -396,7 +396,7 @@ public class DoCopyTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue("-1"));
 
 				sourceChildren = new String[] { "sourceFile" };
@@ -446,7 +446,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -467,7 +467,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject notExistSo = null;
@@ -506,7 +506,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceSo));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -532,7 +532,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(existingDestSo));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("T"));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
@@ -584,7 +584,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceSo));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue("serverName".concat(destFilePath)));
 
 				oneOf(mockReq).getServerName();
@@ -610,7 +610,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(existingDestSo));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
@@ -644,7 +644,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceSo));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue("http://destination:80/".concat(destFilePath)));
 
 				oneOf(mockReq).getContextPath();
@@ -662,7 +662,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getAttribute("javax.servlet.include.path_info");
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject destFileSo = initFileStoredObject(resourceContent);
@@ -718,7 +718,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceSo));
 
-				oneOf(mockReq).getHeader("Destination");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
 				will(returnValue("http://destination:80/".concat(destCollectionPath)));
 
 				oneOf(mockReq).getContextPath();
@@ -736,7 +736,7 @@ public class DoCopyTest extends MockTest {
 				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader("Overwrite");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject existingDestSo = initFolderStoredObject();

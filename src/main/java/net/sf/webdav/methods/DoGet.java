@@ -38,6 +38,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVServlet;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.URLUtil;
 
 public class DoGet extends DoHead {
 
@@ -126,7 +127,7 @@ public class DoGet extends DoHead {
 					boolean isEven = false;
 					for (String child : children) {
 						isEven = !isEven;
-						StoredObject obj = _store.getStoredObject(transaction, path + "/" + child);
+						StoredObject obj = _store.getStoredObject(transaction, URLUtil.getCleanPath(path,child));
 						resources.add(obj);
 					}
 					context.put("resources", resources);
@@ -149,7 +150,7 @@ public class DoGet extends DoHead {
 					boolean isEven = false;
 					for (String child : children) {
 						isEven = !isEven;
-						StoredObject obj = _store.getStoredObject(transaction, path + "/" + child);
+						StoredObject obj = _store.getStoredObject(transaction, URLUtil.getCleanPath(path,child));
 						appendTableRow(transaction,sbFolderBody,path,child,obj,isEven,shortDF);
 					}
 					sbFolderBody.append("</table>");
@@ -178,7 +179,7 @@ public class DoGet extends DoHead {
 		sb.append("<a href=\"");
 		sb.append(resourceName);
 		if (obj == null) {
-			LOG.error("Should not return null for " + resourcePath + "/" + resourceName);
+			LOG.error("Should not return null for " + URLUtil.getCleanPath(resourcePath,resourceName));
 		}
 		if (obj != null && obj.isFolder()) {
 			sb.append("/");

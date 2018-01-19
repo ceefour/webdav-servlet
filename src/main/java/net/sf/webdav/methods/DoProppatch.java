@@ -21,6 +21,7 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.URLUtil;
 import net.sf.webdav.util.XMLHelper;
 import net.sf.webdav.util.XMLWriter;
@@ -165,13 +166,11 @@ public class DoProppatch extends AbstractMethod {
 				// Generating href element
 				generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
 
-				String href = req.getContextPath();
-				if ((href.endsWith("/")) && (path.startsWith("/")))
-					href += path.substring(1);
-				else
-					href += path;
-				if ((so.isFolder()) && (!href.endsWith("/")))
-					href += "/";
+				String href = URLUtil.getCleanPath(req.getContextPath(),path);
+				// folders must end with slash
+				if ((so.isFolder()) && (!href.endsWith(CharsetUtil.FORWARD_SLASH))) {
+					href += CharsetUtil.FORWARD_SLASH;
+				}
 
 				generatedXML.writeText(rewriteUrl(href));
 

@@ -36,7 +36,9 @@ import net.sf.webdav.exceptions.LockFailedException;
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.locking.LockedObject;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.URLEncoder;
+import net.sf.webdav.util.URLUtil;
 import net.sf.webdav.util.XMLHelper;
 import net.sf.webdav.util.XMLWriter;
 
@@ -197,15 +199,8 @@ public class DoPropfind extends AbstractMethod {
 			// no need to get name if depth is already zero
 			String[] names = _store.getChildrenNames(transaction, currentPath);
 			names = names == null ? new String[] {} : names;
-			String newPath = null;
-
 			for (String name : names) {
-				newPath = currentPath;
-				if (!(newPath.endsWith("/"))) {
-					newPath += "/";
-				}
-				newPath += name;
-				recursiveParseProperties(transaction, newPath, req, generatedXML, propertyFindType, properties,
+				recursiveParseProperties(transaction, URLUtil.getCleanPath(currentPath, name), req, generatedXML, propertyFindType, properties,
 						depth - 1, mimeType);
 			}
 		}
@@ -245,20 +240,12 @@ public class DoPropfind extends AbstractMethod {
 		// Generating href element
 		generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
 
-		String href = req.getContextPath();
-		String servletPath = req.getServletPath();
-		if (servletPath != null) {
-			if ((href.endsWith("/")) && (servletPath.startsWith("/")))
-				href += servletPath.substring(1);
-			else
-				href += servletPath;
+		String href = URLUtil.getCleanPath(req.getContextPath(),req.getServletPath());
+		href = URLUtil.getCleanPath(href,path);
+		// folders must end with slash
+		if ((isFolder) && (!href.endsWith(CharsetUtil.FORWARD_SLASH))) {
+			href += CharsetUtil.FORWARD_SLASH;
 		}
-		if ((href.endsWith("/")) && (path.startsWith("/")))
-			href += path.substring(1);
-		else
-			href += path;
-		if ((isFolder) && (!href.endsWith("/")))
-			href += "/";
 
 		generatedXML.writeText(rewriteUrl(href));
 

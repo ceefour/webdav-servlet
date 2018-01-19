@@ -71,7 +71,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath agent"));
 
 				StoredObject parentSo = initFolderStoredObject();
@@ -129,7 +129,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				StoredObject parentSo = null;
@@ -165,7 +165,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("WebDAVFS/1.5.0 (01500000) ....."));
 
 				StoredObject parentSo = null;
@@ -215,7 +215,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("WebDAVFS/1.5.0 (01500000) ....."));
 
 				StoredObject parentSo = initFileStoredObject(resourceContent);
@@ -256,7 +256,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -264,7 +264,7 @@ public class DoPutTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -296,10 +296,10 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
@@ -339,7 +339,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
@@ -350,7 +350,7 @@ public class DoPutTest extends MockTest {
 
 				final String ifHeaderLockToken = "(<locktoken:" + loId + ">)";
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(ifHeaderLockToken));
 
 				oneOf(mockResourceLocks).getLockedObjectByID(mockTransaction, loId);
@@ -372,7 +372,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, path);
 				will(returnValue(lockNullResourceLo));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(ifHeaderLockToken));
 
 				String[] owners = (lockNullResourceLo != null ? lockNullResourceLo.getOwner() : null);

@@ -83,7 +83,7 @@ public class DoUnlockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("Lock-Token");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_LOCK_TOKEN);
 				will(returnValue(lockToken));
 
 				StoredObject lockedSo = initFileStoredObject(resourceContent);
@@ -123,7 +123,7 @@ public class DoUnlockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("Lock-Token");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_LOCK_TOKEN);
 				will(returnValue(lockToken));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_BAD_REQUEST);
@@ -151,7 +151,7 @@ public class DoUnlockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader("Lock-Token");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_LOCK_TOKEN);
 				will(returnValue(lockToken));
 
 				oneOf(mockRes).sendError(WebDAVStatus.SC_BAD_REQUEST);
@@ -194,7 +194,7 @@ public class DoUnlockTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader("User-Agent");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
 				will(returnValue("Goliath"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -202,7 +202,7 @@ public class DoUnlockTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader("If");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -232,10 +232,10 @@ public class DoUnlockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader("Depth");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader("Timeout");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
@@ -280,7 +280,7 @@ public class DoUnlockTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader("Lock-Token");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_LOCK_TOKEN);
 				will(returnValue(lockToken));
 
 				oneOf(mockResourceLocks).getLockedObjectByID(mockTransaction, loId);

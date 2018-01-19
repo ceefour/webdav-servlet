@@ -78,7 +78,7 @@ public class DoHeadTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockReq).getHeader("If-None-Match");
+				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());
