@@ -136,8 +136,8 @@ public class DoHead extends AbstractMethod {
 							if (mimeType != null) {
 								resp.setContentType(mimeType);
 							} else {
-								int lastSlash = path.replace('\\', '/').lastIndexOf('/');
-								int lastDot = path.indexOf(".", lastSlash);
+								int lastSlash = path.replace(CharsetUtil.CHAR_BACKSLASH, CharsetUtil.CHAR_FORWARD_SLASH).lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH);
+								int lastDot = path.indexOf(CharsetUtil.CHAR_DOT, lastSlash);
 								if (lastDot == -1) {
 									resp.setContentType("text/html");
 								}

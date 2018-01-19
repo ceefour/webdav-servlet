@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<prop xmlns:D="DAV:"><lockdiscovery><activelock><locktype><null/></locktype>
-<lockscope><shared/></lockscope>
-<depth>Infinity</depth>
-<owner><href>null</href>
+<prop xmlns:D="DAV:"><lockdiscovery><activelock><locktype><write/></locktype>
+<lockscope><exclusive/></lockscope>
+<depth>0</depth>
+<owner><href>I'am the Lock Owner</href>
 </owner>
-<timeout>Second-604800</timeout>
-<locktoken><href>opaquelocktoken:2e3fdda4-b3c6-4629-9f51-ecdcd2f67ec8</href>
+<timeout>Second--1516352823</timeout>
+<locktoken><href>opaquelocktoken:0ff15eba-1dfc-4461-b587-42bbc7c7829c</href>
 </locktoken>
 </activelock>
 </lockdiscovery>

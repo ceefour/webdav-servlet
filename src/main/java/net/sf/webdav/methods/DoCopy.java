@@ -365,7 +365,7 @@ public class DoCopy extends AbstractMethod {
 			}
 		}
 
-		// Normalize destination path (remove '.' and' ..')
+		// Normalize destination path (remove '.' and '..')
 		destinationPath = URLUtil.normalize(destinationPath);
 
 		String contextPath = req.getContextPath();

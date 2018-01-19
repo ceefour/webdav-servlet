@@ -55,7 +55,7 @@ public class URLUtil {
 	}
 	
 	/**
-	 * Creates a 'clean' parent path from the given path by removing the last '/' and
+	 * Creates a 'clean' parent path from the given path by removing the last / and
 	 * everything after that.
 	 * 
 	 * @param path

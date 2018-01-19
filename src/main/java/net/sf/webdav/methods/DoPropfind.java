@@ -252,7 +252,7 @@ public class DoPropfind extends AbstractMethod {
 		generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
 
 		String resourceName = path;
-		int lastSlash = path.lastIndexOf('/');
+		int lastSlash = path.lastIndexOf(CharsetUtil.CHAR_FORWARD_SLASH);
 		if (lastSlash != -1)
 			resourceName = resourceName.substring(lastSlash + 1);
 

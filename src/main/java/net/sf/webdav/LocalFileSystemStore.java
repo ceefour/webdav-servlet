@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.web.util.UriUtils;
-
 import net.sf.webdav.exceptions.WebDAVException;
 import net.sf.webdav.util.URLUtil;
 

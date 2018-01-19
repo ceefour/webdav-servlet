@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.app.Velocity;
 
 import net.sf.webdav.exceptions.WebDAVException;
+import net.sf.webdav.util.CharsetUtil;
 
 /**
  * Servlet which provides support for WebDAV level 2.
@@ -39,6 +40,8 @@ public class WebDAVServlet extends WebDAVServletBean {
 	 * 
 	 */
 	private static final long serialVersionUID = 7124585997065835079L;
+	
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebDAVServlet.class);
 
 	private static final String INIT_PARAM_DEFAULT_INDEX_FILE = "default-index-file";
 	private static final String INIT_PARAM_INSTEAD_OF_404 = "instead-of-404";
@@ -110,19 +113,26 @@ public class WebDAVServlet extends WebDAVServletBean {
 			throw new WebDAVException("missing parameter: " + INIT_PARAM_ROOTPATH);
 		}
 		if (rootPath.equals(INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE)) {
-			String file = LocalFileSystemStore.class.getProtectionDomain().getCodeSource().getLocation().getFile().replace('\\', '/');
-			if (file.charAt(0) == '/' && System.getProperty("os.name").indexOf("Windows") != -1) {
+			String file = LocalFileSystemStore.class.getProtectionDomain().getCodeSource().getLocation().getFile().replace(CharsetUtil.CHAR_BACKSLASH, CharsetUtil.CHAR_FORWARD_SLASH);
+			if (file.charAt(0) == CharsetUtil.CHAR_FORWARD_SLASH && System.getProperty("os.name").indexOf("Windows") != -1) {
 				file = file.substring(1, file.length());
 			}
 
 			int ix = file.indexOf("/WEB-INF/");
 			if (ix != -1) {
-				rootPath = file.substring(0, ix).replace('/', File.separatorChar);
+				rootPath = file.substring(0, ix).replace(CharsetUtil.CHAR_FORWARD_SLASH, File.separatorChar);
 			} else {
 				throw new WebDAVException("Could not determine root of war file. Can't extract from path '" + file + "' for this web container");
 			}
 		}
-		return new File(rootPath);
+		LOG.info("Mountpoint set to "+rootPath);
+		File root = new File(rootPath);
+		if(!root.exists()) {
+			LOG.error("Mountpoint "+rootPath+" does not exist!");
+			return null;
+		}
+		LOG.info("Mountpoint set to "+rootPath);
+		return root;
 	}
 
 }
