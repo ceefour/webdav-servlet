@@ -38,6 +38,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.WebDAVServlet;
 import net.sf.webdav.WebDAVStatus;
 import net.sf.webdav.locking.ResourceLocks;
+import net.sf.webdav.util.CharsetUtil;
 import net.sf.webdav.util.URLUtil;
 
 public class DoGet extends DoHead {
@@ -54,7 +55,7 @@ public class DoGet extends DoHead {
 			StoredObject so = _store.getStoredObject(transaction, path);
 			if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader("Allow", methodsAllowed);
+				resp.addHeader(HEADER_ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
@@ -97,7 +98,7 @@ public class DoGet extends DoHead {
 
 			if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader("Allow", methodsAllowed);
+				resp.addHeader(HEADER_ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
@@ -118,10 +119,12 @@ public class DoGet extends DoHead {
 				
 				String css = getCSS();
 				
+				String href = URLUtil.getCleanPath(req.getContextPath(),req.getServletPath());
+
 				if(WebDAVServlet.useVelocity) {
 					Template t = Velocity.getTemplate("webdav.vm");
 					VelocityContext context = new VelocityContext();
-					context.put("path", path);
+					context.put("path", URLUtil.getCleanPath(href,path));
 					context.put("css", css);
 					Vector resources = new Vector();
 					boolean isEven = false;
@@ -137,21 +140,23 @@ public class DoGet extends DoHead {
 					
 					StringBuilder sbFolderBody = new StringBuilder();
 					sbFolderBody.append("<html><head><title>Content of folder ");
-					sbFolderBody.append(path);
+					sbFolderBody.append(URLUtil.getCleanPath(href,path));
 					sbFolderBody.append("</title><style type=\"text/css\">");
 					sbFolderBody.append(css);
 					sbFolderBody.append("</style></head>");
 					sbFolderBody.append("<body>");
-					sbFolderBody.append(getHeader(transaction, path, resp, req));
+					sbFolderBody.append(getHeader(transaction, URLUtil.getCleanPath(href,path), resp, req));
 					sbFolderBody.append("<table>");
 					sbFolderBody.append("<tr><th>Name</th><th>Size</th><th>Created</th><th>Modified</th></tr>");
 					sbFolderBody.append("<tr>");
-					sbFolderBody.append("<td colspan=\"4\"><a href=\"../\">Parent</a></td></tr>");
+					if(!path.equals(CharsetUtil.FORWARD_SLASH)) {
+						sbFolderBody.append("<td colspan=\"4\"><a href=\"../\">Parent</a></td></tr>");
+					}
 					boolean isEven = false;
 					for (String child : children) {
 						isEven = !isEven;
 						StoredObject obj = _store.getStoredObject(transaction, URLUtil.getCleanPath(path,child));
-						appendTableRow(transaction,sbFolderBody,path,child,obj,isEven,shortDF);
+						appendTableRow(transaction,sbFolderBody,URLUtil.getCleanPath(href,path),child,obj,isEven,shortDF);
 					}
 					sbFolderBody.append("</table>");
 					sbFolderBody.append(getFooter(transaction, path, resp, req));
@@ -177,7 +182,7 @@ public class DoGet extends DoHead {
 		sb.append("\">");
 		sb.append("<td>");
 		sb.append("<a href=\"");
-		sb.append(resourceName);
+		sb.append(URLUtil.getCleanPath(resourcePath,resourceName));
 		if (obj == null) {
 			LOG.error("Should not return null for " + URLUtil.getCleanPath(resourcePath,resourceName));
 		}

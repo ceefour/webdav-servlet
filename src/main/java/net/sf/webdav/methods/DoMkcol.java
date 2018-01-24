@@ -127,7 +127,7 @@ public class DoMkcol extends AbstractMethod {
 
 							} else {
 								String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-								resp.addHeader("Allow", methodsAllowed);
+								resp.addHeader(HEADER_ALLOW, methodsAllowed);
 								resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 							}
 						}
@@ -138,7 +138,7 @@ public class DoMkcol extends AbstractMethod {
 								+ "\n Sending SC_METHOD_NOT_ALLOWED (405) error response!");
 
 						String methodsAllowed = DeterminableMethod.determineMethodsAllowed(parentSo);
-						resp.addHeader("Allow", methodsAllowed);
+						resp.addHeader(HEADER_ALLOW, methodsAllowed);
 						resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 
 					} else {

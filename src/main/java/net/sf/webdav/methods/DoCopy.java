@@ -161,7 +161,7 @@ public class DoCopy extends AbstractMethod {
 
 				if (copySo.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(copySo);
-					resp.addHeader("Allow", methodsAllowed);
+					resp.addHeader(HEADER_ALLOW, methodsAllowed);
 					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 					return false;
 				}

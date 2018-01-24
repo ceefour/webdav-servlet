@@ -87,7 +87,7 @@ public class DoHead extends AbstractMethod {
 				}
 			} else if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader("Allow", methodsAllowed);
+				resp.addHeader(HEADER_ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
@@ -116,7 +116,7 @@ public class DoHead extends AbstractMethod {
 							resp.setDateHeader("last-modified", lastModified);
 
 							String eTag = getETag(so);
-							resp.addHeader("ETag", eTag);
+							resp.addHeader(HEADER_ETAG, eTag);
 
 							long resourceLength = so.getResourceLength();
 
@@ -125,7 +125,7 @@ public class DoHead extends AbstractMethod {
 									if (resourceLength <= Integer.MAX_VALUE) {
 										resp.setContentLength((int) resourceLength);
 									} else {
-										resp.setHeader("content-length", "" + resourceLength);
+										resp.setHeader(HEADER_CONTENT_LENGTH, Long.toString(resourceLength));
 										// is "content-length" the right header?
 										// is long a valid format?
 									}

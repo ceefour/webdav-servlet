@@ -93,7 +93,7 @@ public class DoProppatch extends AbstractMethod {
 
 				if (so.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-					resp.addHeader("Allow", methodsAllowed);
+					resp.addHeader(HEADER_ALLOW, methodsAllowed);
 					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 					return;
 				}

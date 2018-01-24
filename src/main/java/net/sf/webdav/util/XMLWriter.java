@@ -256,22 +256,7 @@ public class XMLWriter {
         if (_writer != null) {
         	if(LOG.isDebugEnabled()) {
         		String data = _buffer.toString();
-        		try {
-					DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
-					
-					Transformer transformer = TransformerFactory.newInstance().newTransformer();
-					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-					transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-					transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-					
-					StreamResult result = new StreamResult(new StringWriter());
-					DOMSource source = new DOMSource(documentBuilder.parse(IOUtils.toInputStream(data,java.nio.charset.StandardCharsets.UTF_8.name())));
-					transformer.transform(source, result);
-					
-	        		LOG.debug(result.getWriter().toString());
-				} catch (ServletException | ParserConfigurationException | TransformerFactoryConfigurationError | SAXException | TransformerException e) {
-					e.printStackTrace();
-				}
+        		LOG.debug(XMLHelper.format(data));
         		_writer.write(data);
         	} else {
         		_writer.write(_buffer.toString());

@@ -90,11 +90,16 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final String S_DEPTH_RESOURCE_WITH_CHLDREN = "1"; 
 	protected static final String S_DEPTH_INFINITY = "infinity"; 
 
+	protected static final String HEADER_ALLOW = "Allow"; 
+	protected static final String HEADER_CONTENT_LENGTH = "content-length"; 
+	protected static final String HEADER_DAV = "DAV"; 
 	protected static final String HEADER_DEPTH = "Depth"; 
 	protected static final String HEADER_DESTINATION = "Destination"; 
+	protected static final String HEADER_ETAG = "ETag"; 
 	protected static final String HEADER_IF = "If"; 
 	protected static final String HEADER_IF_NONE_MATCH = "If-None-Match"; 
 	protected static final String HEADER_LOCK_TOKEN = "Lock-Token";
+	protected static final String HEADER_MS_AUTHOR_VIA = "MS-Author-Via";
 	protected static final String HEADER_OVERWRITE = "Overwrite"; 
 	protected static final String HEADER_TIMEOUT = "Timeout"; 
 	protected static final String HEADER_USER_AGENT = "User-Agent"; 

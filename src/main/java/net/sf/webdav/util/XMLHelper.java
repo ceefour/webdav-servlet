@@ -1,14 +1,25 @@
 package net.sf.webdav.util;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.IOUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class XMLHelper {
 	
@@ -57,6 +68,31 @@ public class XMLHelper {
 			}
 		}
 		return properties;
+	}
+	
+	public static String format(String xml) {
+		String retval = null;
+		if(xml!=null) {
+			try {
+				DocumentBuilder documentBuilder = getDocumentBuilder();
+				
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				
+				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+				transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+				
+				StreamResult result = new StreamResult(new StringWriter());
+				DOMSource source = new DOMSource(documentBuilder.parse(IOUtils.toInputStream(xml,java.nio.charset.StandardCharsets.UTF_8.name())));
+				transformer.transform(source, result);
+				
+	    		retval = result.getWriter().toString();
+			} catch (ServletException | ParserConfigurationException | TransformerFactoryConfigurationError | SAXException | TransformerException | IOException e) {
+				e.printStackTrace();
+				retval = xml;
+			}
+		}
+		return retval;
 	}
 
 }

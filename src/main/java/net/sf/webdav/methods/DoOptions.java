@@ -52,12 +52,12 @@ public class DoOptions extends DeterminableMethod {
 		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 			StoredObject so = null;
 			try {
-				resp.addHeader("DAV", "1, 2");
+				resp.addHeader(HEADER_DAV, "1, 2");
 
 				so = _store.getStoredObject(transaction, path);
 				String methodsAllowed = determineMethodsAllowed(so);
-				resp.addHeader("Allow", methodsAllowed);
-				resp.addHeader("MS-Author-Via", "DAV");
+				resp.addHeader(HEADER_ALLOW, methodsAllowed);
+				resp.addHeader(HEADER_MS_AUTHOR_VIA, "DAV");
 			} catch (AccessDeniedException e) {
 				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			} catch (WebDAVException e) {

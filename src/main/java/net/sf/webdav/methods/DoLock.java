@@ -519,7 +519,7 @@ public class DoLock extends AbstractMethod {
 		generatedXML.writeElement("DAV::lockdiscovery", XMLWriter.CLOSING);
 		generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
 
-		resp.addHeader("Lock-Token", "<opaquelocktoken:" + lockToken + ">");
+		resp.addHeader(HEADER_LOCK_TOKEN, "<opaquelocktoken:" + lockToken + ">");
 
 		generatedXML.sendData();
 
