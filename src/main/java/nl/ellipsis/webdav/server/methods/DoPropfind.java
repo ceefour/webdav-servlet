@@ -150,11 +150,9 @@ public class DoPropfind extends AbstractMethod {
 				generatedXML.writeXMLHeader();
 				generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
 				if (_depth == 0) {
-					parseProperties(transaction, req, generatedXML, path, propertyFindType, properties,
-							_mimeTyper.getMimeType(transaction, path));
+					parseProperties(transaction, req, generatedXML, path, propertyFindType, properties);
 				} else {
-					recursiveParseProperties(transaction, path, req, generatedXML, propertyFindType, properties, _depth,
-							_mimeTyper.getMimeType(transaction, path));
+					recursiveParseProperties(transaction, path, req, generatedXML, propertyFindType, properties, _depth);
 				}
 				generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
 
@@ -190,10 +188,10 @@ public class DoPropfind extends AbstractMethod {
 	 *             if an error in the underlying store occurs
 	 */
 	private void recursiveParseProperties(ITransaction transaction, String currentPath, HttpServletRequest req,
-			XMLWriter generatedXML, int propertyFindType, Vector<String> properties, int depth, String mimeType)
+			XMLWriter generatedXML, int propertyFindType, Vector<String> properties, int depth)
 			throws WebDAVException {
 
-		parseProperties(transaction, req, generatedXML, currentPath, propertyFindType, properties, mimeType);
+		parseProperties(transaction, req, generatedXML, currentPath, propertyFindType, properties);
 
 		if (depth != 0) {
 			// no need to get name if depth is already zero
@@ -201,7 +199,7 @@ public class DoPropfind extends AbstractMethod {
 			names = names == null ? new String[] {} : names;
 			for (String name : names) {
 				recursiveParseProperties(transaction, URLUtil.getCleanPath(currentPath, name), req, generatedXML, propertyFindType, properties,
-						depth - 1, mimeType);
+						depth - 1);
 			}
 		}
 	}
@@ -222,7 +220,7 @@ public class DoPropfind extends AbstractMethod {
 	 *            contains those properties
 	 */
 	private void parseProperties(ITransaction transaction, HttpServletRequest req, XMLWriter generatedXML, String path,
-			int type, Vector<String> propertiesVector, String mimeType) throws WebDAVException {
+			int type, Vector<String> propertiesVector) throws WebDAVException {
 
 		StoredObject so = _store.getStoredObject(transaction, path);
 
@@ -270,7 +268,7 @@ public class DoPropfind extends AbstractMethod {
 			if (!isFolder) {
 				generatedXML.writeProperty("DAV::getlastmodified", lastModified);
 				generatedXML.writeProperty("DAV::getcontentlength", resourceLength);
-				String contentType = mimeType;
+				String contentType = (so.getMimeType()!=null ? so.getMimeType() : _mimeTyper.getMimeType(transaction, path));
 				if (contentType != null) {
 					generatedXML.writeProperty("DAV::getcontenttype", contentType);
 				}
@@ -358,6 +356,7 @@ public class DoPropfind extends AbstractMethod {
 					if (isFolder) {
 						propertiesNotFound.addElement(property);
 					} else {
+						String mimeType = (so.getMimeType()!=null ? so.getMimeType() : _mimeTyper.getMimeType(transaction, path));
 						generatedXML.writeProperty("DAV::getcontenttype", mimeType);
 					}
 				} else if (property.equals("DAV::getetag")) {
@@ -367,7 +366,7 @@ public class DoPropfind extends AbstractMethod {
 						generatedXML.writeProperty("DAV::getetag", getETag(so));
 					}
 				} else if (property.equals("DAV::getlastmodified")) {
-					if (isFolder) {
+					if (isFolder && lastModified==null) {
 						propertiesNotFound.addElement(property);
 					} else {
 						generatedXML.writeProperty("DAV::getlastmodified", lastModified);
