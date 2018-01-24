@@ -13,13 +13,13 @@
 	<servlet>
 		<servlet-name>webdav</servlet-name>
 		<servlet-class>
-			net.sf.webdav.WebDAVServlet
+			nl.ellipsis.webdav.server.WebDAVServlet
 		</servlet-class>
 		<init-param>
-			<!-- name of the class that implements net.sf.webdav.WebdavStore -->
+			<!-- name of the class that implements nl.ellipsis.webdav.server.WebdavStore -->
 			<param-name>ResourceHandlerImplementation</param-name>
 			<param-value>
-				net.sf.webdav.LocalFileSystemStore
+				nl.ellipsis.webdav.server.LocalFileSystemStore
 			</param-value>
 		</init-param>
 		<init-param>

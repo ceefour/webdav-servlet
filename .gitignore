@@ -4,3 +4,4 @@ build
 /.settings/
 /.classpath
 /.project
+/logs/

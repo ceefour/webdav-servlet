@@ -11,26 +11,26 @@ What is it?
   
 REQUIREMENTS
 
-  JDK 1.42 or above
-  apache-tomcat 5.0.28 or above (or similar)
+  JDK 1.8 or above
+  apache-tomcat 8.5.24 or above (or similar)
 
 INSTALLATION & CONFIGURATION
 
-  -place the webdav-servlet.jar in the /WEB-INF/lib/ of your webapp
-  -open web.xml of the webapp. it needs to contain the following:
+- place the webdav-servlet.jar in the /WEB-INF/lib/ of your webapp
+- open web.xml of the webapp. it needs to contain the following:
   
   	<servlet>
 		<servlet-name>webdav</servlet-name>
 		<servlet-class>
-			net.sf.webdav.WebDAVServlet
+			nl.ellipsis.webdav.server.WebDAVServlet
 		</servlet-class>
 		<init-param>
 			<param-name>ResourceHandlerImplementation</param-name>
 			<param-value>
-				net.sf.webdav.LocalFileSystemStore
+				nl.ellipsis.webdav.server.LocalFileSystemStore
 			</param-value>
 			<description>
-				name of the class that implements net.sf.webdav.WebdavStore
+				name of the class that implements nl.ellipsis.webdav.server.WebdavStore
 			</description>
 		</init-param>
 		<init-param>
@@ -46,26 +46,24 @@ INSTALLATION & CONFIGURATION
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
   
-  -if you want to use the reference implementation, set the parameter "rootpath"
-   to where you want to store your files
-  -if you have implemented your own store, insert the class name
-   to the parameter  "ResourceHandlerImplementation"
-   and copy your .jar to /WEB-INF/lib/
-  -with /* as servlet mapping, every request to the webapp is handled by
-   the servlet. change this if you want
-  -authentication is done by the servlet-container. If you need it, you have to
-   add the appropriate sections to the web.xml
+- if you want to use the reference implementation, set the parameter "rootpath"
+  to where you want to store your files
+- if you have implemented your own store, insert the class name
+  to the parameter  "ResourceHandlerImplementation"
+  and copy your .jar to /WEB-INF/lib/
+- with /* as servlet mapping, every request to the webapp is handled by
+  the servlet. change this if you want
+- authentication is done by the servlet-container. If you need it, you have to
+  add the appropriate sections to the web.xml
 
 
 ACCESSING THE FILESTORE
 
-  the webdav-filestore is reached at:
+  The webdav-filestore is reached at:
   "http://<ip/name + port of the server>/<name of the webapp>/<servlet-maping>"
                              e.g.:   http://localhost:8080/webdav-servlet
 
-weta-dfs-webdav has been tested on tomcat 5.0.28 and 5.5.12
-
-so far, we accessed it from windows(2000 and XP) and MAC
+PfxWebDAVServer has been tested with Java8 on tomcat 8.5.24
 
 
 CREDITS
@@ -79,7 +77,7 @@ after his BasicWebdavStore.
 Thanks for trying WebDAV-Servlet!  
 
 the project homepage is at:
-<http://sourceforge.net/projects/webdav-servlet/>
+<http://github.com/ellipsisnl/PfxWebDAVServer/>
 
-sponsored by media style
-<http://www.media-style.com>
+sponsored by Ellipsis BV
+<http://www.ellipsis.nl>
