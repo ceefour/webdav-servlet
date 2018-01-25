@@ -36,6 +36,7 @@ import org.xml.sax.InputSource;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -109,7 +110,7 @@ public class DoProppatch extends AbstractMethod {
 
 				if (so.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-					resp.addHeader(HEADER_ALLOW, methodsAllowed);
+					resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 					return;
 				}
@@ -154,9 +155,6 @@ public class DoProppatch extends AbstractMethod {
 					return;
 				}
 
-				HashMap<String, String> namespaces = new HashMap<String, String>();
-				namespaces.put("DAV:", "D");
-
 				if (tosetNode != null) {
 					toset = XMLHelper.getPropertiesFromXML(tosetNode);
 					tochange.addAll(toset);
@@ -171,16 +169,15 @@ public class DoProppatch extends AbstractMethod {
 				resp.setContentType("text/xml; charset=UTF-8");
 
 				// Create multistatus object
-				XMLWriter generatedXML = new XMLWriter(resp.getWriter(), namespaces);
+				XMLWriter generatedXML = new XMLWriter(resp.getWriter());
 				generatedXML.writeXMLHeader();
-				generatedXML.writeElement("DAV::multistatus", XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_PREFIX,NS_DAV_FULLNAME,WebDAVConstants.XMLTag.MULTISTATUS, XMLWriter.OPENING);
 
-				generatedXML.writeElement("DAV::response", XMLWriter.OPENING);
-				String status = new String(
-						"HTTP/1.1 " + WebDAVStatus.SC_OK + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE, XMLWriter.OPENING);
+				String status = new String("HTTP/1.1 " + WebDAVStatus.SC_OK + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
 
 				// Generating href element
-				generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.OPENING);
 
 				String href = URLUtil.getCleanPath(req.getContextPath(),path);
 				// folders must end with slash
@@ -190,29 +187,29 @@ public class DoProppatch extends AbstractMethod {
 
 				generatedXML.writeText(rewriteUrl(href));
 
-				generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.CLOSING);
 
 				for (Iterator<String> iter = tochange.iterator(); iter.hasNext();) {
 					String property = (String) iter.next();
 
-					generatedXML.writeElement("DAV::propstat", XMLWriter.OPENING);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.PROPSTAT, XMLWriter.OPENING);
 
-					generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
-					generatedXML.writeElement(property, XMLWriter.NO_CONTENT);
-					generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.PROP, XMLWriter.OPENING);
+					generatedXML.writeElement(NS_DAV_PREFIX,property, XMLWriter.NO_CONTENT);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.PROP, XMLWriter.CLOSING);
 
-					generatedXML.writeElement("DAV::status", XMLWriter.OPENING);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS, XMLWriter.OPENING);
 					generatedXML.writeText(status);
-					generatedXML.writeElement("DAV::status", XMLWriter.CLOSING);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS, XMLWriter.CLOSING);
 
-					generatedXML.writeElement("DAV::propstat", XMLWriter.CLOSING);
+					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.PROPSTAT, XMLWriter.CLOSING);
 				}
 
-				generatedXML.writeElement("DAV::response", XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE, XMLWriter.CLOSING);
 
-				generatedXML.writeElement("DAV::multistatus", XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.MULTISTATUS, XMLWriter.CLOSING);
 
-				generatedXML.sendData();
+				generatedXML.sendData("doPropPatch "+path+"/n");
 			} catch (AccessDeniedException e) {
 				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			} catch (WebDAVException e) {

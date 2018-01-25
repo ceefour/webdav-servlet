@@ -1,9 +1,10 @@
 /*
- * Copyright 1999,2004 The Apache Software Foundation.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  * 
  *      http://www.apache.org/licenses/LICENSE-2.0
  * 
@@ -17,27 +18,27 @@
 package nl.ellipsis.webdav.server.util;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import javax.servlet.ServletException;
-import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
 
 /**
  * XMLWriter helper class.
@@ -45,225 +46,329 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:remm@apache.org">Remy Maucherat</a>
  */
 public class XMLWriter {
-
-	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(XMLWriter.class);
 	
-    // -------------------------------------------------------------- Constants
+	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(XMLWriter.class);
 
-    /**
-     * Opening tag.
-     */
-    public static final int OPENING = 0;
+	// -------------------------------------------------------------- Constants
 
-    /**
-     * Closing tag.
-     */
-    public static final int CLOSING = 1;
+	/**
+	 * Opening tag.
+	 */
+	public static final int OPENING = 0;
 
-    /**
-     * Element with no content.
-     */
-    public static final int NO_CONTENT = 2;
+	/**
+	 * Closing tag.
+	 */
+	public static final int CLOSING = 1;
 
-    // ----------------------------------------------------- Instance Variables
+	/**
+	 * Element with no content.
+	 */
+	public static final int NO_CONTENT = 2;
 
-    /**
-     * Buffer.
-     */
-    protected StringBuffer _buffer = new StringBuffer();
+	// ----------------------------------------------------- Instance Variables
 
-    /**
-     * Writer.
-     */
-    protected Writer _writer = null;
+	/**
+	 * Buffer.
+	 */
+	protected StringBuilder buffer = new StringBuilder();
 
-    /**
-     * Namespaces to be declared in the root element
-     */
-    protected Map<String, String> _namespaces;
+	/**
+	 * Writer.
+	 */
+	protected Writer writer = null;
 
-    /**
-     * Is true until the root element is written
-     */
-    protected boolean _isRootElement = true;
-    
-    
-    private final static String XMLNS = "xmlns";
+	// ----------------------------------------------------------- Constructors
 
-    // ----------------------------------------------------------- Constructors
+	/**
+	 * Constructor.
+	 */
+	public XMLWriter() {
+	}
 
-    /**
-     * Constructor.
-     */
-    public XMLWriter(Map<String, String> namespaces) {
-        _namespaces = namespaces;
-    }
+	/**
+	 * Constructor.
+	 */
+	public XMLWriter(Writer writer) {
+		this.writer = writer;
+	}
 
-    /**
-     * Constructor.
-     */
-    public XMLWriter(Writer writer, Map<String, String> namespaces) {
-        _writer = writer;
-        _namespaces = namespaces;
-    }
+	// --------------------------------------------------------- Public Methods
 
-    // --------------------------------------------------------- Public Methods
+	/**
+	 * Retrieve generated XML.
+	 * 
+	 * @return String containing the generated XML
+	 */
+	@Override
+	public String toString() {
+		return buffer.toString();
+	}
 
-    /**
-     * Retrieve generated XML.
-     * 
-     * @return String containing the generated XML
-     */
-    public String toString() {
-        return _buffer.toString();
-    }
+	/**
+	 * Write property to the XML.
+	 * 
+	 * @param namespace
+	 *           Namespace
+	 * @param namespaceInfo
+	 *           Namespace info
+	 * @param name
+	 *           Property name
+	 * @param value
+	 *           Property value
+	 */
+	public void writeProperty(String namespace, String namespaceInfo, String name, String value) {
+		writeElement(namespace, namespaceInfo, name, OPENING);
+		buffer.append(value);
+		writeElement(namespace, namespaceInfo, name, CLOSING);
+	}
 
-    /**
-     * Write property to the XML.
-     * 
-     * @param name
-     *      Property name
-     * @param value
-     *      Property value
-     */
-    public void writeProperty(String name, String value) {
-        writeElement(name, OPENING);
-        _buffer.append(value);
-        writeElement(name, CLOSING);
-    }
+	/**
+	 * Write property to the XML.
+	 * 
+	 * @param namespace
+	 *           Namespace
+	 * @param name
+	 *           Property name
+	 * @param value
+	 *           Property value
+	 */
+	public void writeProperty(String namespace, String name, String value) {
+		writeElement(namespace, name, OPENING);
+		buffer.append(value);
+		writeElement(namespace, name, CLOSING);
+	}
 
-    /**
-     * Write property to the XML.
-     * 
-     * @param name
-     *      Property name
-     */
-	public void writeProperty(String name) {
-        writeElement(name, NO_CONTENT);
-    }
+	/**
+	 * Write property to the XML.
+	 * 
+	 * @param namespace
+	 *           Namespace
+	 * @param name
+	 *           Property name
+	 */
+	public void writeProperty(String namespace, String name) {
+		writeElement(namespace, name, NO_CONTENT);
+	}
 
-    /**
-     * Write an element.
-     * 
-     * @param name
-     *      Element name
-     * @param type
-     *      Element type
-     */
-    public void writeElement(String name, int type) {
-    	// validate for namespace
-        int pos = name.lastIndexOf(CharsetUtil.CHAR_COLON);
-        if (pos >= 0) {
-            // split namespace and localname
-            String fullns = name.substring(0, pos);
-            name = name.substring(pos + 1);
-            writeElement(fullns,name,type);
-        } else {
-            throw new IllegalArgumentException("All XML elements must have a namespace");
+	/**
+	 * Write an element.
+	 * 
+	 * @param name
+	 *           Element name
+	 * @param namespace
+	 *           Namespace abbreviation
+	 * @param type
+	 *           Element type
+	 */
+	public void writeElement(String namespace, String name, int type) {
+		writeElement(namespace, null, name, type);
+	}
+
+	/**
+	 * Write an element.
+	 * 
+	 * @param namespace
+	 *           Namespace abbreviation
+	 * @param namespaceInfo
+	 *           Namespace info
+	 * @param name
+	 *           Element name
+	 * @param type
+	 *           Element type
+	 */
+	public void writeElement(String namespace, String namespaceInfo, String name, int type) {
+		if (!StringUtils.isEmpty(namespace)) {
+			switch (type) {
+			case OPENING:
+				if (namespaceInfo != null) {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + " xmlns:" + namespace + "=\"" + namespaceInfo + "\">");
+				} else {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + ">");
+				}
+				break;
+			case CLOSING:
+				buffer.append("</" + namespace + CharsetUtil.COLON + name + ">\n");
+				break;
+			case NO_CONTENT:
+			default:
+				if (!StringUtils.isEmpty(namespaceInfo)) {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + " xmlns:" + namespace + "=\"" + namespaceInfo + "\"/>");
+				} else {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + "/>");
+				}
+				break;
+			}
+		} else {
+			switch (type) {
+			case OPENING:
+				buffer.append("<" + name + ">");
+				break;
+			case CLOSING:
+				buffer.append("</" + name + ">\n");
+				break;
+			case NO_CONTENT:
+			default:
+				buffer.append("<" + name + "/>");
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Write an element.
+	 * 
+	 * @param namespace
+	 *           Namespace abbreviation
+	 * @param namespaceInfo
+	 *           Namespace info
+	 * @param name
+	 *           Element name
+	 * @param type
+	 *           Element type
+	 */
+	public void writeNSElement(String namespace, Map<String,String> namespacePrefixMap, String name, int type) {
+		if (!StringUtils.isEmpty(namespace)) {
+			switch (type) {
+			case OPENING:
+				if (namespacePrefixMap != null && !namespacePrefixMap.isEmpty()) {
+					buffer.append("<" + namespace + ":" + name);
+					for(Entry<String, String> e : namespacePrefixMap.entrySet()) {
+						buffer.append(" xmlns:" + e.getKey() + "=\"" + e.getValue() + "\"");
+					}
+					buffer.append(">");
+				} else {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + ">");
+				}
+				break;
+			case CLOSING:
+				buffer.append("</" + namespace + CharsetUtil.COLON + name + ">\n");
+				break;
+			case NO_CONTENT:
+			default:
+				if (namespacePrefixMap != null && !namespacePrefixMap.isEmpty()) {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name);
+					for(Entry<String, String> e : namespacePrefixMap.entrySet()) {
+						buffer.append(" xmlns:" + e.getKey() + "=\"" + e.getValue() + "\"");
+					}
+					buffer.append(">");
+				} else {
+					buffer.append("<" + namespace + CharsetUtil.COLON + name + ">");
+				}
+				break;
+			}
+		} else {
+			switch (type) {
+			case OPENING:
+				buffer.append("<" + name + ">");
+				break;
+			case CLOSING:
+				buffer.append("</" + name + ">\n");
+				break;
+			case NO_CONTENT:
+			default:
+				buffer.append("<" + name + "/>");
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Write text.
+	 * 
+	 * @param text
+	 *           Text to append
+	 */
+	public void writeText(String text) {
+		buffer.append(text);
+	}
+
+	/**
+	 * Write data.
+	 * 
+	 * @param data
+	 *           Data to append
+	 */
+	public void writeData(String data) {
+		buffer.append("<![CDATA[" + data + "]]>");
+	}
+
+	/**
+	 * Write XML Header.
+	 */
+	public void writeXMLHeader() {
+		buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
+	}
+
+	/**
+	 * Send data and reinitializes buffer.
+	 * @param logInfo 
+	 */
+	public void sendData(String logInfo) throws IOException {
+		if (writer != null) {
+			String content = buffer.toString();
+			if(LOG.isDebugEnabled()) {
+				LOG.debug((!StringUtils.isEmpty(logInfo) ? logInfo : "")+getFormattedXML(content));
+			}
+			writer.write(content);
+			buffer = new StringBuilder();
+		}
+	}
+	
+	public static String getFormattedXML(Document document) {
+		String retval = null;
+        if(document!=null) {
+    		TransformerFactory transfac = TransformerFactory.newInstance();
+            StringWriter sw = null;
+    		try {
+    			Transformer transformer = transfac.newTransformer();
+    			
+    			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+    			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+    			  //create string from xml tree
+    	        sw = new StringWriter();
+    	        StreamResult result = new StreamResult(sw);
+    	        
+    	        DOMSource source = new DOMSource(document);
+    	        
+    	        transformer.transform(source, result);
+    	        
+    	        retval = sw.toString();
+    		} catch (TransformerException e) {
+    			e.printStackTrace();
+    		} finally {
+    			try {
+					sw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+    		}
         }
-    }
-    
-    /**
-     * Write an element.
-     * 
-     * @param fullns
-     *      Element namespave
-     * @param name
-     *      Element name
-     * @param type
-     *      Element type
-     */
-    public void writeElement(String fullns, String name, int type) {
-    	// validate namespace presence
-    	if(StringUtils.isEmpty(fullns)) {
-            throw new IllegalArgumentException("All XML elements must have a namespace");
-    	}
-
-        // start writing the buffer
-        StringBuffer nsdecl = new StringBuffer();
-        // when rootelement, add namespace declarations
-        if (_isRootElement) {
-            for (Iterator<String> iter = _namespaces.keySet().iterator(); iter.hasNext();) {
-                String fullName = (String) iter.next();
-                String abbrev = (String) _namespaces.get(fullName);
-                nsdecl.append(CharsetUtil.CHAR_SPACE).append(XMLNS).append(CharsetUtil.CHAR_COLON).append(abbrev).append(CharsetUtil.CHAR_EQUALS).append(CharsetUtil.DQUOTE).append(fullName).append(CharsetUtil.DQUOTE);
-            }
-            _isRootElement = false;
+        return retval;
+	}
+	
+	public static String getFormattedXML(String xml) {
+		String retval = xml;
+		
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		Document document = null;
+		StringReader sr = null;
+		try {
+	    	sr = new StringReader(xml);
+	    	InputSource inputSource = new InputSource(sr);
+	        documentBuilderFactory.setNamespaceAware(true);
+	        document = documentBuilderFactory.newDocumentBuilder().parse(inputSource);
+		} catch (SAXException | IOException | ParserConfigurationException e) {
+			e.printStackTrace();
+		} finally {
+			sr.close();
+		}
+        if(document!=null) {
+    		retval = getFormattedXML(document);
         }
-        
-    	// validate localname
-        int pos = name.lastIndexOf(CharsetUtil.CHAR_COLON);
-        // we may still have a namespace in the localname 
-        if (pos >= 0) {
-            // lookup prefix for namespace
-            String prefix = (String) _namespaces.get(fullns);
-            if (prefix == null) {
-                // there is no prefix for this namespace
-                name = name.substring(pos + 1);
-                // add namesapce declaration to tag
-                nsdecl.append(CharsetUtil.CHAR_SPACE).append(XMLNS).append(CharsetUtil.CHAR_EQUALS).append(CharsetUtil.DQUOTE).append(fullns).append(CharsetUtil.DQUOTE);
-            } else {
-                // there is a prefix
-                name = prefix + CharsetUtil.CHAR_COLON + name.substring(pos + 1);
-            }
-        }
-
-        switch (type) {
-	        case OPENING:
-	            _buffer.append(CharsetUtil.LESS_THAN + name + nsdecl + CharsetUtil.GREATER_THAN);
-	            break;
-	        case CLOSING:
-	            _buffer.append(CharsetUtil.LESS_THAN + CharsetUtil.FORWARD_SLASH + name + CharsetUtil.GREATER_THAN +"\n");
-	            break;
-	        case NO_CONTENT:
-	        default:
-	            _buffer.append(CharsetUtil.LESS_THAN + name + nsdecl + CharsetUtil.FORWARD_SLASH + CharsetUtil.GREATER_THAN);
-	            break;
-        }
-    }
-
-    /**
-     * Write text.
-     * 
-     * @param text
-     *      Text to append
-     */
-    public void writeText(String text) {
-        _buffer.append(text);
-    }
-
-    /**
-     * Write data.
-     * 
-     * @param data
-     *      Data to append
-     */
-    public void writeData(String data) {
-        _buffer.append("<![CDATA[" + data + "]]>");
-    }
-
-    /**
-     * Write XML Header.
-     */
-    public void writeXMLHeader() {
-        _buffer.append("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n");
-    }
-
-    /**
-     * Send data and reinitializes buffer.
-     */
-    public void sendData() throws IOException {
-        if (_writer != null) {
-        	if(LOG.isDebugEnabled()) {
-        		String data = _buffer.toString();
-        		LOG.debug(XMLHelper.format(data));
-        		_writer.write(data);
-        	} else {
-        		_writer.write(_buffer.toString());
-        	}
-            _writer.flush();
-            _buffer = new StringBuffer();
-        }
-    }
+        return retval;
+	}
 
 }

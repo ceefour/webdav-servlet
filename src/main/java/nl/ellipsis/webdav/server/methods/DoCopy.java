@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -140,7 +141,7 @@ public class DoCopy extends AbstractMethod {
 		// Parsing overwrite header
 
 		boolean overwrite = true;
-		String overwriteHeader = req.getHeader(HEADER_OVERWRITE);
+		String overwriteHeader = req.getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 
 		if (overwriteHeader != null) {
 			overwrite = overwriteHeader.equalsIgnoreCase("T");
@@ -161,7 +162,7 @@ public class DoCopy extends AbstractMethod {
 
 				if (copySo.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(copySo);
-					resp.addHeader(HEADER_ALLOW, methodsAllowed);
+					resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 					return false;
 				}
@@ -271,7 +272,7 @@ public class DoCopy extends AbstractMethod {
 
 		_store.createFolder(transaction, destinationPath);
 		boolean infiniteDepth = true;
-		String depth = req.getHeader(HEADER_DEPTH);
+		String depth = req.getHeader(WebDAVConstants.HttpHeader.DEPTH);
 		if (depth != null) {
 			if (depth.equals("0")) {
 				infiniteDepth = false;
@@ -324,7 +325,7 @@ public class DoCopy extends AbstractMethod {
 	 *             if an error occurs while sending response
 	 */
 	private String parseDestinationHeader(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String destinationPath = req.getHeader(HEADER_DESTINATION);
+		String destinationPath = req.getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 
 		if (destinationPath == null) {
 			resp.sendError(WebDAVStatus.SC_BAD_REQUEST);

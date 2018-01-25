@@ -10,6 +10,7 @@ import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
@@ -46,7 +47,7 @@ public class DoProppatchTest extends MockTest {
 		
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -70,7 +71,7 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -99,7 +100,7 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -110,10 +111,10 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 				
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -141,7 +142,7 @@ public class DoProppatchTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -152,10 +153,10 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
 				
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();

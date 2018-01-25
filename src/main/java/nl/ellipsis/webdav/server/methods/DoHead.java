@@ -25,6 +25,7 @@ import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -87,7 +88,7 @@ public class DoHead extends AbstractMethod {
 				}
 			} else if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader(HEADER_ALLOW, methodsAllowed);
+				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
@@ -97,7 +98,7 @@ public class DoHead extends AbstractMethod {
 			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
 
-					String eTagMatch = req.getHeader(HEADER_IF_NONE_MATCH);
+					String eTagMatch = req.getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
 					if (eTagMatch != null) {
 						if (eTagMatch.equals(getETag(so))) {
 							resp.setStatus(WebDAVStatus.SC_NOT_MODIFIED);
@@ -116,7 +117,7 @@ public class DoHead extends AbstractMethod {
 							resp.setDateHeader("last-modified", lastModified);
 
 							String eTag = getETag(so);
-							resp.addHeader(HEADER_ETAG, eTag);
+							resp.addHeader(WebDAVConstants.HttpHeader.ETAG, eTag);
 
 							long resourceLength = so.getResourceLength();
 
@@ -125,7 +126,7 @@ public class DoHead extends AbstractMethod {
 									if (resourceLength <= Integer.MAX_VALUE) {
 										resp.setContentLength((int) resourceLength);
 									} else {
-										resp.setHeader(HEADER_CONTENT_LENGTH, Long.toString(resourceLength));
+										resp.setHeader(WebDAVConstants.HttpHeader.CONTENT_LENGTH, Long.toString(resourceLength));
 										// is "content-length" the right header?
 										// is long a valid format?
 									}

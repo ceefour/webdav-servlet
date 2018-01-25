@@ -35,6 +35,7 @@ import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVServlet;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
@@ -55,7 +56,7 @@ public class DoGet extends DoHead {
 			StoredObject so = _store.getStoredObject(transaction, path);
 			if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader(HEADER_ALLOW, methodsAllowed);
+				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
@@ -98,7 +99,7 @@ public class DoGet extends DoHead {
 
 			if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader(HEADER_ALLOW, methodsAllowed);
+				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 				return;
 			}

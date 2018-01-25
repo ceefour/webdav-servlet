@@ -36,6 +36,7 @@ import org.xml.sax.SAXException;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
@@ -97,7 +98,7 @@ public class DoLock extends AbstractMethod {
 			// Mac OS Finder (whether 10.4.x or 10.5) can't store files
 			// because executing a LOCK without lock information causes a
 			// SC_BAD_REQUEST
-			_userAgent = req.getHeader(HEADER_USER_AGENT);
+			_userAgent = req.getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 			if (_userAgent != null && _userAgent.indexOf("Darwin") != -1) {
 				_macLockRequest = true;
 
@@ -108,7 +109,7 @@ public class DoLock extends AbstractMethod {
 			String tempLockOwner = "doLock" + System.currentTimeMillis() + req.toString();
 			if (_resourceLocks.lock(transaction, _path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
-					if (req.getHeader(AbstractMethod.HEADER_IF) != null) {
+					if (req.getHeader(WebDAVConstants.HttpHeader.IF) != null) {
 						doRefreshLock(transaction, req, resp);
 					} else {
 						doLock(transaction, req, resp);
@@ -422,7 +423,7 @@ public class DoLock extends AbstractMethod {
 	private int getTimeout(ITransaction transaction, HttpServletRequest req) {
 
 		int lockDuration = DEFAULT_TIMEOUT;
-		String lockDurationStr = req.getHeader(HEADER_TIMEOUT);
+		String lockDurationStr = req.getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 
 		if (lockDurationStr == null) {
 			lockDuration = DEFAULT_TIMEOUT;
@@ -461,66 +462,62 @@ public class DoLock extends AbstractMethod {
 	private void generateXMLReport(ITransaction transaction, HttpServletResponse resp, LockedObject lo)
 			throws IOException {
 
-		HashMap<String, String> namespaces = new HashMap<String, String>();
-		namespaces.put("DAV:", "D");
-
 		resp.setStatus(WebDAVStatus.SC_OK);
 		resp.setContentType("text/xml; charset=UTF-8");
 
-		XMLWriter generatedXML = new XMLWriter(resp.getWriter(), namespaces);
+		XMLWriter generatedXML = new XMLWriter(resp.getWriter());
 		generatedXML.writeXMLHeader();
-		generatedXML.writeElement("DAV::prop", XMLWriter.OPENING);
-		generatedXML.writeElement("DAV::lockdiscovery", XMLWriter.OPENING);
-		generatedXML.writeElement("DAV::activelock", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,NS_DAV_FULLNAME,WebDAVConstants.XMLTag.PROP, XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKDISCOVERY, XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.ACTIVELOCK, XMLWriter.OPENING);
 
-		generatedXML.writeElement("DAV::locktype", XMLWriter.OPENING);
-		generatedXML.writeProperty("DAV::" + _type);
-		generatedXML.writeElement("DAV::locktype", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKTYPE, XMLWriter.OPENING);
+		generatedXML.writeProperty(NS_DAV_PREFIX,_type);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKTYPE, XMLWriter.CLOSING);
 
-		generatedXML.writeElement("DAV::lockscope", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKSCOPE, XMLWriter.OPENING);
 		if (_exclusive) {
-			generatedXML.writeProperty("DAV::exclusive");
+			generatedXML.writeProperty(NS_DAV_PREFIX,"exclusive");
 		} else {
-			generatedXML.writeProperty("DAV::shared");
+			generatedXML.writeProperty(NS_DAV_PREFIX,"shared");
 		}
-		generatedXML.writeElement("DAV::lockscope", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKSCOPE, XMLWriter.CLOSING);
 
 		int depth = lo.getLockDepth();
 
-		generatedXML.writeElement("DAV::depth", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.DEPTH, XMLWriter.OPENING);
 		if (depth == DEPTH_INFINITY) {
-			generatedXML.writeText("Infinity");
+			generatedXML.writeText(S_DEPTH_INFINITY);
 		} else {
 			generatedXML.writeText(String.valueOf(depth));
 		}
-		generatedXML.writeElement("DAV::depth", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.DEPTH, XMLWriter.CLOSING);
 
-		generatedXML.writeElement("DAV::owner", XMLWriter.OPENING);
-		generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.OWNER, XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.OPENING);
 		generatedXML.writeText(_lockOwner);
-		generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
-		generatedXML.writeElement("DAV::owner", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.OWNER, XMLWriter.CLOSING);
 
 		long timeout = lo.getTimeoutMillis();
-		generatedXML.writeElement("DAV::timeout", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.TIMEOUT, XMLWriter.OPENING);
 		generatedXML.writeText("Second-" + timeout / 1000);
-		generatedXML.writeElement("DAV::timeout", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.TIMEOUT, XMLWriter.CLOSING);
 
 		String lockToken = lo.getID();
-		generatedXML.writeElement("DAV::locktoken", XMLWriter.OPENING);
-		generatedXML.writeElement("DAV::href", XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKTOKEN, XMLWriter.OPENING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.OPENING);
 		generatedXML.writeText("opaquelocktoken:" + lockToken);
-		generatedXML.writeElement("DAV::href", XMLWriter.CLOSING);
-		generatedXML.writeElement("DAV::locktoken", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKTOKEN, XMLWriter.CLOSING);
 
-		generatedXML.writeElement("DAV::activelock", XMLWriter.CLOSING);
-		generatedXML.writeElement("DAV::lockdiscovery", XMLWriter.CLOSING);
-		generatedXML.writeElement("DAV::prop", XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.ACTIVELOCK, XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.LOCKDISCOVERY, XMLWriter.CLOSING);
+		generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.PROP, XMLWriter.CLOSING);
 
-		resp.addHeader(HEADER_LOCK_TOKEN, "<opaquelocktoken:" + lockToken + ">");
+		resp.addHeader(WebDAVConstants.HttpHeader.LOCK_TOKEN, "<opaquelocktoken:" + lockToken + ">");
 
-		generatedXML.sendData();
-
+		generatedXML.sendData("doLock.response "+lo.getPath()+"\n");
 	}
 
 	/**

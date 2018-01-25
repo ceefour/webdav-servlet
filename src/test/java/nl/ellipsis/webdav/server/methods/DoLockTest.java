@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
 import nl.ellipsis.webdav.server.locking.LockedObject;
@@ -51,7 +52,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -86,22 +87,22 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue("Infinite"));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -135,16 +136,16 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -155,10 +156,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -192,16 +193,16 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -212,10 +213,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -250,16 +251,16 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -270,10 +271,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -307,16 +308,16 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -327,10 +328,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue(timeoutString));
 
 				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
@@ -364,7 +365,7 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -380,7 +381,7 @@ public class DoLockTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -388,7 +389,7 @@ public class DoLockTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -418,10 +419,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();

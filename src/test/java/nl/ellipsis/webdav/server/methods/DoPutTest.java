@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
 import nl.ellipsis.webdav.server.locking.LockedObject;
@@ -47,7 +48,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -68,13 +69,13 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Goliath agent"));
 
 				StoredObject parentSo = initFolderStoredObject();
@@ -126,13 +127,13 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				StoredObject parentSo = null;
@@ -162,13 +163,13 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("WebDAVFS/1.5.0 (01500000) ....."));
 
 				StoredObject parentSo = null;
@@ -212,13 +213,13 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("WebDAVFS/1.5.0 (01500000) ....."));
 
 				StoredObject parentSo = initFileStoredObject(resourceContent);
@@ -243,7 +244,7 @@ public class DoPutTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -259,7 +260,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -267,7 +268,7 @@ public class DoPutTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -299,10 +300,10 @@ public class DoPutTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_TIMEOUT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
@@ -336,13 +337,13 @@ public class DoPutTest extends MockTest {
 				// // -----LOCK on a non-existing resource successful------
 				// // --------now doPUT on the lock-null resource----------
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_USER_AGENT);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 				will(returnValue("Transmit agent"));
 
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
@@ -353,7 +354,7 @@ public class DoPutTest extends MockTest {
 
 				final String ifHeaderLockToken = "(<locktoken:" + loId + ">)";
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(ifHeaderLockToken));
 
 				oneOf(mockResourceLocks).getLockedObjectByID(mockTransaction, loId);
@@ -375,7 +376,7 @@ public class DoPutTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, path);
 				will(returnValue(lockNullResourceLo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
 				will(returnValue(ifHeaderLockToken));
 
 				String[] owners = (lockNullResourceLo != null ? lockNullResourceLo.getOwner() : null);

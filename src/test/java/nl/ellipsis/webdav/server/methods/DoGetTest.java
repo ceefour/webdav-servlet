@@ -10,6 +10,7 @@ import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
@@ -48,7 +49,7 @@ public class DoGetTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -80,7 +81,7 @@ public class DoGetTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -91,7 +92,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());
@@ -130,7 +131,7 @@ public class DoGetTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -143,7 +144,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
@@ -158,11 +159,16 @@ public class DoGetTest extends MockTest {
 				tos = new TestingOutputStream();
 
 				oneOf(mockRes).getOutputStream();
-				will(returnValue(tos));
+				will(returnValue(tos)); 
 
 				oneOf(mockStore).getChildrenNames(mockTransaction, "/foo");
 				will(returnValue(new String[] { "AAA", "BBB" }));
-
+				
+				oneOf(mockReq).getContextPath();
+				will(returnValue("/"));
+				oneOf(mockReq).getServletPath();
+				will(returnValue("/"));
+				
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo/AAA");
 				will(returnValue(aaa));
 
@@ -186,7 +192,7 @@ public class DoGetTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -218,7 +224,7 @@ public class DoGetTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -234,7 +240,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/alternative");
 				will(returnValue(alternativeSo));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", alternativeSo.getLastModified().getTime());

@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
@@ -55,13 +56,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 				
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destFilePath));
 				
 				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
@@ -84,13 +85,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -105,13 +106,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("/servletPath"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -167,13 +168,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -188,13 +189,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -228,13 +229,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -249,13 +250,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -314,13 +315,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -335,13 +336,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = null;
@@ -369,13 +370,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -390,7 +391,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -416,13 +417,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -437,13 +438,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -463,7 +464,7 @@ public class DoMoveTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(null));
 
 				String[] sourceChildren = new String[] { "sourceFile" };
@@ -525,13 +526,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -546,13 +547,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -585,13 +586,13 @@ public class DoMoveTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(AbstractMethod.HEADER_DESTINATION);
+				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 				will(returnValue(overwritePath));
 
 				oneOf(mockReq).getServerName();
@@ -606,13 +607,13 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getServletPath();
 				will(returnValue("servlet_path"));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_OVERWRITE);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -647,7 +648,7 @@ public class DoMoveTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(overwritePath));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));

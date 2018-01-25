@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -60,7 +61,7 @@ public class DoPut extends AbstractMethod {
 		if (!_readOnly) {
 			String parentPath = URLUtil.getParentPath(path);
 
-			_userAgent = req.getHeader(HEADER_USER_AGENT);
+			_userAgent = req.getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
 
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 

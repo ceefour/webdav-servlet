@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl.ellipsis.webdav.server.ITransaction;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -48,7 +49,7 @@ public class DoMove extends AbstractMethod {
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
 		String sourcePath = getRelativePath(req);
-		String destinationPath = req.getHeader(HEADER_DESTINATION);
+		String destinationPath = req.getHeader(WebDAVConstants.HttpHeader.DESTINATION);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("-- " + this.getClass().getName()+" "+sourcePath+" -> "+destinationPath);
 		}
@@ -95,7 +96,7 @@ public class DoMove extends AbstractMethod {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, sourcePath, tempLockOwner);
 				}
 			} else {
-				errorList.put(req.getHeader(HEADER_DESTINATION), WebDAVStatus.SC_LOCKED);
+				errorList.put(req.getHeader(WebDAVConstants.HttpHeader.DESTINATION), WebDAVStatus.SC_LOCKED);
 				sendReport(req, resp, errorList);
 			}
 		} else {

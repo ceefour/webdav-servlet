@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
 import nl.ellipsis.webdav.server.IMethodExecutor;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
@@ -56,8 +57,6 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	
 	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractMethod.class);
 	
-	public static final String ATTR_INCLUDE_PATH_INFO = "javax.servlet.include.path_info";
-
 	private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
 	private static final ThreadLocal<DateFormat> thCreationDateFormat = new ThreadLocal<DateFormat>();
 	private static final ThreadLocal<DateFormat> thLocalDateFormat = new ThreadLocal<DateFormat>();
@@ -90,30 +89,11 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final String S_DEPTH_RESOURCE_WITH_CHLDREN = "1"; 
 	protected static final String S_DEPTH_INFINITY = "infinity"; 
 
-	protected static final String HEADER_ALLOW = "Allow"; 
-	protected static final String HEADER_CONTENT_LENGTH = "content-length"; 
-	protected static final String HEADER_DAV = "DAV"; 
-	protected static final String HEADER_DEPTH = "Depth"; 
-	protected static final String HEADER_DESTINATION = "Destination"; 
-	protected static final String HEADER_ETAG = "ETag"; 
-	protected static final String HEADER_IF = "If"; 
-	protected static final String HEADER_IF_NONE_MATCH = "If-None-Match"; 
-	protected static final String HEADER_LOCK_TOKEN = "Lock-Token";
-	protected static final String HEADER_MS_AUTHOR_VIA = "MS-Author-Via";
-	protected static final String HEADER_OVERWRITE = "Overwrite"; 
-	protected static final String HEADER_TIMEOUT = "Timeout"; 
-	protected static final String HEADER_USER_AGENT = "User-Agent"; 
-
 	protected static final String PARAM_LOCKTOKEN = "locktoken";
 
 	protected static final String NS_DAV_FULLNAME = "DAV:";
 	protected static final String NS_DAV_PREFIX = "D";
 
-	protected static final String TAG_HREF = "href";
-	protected static final String TAG_MULTISTATUS = "multistatus";
-	protected static final String TAG_RESPONSE = "response";
-	protected static final String TAG_STATUS = "status";
-	
 	private static final String PROTOCOL_HTTP = "http";
 
 	/**
@@ -192,10 +172,10 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static String getRelativePath(HttpServletRequest request) {
 		String path = null;
 		// Are we being processed by a RequestDispatcher.include()?
-		if (request.getAttribute(ATTR_INCLUDE_PATH_INFO) != null) {
-			path = (String) request.getAttribute(ATTR_INCLUDE_PATH_INFO);
+		if (request.getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO) != null) {
+			path = (String) request.getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 //			if (StringUtils.isEmpty(path)) {
-//				path = (String) request.getAttribute("javax.servlet.include.servlet_path");
+//				path = (String) request.getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_SERVLET_PATH);
 //			}
 		}
 		if(StringUtils.isEmpty(path)) {
@@ -234,7 +214,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 */
 	protected static int getDepth(HttpServletRequest req) {
 		int depth = DEPTH_INFINITY;
-		String depthStr = req.getHeader(HEADER_DEPTH);
+		String depthStr = req.getHeader(WebDAVConstants.HttpHeader.DEPTH);
 		if (depthStr != null) {
 			if (depthStr.equals(S_DEPTH_RESOURCE)) {
 				depth = DEPTH_RESOURCE;
@@ -276,7 +256,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
 	protected static String[] getLockIdFromIfHeader(HttpServletRequest req) {
 		String[] ids = new String[2];
-		String id = req.getHeader(HEADER_IF);
+		String id = req.getHeader(WebDAVConstants.HttpHeader.IF);
 
 		if (StringUtils.isNotEmpty(id)) {
 			// only one locktoken between parenthesis
@@ -308,7 +288,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	}
 
 	protected static String getLockIdFromLockTokenHeader(HttpServletRequest req) {
-		String id = req.getHeader(HEADER_LOCK_TOKEN);
+		String id = req.getHeader(WebDAVConstants.HttpHeader.LOCK_TOKEN);
 		if (id != null) {
 			id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1, id.indexOf(CharsetUtil.CHAR_GREATER_THAN));
 
@@ -401,13 +381,10 @@ public abstract class AbstractMethod implements IMethodExecutor {
 			String absoluteUri = req.getRequestURI();
 			// String relativePath = getRelativePath(req);
 
-			HashMap<String, String> namespaces = new HashMap<String, String>();
-			namespaces.put(NS_DAV_FULLNAME, NS_DAV_PREFIX);
-
-			XMLWriter generatedXML = new XMLWriter(namespaces);
+			XMLWriter generatedXML = new XMLWriter();
 			generatedXML.writeXMLHeader();
 
-			generatedXML.writeElement(NS_DAV_FULLNAME,TAG_MULTISTATUS,XMLWriter.OPENING);
+			generatedXML.writeElement(NS_DAV_PREFIX,NS_DAV_FULLNAME,WebDAVConstants.XMLTag.MULTISTATUS,XMLWriter.OPENING);
 
 			Enumeration<String> pathList = errorList.keys();
 			while (pathList.hasMoreElements()) {
@@ -415,9 +392,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
 				String errorPath = (String) pathList.nextElement();
 				int errorCode = ((Integer) errorList.get(errorPath)).intValue();
 
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_RESPONSE,XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE,XMLWriter.OPENING);
 
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_HREF,XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF,XMLWriter.OPENING);
 				String toAppend = null;
 				if (absoluteUri.endsWith(errorPath)) {
 					toAppend = absoluteUri;
@@ -431,16 +408,16 @@ public abstract class AbstractMethod implements IMethodExecutor {
 					toAppend = CharsetUtil.FORWARD_SLASH + toAppend;
 				}
 				generatedXML.writeText(errorPath);
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_HREF,XMLWriter.CLOSING);
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_STATUS,XMLWriter.OPENING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF,XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS,XMLWriter.OPENING);
 				generatedXML.writeText("HTTP/1.1 " + errorCode + " " + WebDAVStatus.getStatusText(errorCode));
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_STATUS,XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS,XMLWriter.CLOSING);
 
-				generatedXML.writeElement(NS_DAV_FULLNAME,TAG_RESPONSE,XMLWriter.CLOSING);
+				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE,XMLWriter.CLOSING);
 
 			}
 
-			generatedXML.writeElement(NS_DAV_FULLNAME,TAG_MULTISTATUS,XMLWriter.CLOSING);
+			generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.MULTISTATUS,XMLWriter.CLOSING);
 
 			Writer writer = resp.getWriter();
 			writer.write(generatedXML.toString());

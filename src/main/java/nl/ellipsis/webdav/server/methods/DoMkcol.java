@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -127,7 +128,7 @@ public class DoMkcol extends AbstractMethod {
 
 							} else {
 								String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-								resp.addHeader(HEADER_ALLOW, methodsAllowed);
+								resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 								resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 							}
 						}
@@ -138,7 +139,7 @@ public class DoMkcol extends AbstractMethod {
 								+ "\n Sending SC_METHOD_NOT_ALLOWED (405) error response!");
 
 						String methodsAllowed = DeterminableMethod.determineMethodsAllowed(parentSo);
-						resp.addHeader(HEADER_ALLOW, methodsAllowed);
+						resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
 						resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
 
 					} else {

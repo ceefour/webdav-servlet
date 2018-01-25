@@ -9,6 +9,7 @@ import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
@@ -45,13 +46,13 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue("infinity"));
 
 				StoredObject rootSo = initFolderStoredObject();
@@ -59,7 +60,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(rootSo));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -75,9 +76,6 @@ public class DoPropfindTest extends MockTest {
 
 				oneOf(mockRes).getWriter();
 				will(returnValue(pw));
-
-				oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
-				will(returnValue("text/xml; charset=UTF-8"));
 
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(rootSo));
@@ -135,13 +133,13 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue("0"));
 
 				StoredObject fileSo = initFolderStoredObject();
@@ -149,7 +147,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(fileSo));
 
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
@@ -165,9 +163,6 @@ public class DoPropfindTest extends MockTest {
 
 				oneOf(mockRes).getWriter();
 				will(returnValue(pw));
-
-				oneOf(mockMimeTyper).getMimeType(mockTransaction, path);
-				will(returnValue("text/xml; charset=UTF-8"));
 
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(fileSo));
@@ -193,13 +188,13 @@ public class DoPropfindTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(AbstractMethod.ATTR_INCLUDE_PATH_INFO);
+				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(AbstractMethod.HEADER_DEPTH);
+				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
 				will(returnValue("0"));
 
 				StoredObject notExistingSo = null;

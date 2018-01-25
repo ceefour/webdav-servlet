@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
+import nl.ellipsis.webdav.server.WebDAVConstants;
 import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
@@ -52,12 +53,12 @@ public class DoOptions extends DeterminableMethod {
 		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 			StoredObject so = null;
 			try {
-				resp.addHeader(HEADER_DAV, "1, 2");
+				resp.addHeader(WebDAVConstants.HttpHeader.DAV, "1, 2");
 
 				so = _store.getStoredObject(transaction, path);
 				String methodsAllowed = determineMethodsAllowed(so);
-				resp.addHeader(HEADER_ALLOW, methodsAllowed);
-				resp.addHeader(HEADER_MS_AUTHOR_VIA, "DAV");
+				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
+				resp.addHeader(WebDAVConstants.HttpHeader.MS_AUTHOR_VIA, "DAV");
 			} catch (AccessDeniedException e) {
 				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
 			} catch (WebDAVException e) {

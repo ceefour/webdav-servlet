@@ -95,6 +95,7 @@ public abstract class MockTest extends Assert {
 			if(resourceContent!=null) {
 				// so.setResourceContent(resourceContent);
 				so.setResourceLength(resourceContent.length);
+				so.setMimeType("text/xml; charset=UTF-8");
 			} else {
 				so.setResourceLength(0L);
 			}
