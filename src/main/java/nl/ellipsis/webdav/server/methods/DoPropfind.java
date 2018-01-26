@@ -332,44 +332,44 @@ public class DoPropfind extends AbstractMethod {
 
 				String property = (String) properties.nextElement();
 
-				if (property.equals("DAV::creationdate")) {
+				if (property.equals(WebDAVConstants.XMLTag.CREATIONDATE)) {
 					generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.CREATIONDATE, creationdate);
 				} else if (property.equals("DAV::displayname")) {
 					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.DISPLAYNAME, XMLWriter.OPENING);
 					generatedXML.writeData(resourceName);
 					generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.DISPLAYNAME, XMLWriter.CLOSING);
-				} else if (property.equals("DAV::getcontentlanguage")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.GET_CONTENTLANGUAGE)) {
 					if (isFolder) {
 						propertiesNotFound.addElement(property);
 					} else {
 						generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.GET_CONTENTLANGUAGE, XMLWriter.NO_CONTENT);
 					}
-				} else if (property.equals("DAV::getcontentlength")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.GET_CONTENTLENGTH)) {
 					if (isFolder) {
 						propertiesNotFound.addElement(property);
 					} else {
 						generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.GET_CONTENTLENGTH, resourceLength);
 					}
-				} else if (property.equals("DAV::getcontenttype")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.GET_CONTENTTYPE)) {
 					if (isFolder) {
 						propertiesNotFound.addElement(property);
 					} else {
 						String mimeType = (so.getMimeType()!=null ? so.getMimeType() : _mimeTyper.getMimeType(transaction, path));
 						generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.GET_CONTENTTYPE, mimeType);
 					}
-				} else if (property.equals("DAV::getetag")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.GET_ETAG)) {
 					if (isFolder || so.isNullResource()) {
 						propertiesNotFound.addElement(property);
 					} else {
 						generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.GET_ETAG, getETag(so));
 					}
-				} else if (property.equals("DAV::getlastmodified")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.GET_LASTMODIFIED)) {
 					if (isFolder && lastModified==null) {
 						propertiesNotFound.addElement(property);
 					} else {
 						generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.GET_LASTMODIFIED, lastModified);
 					}
-				} else if (property.equals("DAV::resourcetype")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.RESOURCETYPE)) {
 					if (isFolder) {
 						generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESOURCETYPE, XMLWriter.OPENING);
 						generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.COLLECTION, XMLWriter.NO_CONTENT);
@@ -377,11 +377,11 @@ public class DoPropfind extends AbstractMethod {
 					} else {
 						generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESOURCETYPE, XMLWriter.NO_CONTENT);
 					}
-				} else if (property.equals("DAV::source")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.SOURCE)) {
 					generatedXML.writeProperty(NS_DAV_PREFIX,WebDAVConstants.XMLTag.SOURCE, "");
-				} else if (property.equals("DAV::supportedlock")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.SUPPORTEDLOCK)) {
 					writeSupportedLockElements(transaction, generatedXML, path);
-				} else if (property.equals("DAV::lockdiscovery")) {
+				} else if (property.equals(WebDAVConstants.XMLTag.LOCKDISCOVERY)) {
 					writeLockDiscoveryElements(transaction, generatedXML, path);
 				} else {
 					propertiesNotFound.addElement(property);

@@ -308,67 +308,11 @@ public class XMLWriter {
 		if (writer != null) {
 			String content = buffer.toString();
 			if(LOG.isDebugEnabled()) {
-				LOG.debug((!StringUtils.isEmpty(logInfo) ? logInfo : "")+getFormattedXML(content));
+				LOG.debug((!StringUtils.isEmpty(logInfo) ? logInfo : "")+XMLHelper.format(content));
 			}
 			writer.write(content);
 			buffer = new StringBuilder();
 		}
-	}
-	
-	public static String getFormattedXML(Document document) {
-		String retval = null;
-        if(document!=null) {
-    		TransformerFactory transfac = TransformerFactory.newInstance();
-            StringWriter sw = null;
-    		try {
-    			Transformer transformer = transfac.newTransformer();
-    			
-    			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-    			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-    			  //create string from xml tree
-    	        sw = new StringWriter();
-    	        StreamResult result = new StreamResult(sw);
-    	        
-    	        DOMSource source = new DOMSource(document);
-    	        
-    	        transformer.transform(source, result);
-    	        
-    	        retval = sw.toString();
-    		} catch (TransformerException e) {
-    			e.printStackTrace();
-    		} finally {
-    			try {
-					sw.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-    		}
-        }
-        return retval;
-	}
-	
-	public static String getFormattedXML(String xml) {
-		String retval = xml;
-		
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		Document document = null;
-		StringReader sr = null;
-		try {
-	    	sr = new StringReader(xml);
-	    	InputSource inputSource = new InputSource(sr);
-	        documentBuilderFactory.setNamespaceAware(true);
-	        document = documentBuilderFactory.newDocumentBuilder().parse(inputSource);
-		} catch (SAXException | IOException | ParserConfigurationException e) {
-			e.printStackTrace();
-		} finally {
-			sr.close();
-		}
-        if(document!=null) {
-    		retval = getFormattedXML(document);
-        }
-        return retval;
 	}
 
 }

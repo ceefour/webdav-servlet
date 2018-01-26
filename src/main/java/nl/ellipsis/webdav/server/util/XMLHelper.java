@@ -104,7 +104,7 @@ public class XMLHelper {
     			Transformer transformer = transfac.newTransformer();
     			
     			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    			// transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
     			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
@@ -141,8 +141,14 @@ public class XMLHelper {
 			if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
 				String nodeName = currentNode.getLocalName();
 				String namespace = currentNode.getNamespaceURI();
+				String propertyName = null;
+				if (nodeName.indexOf(':') != -1) {
+					propertyName = nodeName.substring(nodeName.indexOf(':') + 1);
+				} else {
+					propertyName = nodeName;
+				}
 				// href is a live property which is handled differently
-				properties.addElement(namespace + ":" + nodeName);
+				properties.addElement(propertyName);
 			}
 		}
 		return properties;
