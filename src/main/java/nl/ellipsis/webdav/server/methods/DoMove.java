@@ -21,9 +21,11 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.ObjectAlreadyExistsException;
@@ -49,7 +51,7 @@ public class DoMove extends AbstractMethod {
 	public void execute(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, LockFailedException {
 		String sourcePath = getRelativePath(req);
-		String destinationPath = req.getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+		String destinationPath = req.getHeader(HttpHeaders.DESTINATION);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("-- " + this.getClass().getName()+" "+sourcePath+" -> "+destinationPath);
 		}
@@ -58,17 +60,17 @@ public class DoMove extends AbstractMethod {
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, sourcePath)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return;
 			}
 
 			if (destinationPath == null) {
-				resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 				return;
 			}
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return;
 			}
 
@@ -87,20 +89,20 @@ public class DoMove extends AbstractMethod {
 					}
 
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (ObjectAlreadyExistsException e) {
-					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, sourcePath, tempLockOwner);
 				}
 			} else {
-				errorList.put(req.getHeader(WebDAVConstants.HttpHeader.DESTINATION), WebDAVStatus.SC_LOCKED);
+				errorList.put(req.getHeader(HttpHeaders.DESTINATION), HttpStatus.LOCKED.value());
 				sendReport(req, resp, errorList);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 

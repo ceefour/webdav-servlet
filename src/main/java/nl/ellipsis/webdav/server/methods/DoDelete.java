@@ -21,10 +21,11 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.ObjectAlreadyExistsException;
@@ -59,12 +60,12 @@ public class DoDelete extends AbstractMethod {
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return; // parent is locked
 			}
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return; // resource is locked
 			}
 
@@ -77,19 +78,19 @@ public class DoDelete extends AbstractMethod {
 						sendReport(req, resp, errorList);
 					}
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (ObjectAlreadyExistsException e) {
-					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 
@@ -115,7 +116,7 @@ public class DoDelete extends AbstractMethod {
 	public void deleteResource(ITransaction transaction, String path, Hashtable<String, Integer> errorList,
 			HttpServletRequest req, HttpServletResponse resp) throws IOException, WebDAVException {
 
-		resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
+		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 		if (!_readOnly) {
 			StoredObject so = _store.getStoredObject(transaction, path);
@@ -127,15 +128,15 @@ public class DoDelete extends AbstractMethod {
 						deleteFolder(transaction, path, errorList, req, resp);
 						_store.removeObject(transaction, path);
 					} else {
-						resp.sendError(WebDAVStatus.SC_NOT_FOUND);
+						resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 					}
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_NOT_FOUND);
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 			so = null;
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 
@@ -174,11 +175,11 @@ public class DoDelete extends AbstractMethod {
 					_store.removeObject(transaction, childPath);
 				}
 			} catch (AccessDeniedException e) {
-				errorList.put(path + children[i], new Integer(WebDAVStatus.SC_FORBIDDEN));
+				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_FORBIDDEN));
 			} catch (ObjectNotFoundException e) {
-				errorList.put(path + children[i], new Integer(WebDAVStatus.SC_NOT_FOUND));
+				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_NOT_FOUND));
 			} catch (WebDAVException e) {
-				errorList.put(path + children[i], new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
+				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
 			}
 		}
 		so = null;

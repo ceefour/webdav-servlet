@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 import nl.ellipsis.webdav.server.exceptions.UnauthenticatedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
@@ -143,7 +145,7 @@ public class WebDAVServletBean extends HttpServlet {
 			transaction = _store.begin(userPrincipal);
 			needRollback = true;
 			_store.checkAuthentication(transaction);
-			resp.setStatus(WebDAVStatus.SC_OK);
+			resp.setStatus(HttpServletResponse.SC_OK);
 
 			try {
 				IMethodExecutor methodExecutor = (IMethodExecutor) _methodMap.get(methodName);
@@ -174,13 +176,13 @@ public class WebDAVServletBean extends HttpServlet {
 				java.io.PrintWriter pw = new java.io.PrintWriter(sw);
 				e.printStackTrace(pw);
 				LOG.error("IOException: " + sw.toString());
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				_store.rollback(transaction);
 				throw new ServletException(e);
 			}
 
 		} catch (UnauthenticatedException e) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (WebDAVException e) {
 			java.io.StringWriter sw = new java.io.StringWriter();
 			java.io.PrintWriter pw = new java.io.PrintWriter(sw);

@@ -5,11 +5,11 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.LockedObject;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
@@ -20,6 +20,7 @@ import nl.ellipsis.webdav.server.util.URLUtil;
 import org.jmock.Expectations;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
 
 public class DoDeleteTest extends MockTest {
 
@@ -48,7 +49,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 				
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -70,7 +71,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject fileSo = initFileStoredObject(resourceContent);
 
@@ -99,14 +100,14 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject fileSo = null;
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(fileSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -128,7 +129,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject folderSo = initFolderStoredObject();
 
@@ -184,14 +185,14 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject folderSo = null;
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(folderSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -213,7 +214,7 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject fileSo = initFileStoredObject(resourceContent);
 
@@ -254,10 +255,10 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(fileInLockedFolderPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(wrongLockToken));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_LOCKED);
+				oneOf(mockRes).setStatus(HttpStatus.LOCKED.value());
 
 //				oneOf(mockReq).getRequestURI();
 //				will(returnValue("http://foo.bar".concat(lockedFolderPath)));
@@ -295,10 +296,10 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(rightLockToken));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject so = initFileStoredObject(resourceContent);
 
@@ -330,14 +331,14 @@ public class DoDeleteTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue("/folder/file"));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				StoredObject nonExistingSo = null;
 
 				oneOf(mockStore).getStoredObject(mockTransaction, "/folder/file");
 				will(returnValue(nonExistingSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 

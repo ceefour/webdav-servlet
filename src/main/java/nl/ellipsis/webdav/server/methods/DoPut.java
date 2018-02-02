@@ -21,11 +21,12 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
@@ -61,17 +62,17 @@ public class DoPut extends AbstractMethod {
 		if (!_readOnly) {
 			String parentPath = URLUtil.getParentPath(path);
 
-			_userAgent = req.getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+			_userAgent = req.getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 
 			Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return; // parent is locked
 			}
 
 			if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-				resp.setStatus(WebDAVStatus.SC_LOCKED);
+				resp.setStatus(HttpStatus.LOCKED.value());
 				return; // resource is locked
 			}
 
@@ -81,14 +82,14 @@ public class DoPut extends AbstractMethod {
 				try {
 					parentSo = _store.getStoredObject(transaction, parentPath);
 					if (parentPath != null && parentSo != null && parentSo.isResource()) {
-						resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+						resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 						return;
 					} else if (parentPath != null && parentSo == null && _lazyFolderCreationOnPut) {
 						_store.createFolder(transaction, parentPath);
 					} else if (parentPath != null && parentSo == null && !_lazyFolderCreationOnPut) {
 						// https://tools.ietf.org/html/rfc4918#page-50 
 						// A PUT that would result in the creation of a resource without an appropriately scoped parent collection MUST fail with a 409 (Conflict).
-						errorList.put(parentPath, WebDAVStatus.SC_CONFLICT);
+						errorList.put(parentPath, HttpServletResponse.SC_CONFLICT);
 						sendReport(req, resp, errorList);
 						return;
 					}
@@ -97,14 +98,14 @@ public class DoPut extends AbstractMethod {
 
 					if (so == null) {
 						_store.createResource(transaction, path);
-						// resp.setStatus(WebDAVStatus.SC_CREATED);
+						// resp.setStatus(HttpServletResponse.SC_CREATED);
 					} else {
 						// This has already been created, just update the data
 						if (so.isNullResource()) {
 
 							LockedObject nullResourceLo = _resourceLocks.getLockedObjectByPath(transaction, path);
 							if (nullResourceLo == null) {
-								resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+								resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 								return;
 							}
 							String nullResourceLockToken = nullResourceLo.getID();
@@ -113,7 +114,7 @@ public class DoPut extends AbstractMethod {
 							if (lockTokens != null) {
 								lockToken = lockTokens[0];
 							} else {
-								resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+								resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 								return;
 							}
 							if (lockToken.equals(nullResourceLockToken)) {
@@ -126,10 +127,10 @@ public class DoPut extends AbstractMethod {
 									owner = nullResourceLockOwners[0];
 
 								if (!_resourceLocks.unlock(transaction, lockToken, owner)) {
-									resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+									resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 								}
 							} else {
-								errorList.put(path, WebDAVStatus.SC_LOCKED);
+								errorList.put(path, HttpStatus.LOCKED.value());
 								sendReport(req, resp, errorList);
 							}
 						}
@@ -146,17 +147,17 @@ public class DoPut extends AbstractMethod {
 					}
 					// Now lets report back what was actually saved
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 
@@ -166,14 +167,14 @@ public class DoPut extends AbstractMethod {
 	private void doUserAgentWorkaround(HttpServletResponse resp) {
 		if (_userAgent != null && _userAgent.indexOf("WebDAVFS") != -1 && _userAgent.indexOf("Transmit") == -1) {
 			LOG.debug("DoPut.execute() : do workaround for user agent '" + _userAgent + "'");
-			resp.setStatus(WebDAVStatus.SC_CREATED);
+			resp.setStatus(HttpServletResponse.SC_CREATED);
 		} else if (_userAgent != null && _userAgent.indexOf("Transmit") != -1) {
 			// Transmit also uses WEBDAVFS 1.x.x but crashes
 			// with SC_CREATED response
 			LOG.debug("DoPut.execute() : do workaround for user agent '" + _userAgent + "'");
-			resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
+			resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 		} else {
-			resp.setStatus(WebDAVStatus.SC_CREATED);
+			resp.setStatus(HttpServletResponse.SC_CREATED);
 		}
 	}
 }

@@ -7,22 +7,6 @@ public interface WebDAVConstants {
 	public final static String CONTENTTYPE_XML_UTF8 = "text/xml; charset=utf-8";
 	// public static final String RESOURCES_ATTR = "nl.ellipsis.webdav.naming.resources";
 
-	public interface HttpHeader {
-		public final static String ALLOW			= "Allow";
-		public final static String CONTENT_LENGTH	= "content-length"; 
-		public final static String DAV				= "DAV";
-		public final static String DEPTH			= "Depth";
-		public final static String DESTINATION		= "Destination";
-		public final static String ETAG				= "ETag";
-		public final static String IF				= "If";
-		public final static String IF_NONE_MATCH	= "If-None-Match";
-		public final static String LOCK_TOKEN		= "Lock-Token";
-		public final static String MS_AUTHOR_VIA	= "MS-Author-Via";
-		public final static String OVERWRITE		= "Overwrite";
-		public final static String TIMEOUT			= "Timeout";
-		public final static String USER_AGENT 		= "User-Agent"; 
-	}
-
 	public interface HttpRequestParam {
 	    public static final String INCLUDE_CONTEXT_PATH 		= "javax.servlet.include.context_path";
 	    public static final String INCLUDE_PATH_INFO 			= "javax.servlet.include.path_info";

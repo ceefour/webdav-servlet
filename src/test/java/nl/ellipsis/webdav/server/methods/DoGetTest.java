@@ -6,12 +6,12 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.methods.DoGet;
@@ -63,9 +63,9 @@ public class DoGetTest extends MockTest {
 				oneOf(mockReq).getRequestURI();
 				will(returnValue("/index.html"));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND, "/index.html");
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND, "/index.html");
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -92,7 +92,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());
@@ -144,7 +144,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
 				will(returnValue(fooSo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getStoredObject(mockTransaction, "/foo");
@@ -240,7 +240,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/alternative");
 				will(returnValue(alternativeSo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", alternativeSo.getLastModified().getTime());
@@ -264,7 +264,7 @@ public class DoGetTest extends MockTest {
 				oneOf(mockStore).getResourceContent(mockTransaction, "/alternative");
 				will(returnValue(dsis));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 

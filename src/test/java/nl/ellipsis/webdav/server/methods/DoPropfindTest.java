@@ -5,12 +5,12 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.methods.DoPropfind;
@@ -20,6 +20,7 @@ import nl.ellipsis.webdav.server.util.URLUtil;
 import org.jmock.Expectations;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
 
 public class DoPropfindTest extends MockTest {
 	static IWebDAVStore mockStore;
@@ -52,7 +53,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue("infinity"));
 
 				StoredObject rootSo = initFolderStoredObject();
@@ -70,7 +71,7 @@ public class DoPropfindTest extends MockTest {
 				will(returnValue(0));
 				// no content, which means it is a all-prop request
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockRes).setStatus(HttpStatus.MULTI_STATUS.value());
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -139,7 +140,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue("0"));
 
 				StoredObject fileSo = initFolderStoredObject();
@@ -157,7 +158,7 @@ public class DoPropfindTest extends MockTest {
 				will(returnValue(0));
 				// no content, which means it is a allprop request
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockRes).setStatus(HttpStatus.MULTI_STATUS.value());
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -194,7 +195,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue("0"));
 
 				StoredObject notExistingSo = null;
@@ -207,7 +208,7 @@ public class DoPropfindTest extends MockTest {
 				oneOf(mockReq).getRequestURI();
 				will(returnValue(path));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND, path);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND, path);
 			}
 		});
 

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.springframework.http.HttpStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -37,7 +38,6 @@ import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
@@ -70,7 +70,7 @@ public class DoProppatch extends AbstractMethod {
 		}
 
 		if (_readOnly) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
@@ -79,12 +79,12 @@ public class DoProppatch extends AbstractMethod {
 		Hashtable<String, Integer> errorList = new Hashtable<String, Integer>();
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			resp.setStatus(HttpStatus.LOCKED.value());
 			return; // parent is locked
 		}
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, path)) {
-			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			resp.setStatus(HttpStatus.LOCKED.value());
 			return; // resource is locked
 		}
 
@@ -110,8 +110,8 @@ public class DoProppatch extends AbstractMethod {
 
 				if (so.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-					resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+					resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+					resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 					return;
 				}
 
@@ -120,7 +120,7 @@ public class DoProppatch extends AbstractMethod {
 				if (lo != null && lo.isExclusive() && !lockTokenMatchesIfHeader) {
 					// Object on specified path is LOCKED
 					errorList = new Hashtable<String, Integer>();
-					errorList.put(path, new Integer(WebDAVStatus.SC_LOCKED));
+					errorList.put(path, new Integer(HttpStatus.LOCKED.value()));
 					sendReport(req, resp, errorList);
 					return;
 				}
@@ -146,12 +146,12 @@ public class DoProppatch extends AbstractMethod {
 						toremoveNode = XMLHelper.findSubElement(XMLHelper.findSubElement(rootElement, "remove"),
 								"prop");
 					} catch (Exception e) {
-						resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+						resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						return;
 					}
 				} else {
 					// no content: error
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				}
 
@@ -165,7 +165,7 @@ public class DoProppatch extends AbstractMethod {
 					tochange.addAll(toremove);
 				}
 
-				resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				resp.setStatus(HttpStatus.MULTI_STATUS.value());
 				resp.setContentType("text/xml; charset=UTF-8");
 
 				// Create multistatus object
@@ -174,7 +174,7 @@ public class DoProppatch extends AbstractMethod {
 				generatedXML.writeElement(NS_DAV_PREFIX,NS_DAV_FULLNAME,WebDAVConstants.XMLTag.MULTISTATUS, XMLWriter.OPENING);
 
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE, XMLWriter.OPENING);
-				String status = new String("HTTP/1.1 " + WebDAVStatus.SC_OK + " " + WebDAVStatus.getStatusText(WebDAVStatus.SC_OK));
+				String status = new String("HTTP/1.1 " + HttpServletResponse.SC_OK + " " + HttpStatus.OK.getReasonPhrase());
 
 				// Generating href element
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF, XMLWriter.OPENING);
@@ -211,14 +211,14 @@ public class DoProppatch extends AbstractMethod {
 
 				generatedXML.sendData("doPropPatch "+path+"/n");
 			} catch (AccessDeniedException e) {
-				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 }

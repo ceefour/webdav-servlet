@@ -21,11 +21,13 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.ObjectAlreadyExistsException;
@@ -65,22 +67,22 @@ public class DoCopy extends AbstractMethod {
 					if (!copyResource(transaction, req, resp))
 						return;
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (ObjectAlreadyExistsException e) {
-					resp.sendError(WebDAVStatus.SC_CONFLICT, req.getRequestURI());
+					resp.sendError(HttpServletResponse.SC_CONFLICT, req.getRequestURI());
 				} catch (ObjectNotFoundException e) {
-					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 
 	}
@@ -115,7 +117,7 @@ public class DoCopy extends AbstractMethod {
 		String path = getRelativePath(req);
 		
 		if (path.equals(destinationPath)) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return false;
 		}
 
@@ -124,24 +126,24 @@ public class DoCopy extends AbstractMethod {
 		String parentDestinationPath = URLUtil.getParentPath(destinationPath);
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, parentPath)) {
-			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			resp.setStatus(HttpStatus.LOCKED.value());
 			return false; // parent is locked
 		}
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, parentDestinationPath)) {
-			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			resp.setStatus(HttpStatus.LOCKED.value());
 			return false; // parentDestination is locked
 		}
 
 		if (!checkLocks(transaction, req, resp, _resourceLocks, destinationPath)) {
-			resp.setStatus(WebDAVStatus.SC_LOCKED);
+			resp.setStatus(HttpStatus.LOCKED.value());
 			return false; // destination is locked
 		}
 
 		// Parsing overwrite header
 
 		boolean overwrite = true;
-		String overwriteHeader = req.getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+		String overwriteHeader = req.getHeader(HttpHeaders.OVERWRITE);
 
 		if (overwriteHeader != null) {
 			overwrite = overwriteHeader.equalsIgnoreCase("T");
@@ -162,8 +164,8 @@ public class DoCopy extends AbstractMethod {
 
 				if (copySo.isNullResource()) {
 					String methodsAllowed = DeterminableMethod.determineMethodsAllowed(copySo);
-					resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-					resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+					resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+					resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 					return false;
 				}
 
@@ -176,15 +178,15 @@ public class DoCopy extends AbstractMethod {
 					if (destinationSo != null) {
 						_doDelete.deleteResource(transaction, destinationPath, errorList, req, resp);
 					} else {
-						resp.setStatus(WebDAVStatus.SC_CREATED);
+						resp.setStatus(HttpServletResponse.SC_CREATED);
 					}
 				} else {
 					// If the destination exists, then it's a conflict
 					if (destinationSo != null) {
-						resp.sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
+						resp.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
 						return false;
 					} else {
-						resp.setStatus(WebDAVStatus.SC_CREATED);
+						resp.setStatus(HttpServletResponse.SC_CREATED);
 					}
 				}
 				copy(transaction, path, destinationPath, errorList, req, resp);
@@ -196,7 +198,7 @@ public class DoCopy extends AbstractMethod {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, destinationPath, lockOwner);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return false;
 		}
 		return true;
@@ -241,7 +243,7 @@ public class DoCopy extends AbstractMethod {
 			if (sourceSo.isFolder()) {
 				copyFolder(transaction, sourcePath, destinationPath, errorList, req, resp);
 			} else {
-				resp.sendError(WebDAVStatus.SC_NOT_FOUND);
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		}
 	}
@@ -272,7 +274,7 @@ public class DoCopy extends AbstractMethod {
 
 		_store.createFolder(transaction, destinationPath);
 		boolean infiniteDepth = true;
-		String depth = req.getHeader(WebDAVConstants.HttpHeader.DEPTH);
+		String depth = req.getHeader(HttpHeaders.DEPTH);
 		if (depth != null) {
 			if (depth.equals("0")) {
 				infiniteDepth = false;
@@ -301,13 +303,13 @@ public class DoCopy extends AbstractMethod {
 						copyFolder(transaction, childSourcePath, destinationSourcePath, errorList, req, resp);
 					}
 				} catch (AccessDeniedException e) {
-					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_FORBIDDEN));
+					errorList.put(destinationSourcePath, new Integer(HttpServletResponse.SC_FORBIDDEN));
 				} catch (ObjectNotFoundException e) {
-					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_NOT_FOUND));
+					errorList.put(destinationSourcePath, new Integer(HttpServletResponse.SC_NOT_FOUND));
 				} catch (ObjectAlreadyExistsException e) {
-					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_CONFLICT));
+					errorList.put(destinationSourcePath, new Integer(HttpServletResponse.SC_CONFLICT));
 				} catch (WebDAVException e) {
-					errorList.put(destinationSourcePath, new Integer(WebDAVStatus.SC_INTERNAL_SERVER_ERROR));
+					errorList.put(destinationSourcePath, new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
 				}
 			}
 		}
@@ -325,10 +327,10 @@ public class DoCopy extends AbstractMethod {
 	 *             if an error occurs while sending response
 	 */
 	private String parseDestinationHeader(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String destinationPath = req.getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+		String destinationPath = req.getHeader(HttpHeaders.DESTINATION);
 
 		if (destinationPath == null) {
-			resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			return null;
 		}
 

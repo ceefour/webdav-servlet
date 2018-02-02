@@ -8,7 +8,6 @@ import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.methods.DoHead;
@@ -55,7 +54,7 @@ public class DoHeadTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -81,7 +80,7 @@ public class DoHeadTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, "/index.html");
 				will(returnValue(indexSo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
 				will(returnValue(null));
 
 				oneOf(mockRes).setDateHeader("last-modified", indexSo.getLastModified().getTime());

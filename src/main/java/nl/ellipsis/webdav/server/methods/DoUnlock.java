@@ -21,10 +21,11 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
 import nl.ellipsis.webdav.server.locking.LockedObject;
@@ -51,7 +52,7 @@ public class DoUnlock extends DeterminableMethod {
 		}
 
 		if (_readOnly) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		} else {
 			String tempLockOwner = "doUnlock" + System.currentTimeMillis() + req.toString();
@@ -86,13 +87,13 @@ public class DoUnlock extends DeterminableMethod {
 								_store.removeObject(transaction, path);
 							}
 
-							resp.setStatus(WebDAVStatus.SC_NO_CONTENT);
+							resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 						} else {
 							LOG.debug("DoUnlock failure at " + lo.getPath());
-							resp.sendError(WebDAVStatus.SC_METHOD_FAILURE);
+							resp.sendError(HttpStatus.METHOD_FAILURE.value()); 
 						}
 					} else {
-						resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+						resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 					}
 				}
 			} catch (LockFailedException e) {

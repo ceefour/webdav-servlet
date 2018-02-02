@@ -26,7 +26,6 @@ import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.ObjectAlreadyExistsException;
@@ -76,7 +75,7 @@ public class DoHead extends AbstractMethod {
 			} else
 				bUriExists = true;
 		} catch (AccessDeniedException e) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
@@ -88,8 +87,8 @@ public class DoHead extends AbstractMethod {
 				}
 			} else if (so.isNullResource()) {
 				String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-				resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+				resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+				resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 				return;
 			}
 
@@ -98,10 +97,10 @@ public class DoHead extends AbstractMethod {
 			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 				try {
 
-					String eTagMatch = req.getHeader(WebDAVConstants.HttpHeader.IF_NONE_MATCH);
+					String eTagMatch = req.getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
 					if (eTagMatch != null) {
 						if (eTagMatch.equals(getETag(so))) {
-							resp.setStatus(WebDAVStatus.SC_NOT_MODIFIED);
+							resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 							return;
 						}
 					}
@@ -117,7 +116,7 @@ public class DoHead extends AbstractMethod {
 							resp.setDateHeader("last-modified", lastModified);
 
 							String eTag = getETag(so);
-							resp.addHeader(WebDAVConstants.HttpHeader.ETAG, eTag);
+							resp.addHeader(javax.ws.rs.core.HttpHeaders.ETAG, eTag);
 
 							long resourceLength = so.getResourceLength();
 
@@ -126,7 +125,7 @@ public class DoHead extends AbstractMethod {
 									if (resourceLength <= Integer.MAX_VALUE) {
 										resp.setContentLength((int) resourceLength);
 									} else {
-										resp.setHeader(WebDAVConstants.HttpHeader.CONTENT_LENGTH, Long.toString(resourceLength));
+										resp.setHeader(javax.ws.rs.core.HttpHeaders.CONTENT_LENGTH, Long.toString(resourceLength));
 										// is "content-length" the right header?
 										// is long a valid format?
 									}
@@ -149,23 +148,23 @@ public class DoHead extends AbstractMethod {
 						folderBody(transaction, path, resp, req);
 					}
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (ObjectAlreadyExistsException e) {
-					resp.sendError(WebDAVStatus.SC_NOT_FOUND, req.getRequestURI());
+					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
 			folderBody(transaction, path, resp, req);
 		}
 
 		if (!bUriExists)
-			resp.setStatus(WebDAVStatus.SC_NOT_FOUND);
+			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 
 	}
 

@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.methods.DoNotImplemented;
 import nl.ellipsis.webdav.server.testutil.MockTest;
 
@@ -35,7 +34,7 @@ public class DoNotImplementedTest extends MockTest {
 			{
 				oneOf(mockReq).getMethod();
 				will(returnValue("notImplementedMethod"));
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -52,7 +51,7 @@ public class DoNotImplementedTest extends MockTest {
 			{
 				oneOf(mockReq).getMethod();
 				will(returnValue("notImplementedMethod"));
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_IMPLEMENTED);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 			}
 		});
 

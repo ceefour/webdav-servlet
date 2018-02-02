@@ -20,11 +20,11 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
@@ -53,21 +53,21 @@ public class DoOptions extends DeterminableMethod {
 		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
 			StoredObject so = null;
 			try {
-				resp.addHeader(WebDAVConstants.HttpHeader.DAV, "1, 2");
+				resp.addHeader(HttpHeaders.DAV, "1, 2");
 
 				so = _store.getStoredObject(transaction, path);
 				String methodsAllowed = determineMethodsAllowed(so);
-				resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-				resp.addHeader(WebDAVConstants.HttpHeader.MS_AUTHOR_VIA, "DAV");
+				resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+				resp.addHeader(HttpHeaders.MS_AUTHOR_VIA, "DAV");
 			} catch (AccessDeniedException e) {
-				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
 		} else {
-			resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
 }

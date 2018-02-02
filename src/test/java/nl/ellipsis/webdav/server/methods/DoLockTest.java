@@ -6,11 +6,11 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
 import nl.ellipsis.webdav.server.locking.LockedObject;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
@@ -58,7 +58,7 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 				
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -93,19 +93,19 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(lockToken));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue("Infinite"));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -142,10 +142,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -156,13 +156,13 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue(timeoutString));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -199,10 +199,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFileStoredObject(resourceContent);
@@ -213,13 +213,13 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue(timeoutString));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -257,10 +257,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -271,13 +271,13 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue(timeoutString));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -314,10 +314,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				StoredObject so = initFolderStoredObject();
@@ -328,13 +328,13 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisShared));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue(timeoutString));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 
@@ -381,7 +381,7 @@ public class DoLockTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, parentPath);
 				will(returnValue(parentLo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.USER_AGENT);
+				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Goliath"));
 
 				oneOf(mockResourceLocks).lock(with(any(ITransaction.class)), with(any(String.class)),
@@ -389,7 +389,7 @@ public class DoLockTest extends MockTest {
 						with(any(boolean.class)));
 				will(returnValue(true));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				StoredObject lockNullResourceSo = null;
@@ -409,7 +409,7 @@ public class DoLockTest extends MockTest {
 
 				oneOf(mockStore).createResource(mockTransaction, lockPath);
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_CREATED);
 
 				lockNullResourceSo = initLockNullStoredObject();
 
@@ -419,10 +419,10 @@ public class DoLockTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsisExclusive));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(("0")));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.TIMEOUT);
+				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue("Infinite"));
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
@@ -435,7 +435,7 @@ public class DoLockTest extends MockTest {
 				oneOf(mockResourceLocks).getLockedObjectByPath(mockTransaction, lockPath);
 				will(returnValue(lockNullResourceLo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_OK);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 

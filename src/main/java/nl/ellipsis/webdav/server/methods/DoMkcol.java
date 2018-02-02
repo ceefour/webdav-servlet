@@ -21,11 +21,12 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.http.HttpStatus;
+
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.AccessDeniedException;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.exceptions.WebDAVException;
@@ -64,7 +65,7 @@ public class DoMkcol extends AbstractMethod {
 				LOG.debug("MkCol on locked resource (parentPath) not executable!"
 						+ "\n Sending SC_FORBIDDEN (403) error response!");
 
-				resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
 
@@ -76,21 +77,21 @@ public class DoMkcol extends AbstractMethod {
 					parentSo = _store.getStoredObject(transaction, parentPath);
 					if (parentSo == null) {
 						// parent not exists
-						resp.sendError(WebDAVStatus.SC_CONFLICT);
+						resp.sendError(HttpServletResponse.SC_CONFLICT);
 						return;
 					}
 					if (parentPath != null && parentSo.isFolder()) {
 						so = _store.getStoredObject(transaction, path);
 						if (so == null) {
 							_store.createFolder(transaction, path);
-							resp.setStatus(WebDAVStatus.SC_CREATED);
+							resp.setStatus(HttpServletResponse.SC_CREATED);
 						} else {
 							// object already exists
 							if (so.isNullResource()) {
 
 								LockedObject nullResourceLo = _resourceLocks.getLockedObjectByPath(transaction, path);
 								if (nullResourceLo == null) {
-									resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+									resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 									return;
 								}
 								String nullResourceLockToken = nullResourceLo.getID();
@@ -99,7 +100,7 @@ public class DoMkcol extends AbstractMethod {
 								if (lockTokens != null)
 									lockToken = lockTokens[0];
 								else {
-									resp.sendError(WebDAVStatus.SC_BAD_REQUEST);
+									resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
 									return;
 								}
 								if (lockToken.equals(nullResourceLockToken)) {
@@ -112,9 +113,9 @@ public class DoMkcol extends AbstractMethod {
 										owner = nullResourceLockOwners[0];
 
 									if (_resourceLocks.unlock(transaction, lockToken, owner)) {
-										resp.setStatus(WebDAVStatus.SC_CREATED);
+										resp.setStatus(HttpServletResponse.SC_CREATED);
 									} else {
-										resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+										resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 									}
 
 								} else {
@@ -122,14 +123,14 @@ public class DoMkcol extends AbstractMethod {
 									LOG.debug("MkCol on lock-null-resource with wrong lock-token!"
 											+ "\n Sending multistatus error report!");
 
-									errorList.put(path, WebDAVStatus.SC_LOCKED);
+									errorList.put(path, HttpStatus.LOCKED.value());
 									sendReport(req, resp, errorList);
 								}
 
 							} else {
 								String methodsAllowed = DeterminableMethod.determineMethodsAllowed(so);
-								resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-								resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+								resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+								resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 							}
 						}
 
@@ -139,25 +140,25 @@ public class DoMkcol extends AbstractMethod {
 								+ "\n Sending SC_METHOD_NOT_ALLOWED (405) error response!");
 
 						String methodsAllowed = DeterminableMethod.determineMethodsAllowed(parentSo);
-						resp.addHeader(WebDAVConstants.HttpHeader.ALLOW, methodsAllowed);
-						resp.sendError(WebDAVStatus.SC_METHOD_NOT_ALLOWED);
+						resp.addHeader(javax.ws.rs.core.HttpHeaders.ALLOW, methodsAllowed);
+						resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 
 					} else {
-						resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+						resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 					}
 				} catch (AccessDeniedException e) {
-					resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (WebDAVException e) {
-					resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
-				resp.sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 
 		} else {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		}
 	}
 

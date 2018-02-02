@@ -35,15 +35,16 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.IMethodExecutor;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
 import nl.ellipsis.webdav.server.locking.IResourceLocks;
 import nl.ellipsis.webdav.server.locking.LockedObject;
@@ -214,7 +215,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 */
 	protected static int getDepth(HttpServletRequest req) {
 		int depth = DEPTH_INFINITY;
-		String depthStr = req.getHeader(WebDAVConstants.HttpHeader.DEPTH);
+		String depthStr = req.getHeader(HttpHeaders.DEPTH);
 		if (depthStr != null) {
 			if (depthStr.equals(S_DEPTH_RESOURCE)) {
 				depth = DEPTH_RESOURCE;
@@ -256,7 +257,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
 	protected static String[] getLockIdFromIfHeader(HttpServletRequest req) {
 		String[] ids = new String[2];
-		String id = req.getHeader(WebDAVConstants.HttpHeader.IF);
+		String id = req.getHeader(HttpHeaders.IF);
 
 		if (StringUtils.isNotEmpty(id)) {
 			// only one locktoken between parenthesis
@@ -288,7 +289,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	}
 
 	protected static String getLockIdFromLockTokenHeader(HttpServletRequest req) {
-		String id = req.getHeader(WebDAVConstants.HttpHeader.LOCK_TOKEN);
+		String id = req.getHeader(HttpHeaders.LOCK_TOKEN);
 		if (id != null) {
 			id = id.substring(id.indexOf(CharsetUtil.CHAR_COLON) + 1, id.indexOf(CharsetUtil.CHAR_GREATER_THAN));
 
@@ -369,14 +370,15 @@ public abstract class AbstractMethod implements IMethodExecutor {
 
 		if (errorList.size() == 1) {
 			int code = errorList.elements().nextElement();
-			String status = WebDAVStatus.getStatusText(code);
+			HttpStatus s = HttpStatus.valueOf(code);
+			String status = s.getReasonPhrase();
 			if (status != null && !status.isEmpty()) {
 				resp.sendError(code, status);
 			} else {
 				resp.sendError(code);
 			}
 		} else {
-			resp.setStatus(WebDAVStatus.SC_MULTI_STATUS);
+			resp.setStatus(HttpStatus.MULTI_STATUS.value());
 
 			String absoluteUri = req.getRequestURI();
 			// String relativePath = getRelativePath(req);
@@ -410,7 +412,8 @@ public abstract class AbstractMethod implements IMethodExecutor {
 				generatedXML.writeText(errorPath);
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.HREF,XMLWriter.CLOSING);
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS,XMLWriter.OPENING);
-				generatedXML.writeText("HTTP/1.1 " + errorCode + " " + WebDAVStatus.getStatusText(errorCode));
+				HttpStatus s  = HttpStatus.valueOf(errorCode);
+				generatedXML.writeText("HTTP/1.1 " + errorCode + " " + s.getReasonPhrase());
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.STATUS,XMLWriter.CLOSING);
 
 				generatedXML.writeElement(NS_DAV_PREFIX,WebDAVConstants.XMLTag.RESPONSE,XMLWriter.CLOSING);

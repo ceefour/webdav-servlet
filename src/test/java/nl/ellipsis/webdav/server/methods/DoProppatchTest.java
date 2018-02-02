@@ -6,12 +6,12 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.IMimeTyper;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.methods.DoProppatch;
@@ -20,6 +20,7 @@ import nl.ellipsis.webdav.server.testutil.MockTest;
 import org.jmock.Expectations;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
 public class DoProppatchTest extends MockTest {
@@ -53,7 +54,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(path));
 				
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -82,7 +83,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(notExistingSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -111,7 +112,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 				
 				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
@@ -123,7 +124,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockReq).getContentLength();
 				will(returnValue(0));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_INTERNAL_SERVER_ERROR);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		});
 
@@ -153,7 +154,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, path);
 				will(returnValue(testFileSo));
 				
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.IF);
+				oneOf(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
 				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
@@ -168,7 +169,7 @@ public class DoProppatchTest extends MockTest {
 				oneOf(mockReq).getInputStream();
 				will(returnValue(dsis));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_MULTI_STATUS);
+				oneOf(mockRes).setStatus(HttpStatus.MULTI_STATUS.value());
 
 				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
 

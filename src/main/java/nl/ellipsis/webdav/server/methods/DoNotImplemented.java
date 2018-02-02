@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.ellipsis.webdav.server.IMethodExecutor;
 import nl.ellipsis.webdav.server.ITransaction;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 
 public class DoNotImplemented implements IMethodExecutor {
 
@@ -38,7 +37,7 @@ public class DoNotImplemented implements IMethodExecutor {
 		LOG.debug("-- " + req.getMethod());
 
 		if (_readOnly) {
-			resp.sendError(WebDAVStatus.SC_FORBIDDEN);
+			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} else {
 			resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
 		}

@@ -5,11 +5,11 @@ import java.io.ByteArrayInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.HttpHeaders;
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.IWebDAVStore;
 import nl.ellipsis.webdav.server.StoredObject;
 import nl.ellipsis.webdav.server.WebDAVConstants;
-import nl.ellipsis.webdav.server.WebDAVStatus;
 import nl.ellipsis.webdav.server.locking.ResourceLocks;
 import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.methods.DoCopy;
@@ -62,10 +62,10 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 				
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				oneOf(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destFilePath));
 				
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -91,7 +91,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -112,7 +112,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -125,7 +125,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_CREATED);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
@@ -143,7 +143,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
@@ -174,7 +174,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -195,7 +195,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -208,7 +208,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
 
 			}
 		});
@@ -235,7 +235,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -256,7 +256,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceFileSo = initFileStoredObject(resourceContent);
@@ -269,7 +269,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
@@ -290,7 +290,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destFilePath));
 				will(returnValue(destFileSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
@@ -321,7 +321,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -342,7 +342,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceFileSo = null;
@@ -350,7 +350,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceFilePath));
 				will(returnValue(sourceFileSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_NOT_FOUND);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 		});
 
@@ -376,7 +376,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(sourceFilePath));
 
 				oneOf(mockReq).getServerName();
@@ -397,7 +397,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceFilePath));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_FORBIDDEN);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_FORBIDDEN);
 			}
 		});
 
@@ -423,7 +423,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -444,7 +444,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -457,14 +457,14 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 				will(returnValue(destCollectionSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_CREATED);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_CREATED);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(null));
 
 				String[] sourceChildren = new String[] { "sourceFile" };
@@ -491,7 +491,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath,"/sourceFile"));
 				will(returnValue(movedSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
@@ -532,7 +532,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(destCollectionPath));
 
 				oneOf(mockReq).getServerName();
@@ -553,7 +553,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("F"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -566,7 +566,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(destCollectionPath));
 				will(returnValue(destCollectionSo));
 
-				oneOf(mockRes).sendError(WebDAVStatus.SC_PRECONDITION_FAILED);
+				oneOf(mockRes).sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
 			}
 		});
 
@@ -592,7 +592,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				exactly(2).of(mockReq).getHeader(WebDAVConstants.HttpHeader.DESTINATION);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DESTINATION);
 				will(returnValue(overwritePath));
 
 				oneOf(mockReq).getServerName();
@@ -613,7 +613,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockReq).getPathInfo();
 				will(returnValue(sourceCollectionPath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.OVERWRITE);
+				oneOf(mockReq).getHeader(HttpHeaders.OVERWRITE);
 				will(returnValue("T"));
 
 				StoredObject sourceCollectionSo = initFolderStoredObject();
@@ -626,7 +626,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath));
 				will(returnValue(destCollectionSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath));
 				will(returnValue(destCollectionSo));
@@ -648,7 +648,7 @@ public class DoMoveTest extends MockTest {
 
 				oneOf(mockStore).createFolder(mockTransaction, URLUtil.getCleanPath(overwritePath));
 
-				oneOf(mockReq).getHeader(WebDAVConstants.HttpHeader.DEPTH);
+				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(null));
 
 				oneOf(mockStore).getChildrenNames(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
@@ -671,7 +671,7 @@ public class DoMoveTest extends MockTest {
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(overwritePath,"/sourceFile"));
 				will(returnValue(movedSo));
 
-				oneOf(mockRes).setStatus(WebDAVStatus.SC_NO_CONTENT);
+				oneOf(mockRes).setStatus(HttpServletResponse.SC_NO_CONTENT);
 
 				oneOf(mockStore).getStoredObject(mockTransaction, URLUtil.getCleanPath(sourceCollectionPath));
 				will(returnValue(sourceCollectionSo));
