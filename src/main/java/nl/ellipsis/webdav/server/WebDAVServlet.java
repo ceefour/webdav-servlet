@@ -17,6 +17,7 @@
 package nl.ellipsis.webdav.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import javax.servlet.ServletException;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,7 @@ public class WebDAVServlet extends WebDAVServletBean {
 	
 	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebDAVServlet.class);
 
+	private static final String INIT_PARAM_CREATE_ROOT_IF_NOT_EXISTS = "createRootIfNotExists";
 	private static final String INIT_PARAM_DEFAULT_INDEX_FILE = "default-index-file";
 	private static final String INIT_PARAM_INSTEAD_OF_404 = "instead-of-404";
 	private static final String INIT_PARAM_LAZY_FOLDER_CREATION_ON_PUT = "lazyFolderCreationOnPut";
@@ -61,7 +63,8 @@ public class WebDAVServlet extends WebDAVServletBean {
 			clazzName = LocalFileSystemStore.class.getName();
 		}
 
-		File root = getFileRoot();
+		boolean createRootIfNotExists = getBooleanInitParameter(INIT_PARAM_CREATE_ROOT_IF_NOT_EXISTS, false);
+		File root = getFileRoot(createRootIfNotExists);
 
 		IWebDAVStore webdavStore = constructStore(clazzName, root);
 
@@ -100,14 +103,17 @@ public class WebDAVServlet extends WebDAVServletBean {
 	}
 
 	private boolean getBooleanInitParameter(String key, boolean defaultValue) {
-		return getInitParameter(key) == null ? defaultValue : Boolean.getBoolean(getInitParameter(key));
+		String value = getInitParameter(key);
+		return value == null ? defaultValue : ("1".equals(value) || Boolean.getBoolean(value));
 	}
 
 	private int getIntInitParameter(String key, int defaultValue) {
-		return getInitParameter(key) == null ? defaultValue : Integer.parseInt(getInitParameter(key));
+		String value = getInitParameter(key);
+		return value == null ? defaultValue : Integer.parseInt(value);
 	}
 
-	private File getFileRoot() {
+	private File getFileRoot(boolean createRootIfNotExists) {
+		File root = null;
 		String rootPath = getInitParameter(INIT_PARAM_ROOTPATH);
 		if (StringUtils.isEmpty(rootPath)) {
 			throw new WebDAVException("missing parameter: " + INIT_PARAM_ROOTPATH);
@@ -126,12 +132,21 @@ public class WebDAVServlet extends WebDAVServletBean {
 			}
 		}
 		LOG.info("Mountpoint set to "+rootPath);
-		File root = new File(rootPath);
-		if(!root.exists()) {
-			LOG.error("Mountpoint "+rootPath+" does not exist!");
-			return null;
+		root = new File(rootPath);
+		boolean createdRoot = false;
+		if(!root.exists() && createRootIfNotExists) {
+			createdRoot = root.mkdir();
 		}
-		LOG.info("Mountpoint set to "+rootPath);
+		if(!root.exists()) {
+			if(createRootIfNotExists && !createdRoot) {
+				LOG.error("Unable to create mountpoint "+rootPath+"!");
+			} else {
+				LOG.error("Mountpoint "+rootPath+" does not exist!");
+			}
+			root = null;
+		} else {
+			LOG.info("Mountpoint set to "+ (createdRoot ? "newly created " : "") + rootPath);
+		}
 		return root;
 	}
 

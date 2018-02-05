@@ -75,7 +75,7 @@ public class WebDAVServletTest extends MockTest {
     // first three expectations aren't successful with "mvn test"
     @Test
     public void testInitGenericServlet() throws Exception {
-
+    	
         _mockery.checking(new Expectations() {
             {
                 allowing(servletConfig).getServletContext();
@@ -92,7 +92,10 @@ public class WebDAVServletTest extends MockTest {
                 oneOf(servletConfig).getInitParameter("rootpath");
                 will(returnValue("./target/tmpTestData/"));
 
-                exactly(2).of(servletConfig).getInitParameter("lazyFolderCreationOnPut");
+                oneOf(servletConfig).getInitParameter("createRootIfNotExists");
+                will(returnValue("1"));
+
+                oneOf(servletConfig).getInitParameter("lazyFolderCreationOnPut");
                 will(returnValue("1"));
 
                 oneOf(servletConfig).getInitParameter("default-index-file");
@@ -101,7 +104,7 @@ public class WebDAVServletTest extends MockTest {
                 oneOf(servletConfig).getInitParameter("instead-of-404");
                 will(returnValue(""));
 
-                exactly(2).of(servletConfig).getInitParameter("no-content-length-headers");
+                oneOf(servletConfig).getInitParameter("no-content-length-headers");
                 will(returnValue("0"));
             }
         });
@@ -118,6 +121,7 @@ public class WebDAVServletTest extends MockTest {
 
         mockServletConfig.addInitParameter("ResourceHandlerImplementation", "");
         mockServletConfig.addInitParameter("rootpath", "./target/tmpTestData");
+        mockServletConfig.addInitParameter("createRootIfNotExists", "1");
         mockServletConfig.addInitParameter("lazyFolderCreationOnPut", "1");
         mockServletConfig.addInitParameter("default-index-file", dftIndexFile);
         mockServletConfig.addInitParameter("instead-of-404", insteadOf404);

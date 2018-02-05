@@ -104,7 +104,7 @@ public class XMLHelper {
     			Transformer transformer = transfac.newTransformer();
     			
     			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    			// transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+    			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 				transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
     			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
