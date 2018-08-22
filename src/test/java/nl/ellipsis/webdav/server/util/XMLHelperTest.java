@@ -17,7 +17,7 @@ public class XMLHelperTest {
 		String formattedXml = XMLHelper.format(xml);
 
 		// XMLHelper appears to permit an XML declaration if the
-		// underlying transformer choses to produce one. The test
+		// underlying transformer chooses to produce one. The test
 		// aims not to care either way.
 		assertTrue(formattedXml.endsWith(expectedXml));
 	}
