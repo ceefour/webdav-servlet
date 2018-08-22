@@ -16,10 +16,7 @@ public class XMLHelperTest {
 		String expectedXml = "<root>"+lineSeparator+"  <sub>"+lineSeparator+"    <subsub/>"+lineSeparator+"  </sub>"+lineSeparator+"</root>"+lineSeparator;
 		String formattedXml = XMLHelper.format(xml);
 
-		// XMLHelper appears to permit an XML declaration if the
-		// underlying transformer chooses to produce one. The test
-		// aims not to care either way.
-		assertTrue(formattedXml.endsWith(expectedXml));
+		assertEquals(expectedXml, formattedXml);
 	}
 
 }
