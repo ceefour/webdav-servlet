@@ -10,10 +10,16 @@ public class XMLHelperTest {
 
 	@Test
 	public void testFormat() {
+		String lineSeparator = System.getProperty("line.separator");
+
 		String xml = "<root><sub><subsub></subsub></sub></root>";
-		String expectedXml = "<root>\r\n  <sub>\r\n    <subsub/>\r\n  </sub>\r\n</root>\r\n";
+		String expectedXml = "<root>"+lineSeparator+"  <sub>"+lineSeparator+"    <subsub/>"+lineSeparator+"  </sub>"+lineSeparator+"</root>"+lineSeparator;
 		String formattedXml = XMLHelper.format(xml);
-		assertEquals(expectedXml,formattedXml);
+
+		// XMLHelper appears to permit an XML declaration if the
+		// underlying transformer choses to produce one. The test
+		// aims not to care either way.
+		assertTrue(formattedXml.endsWith(expectedXml));
 	}
 
 }
