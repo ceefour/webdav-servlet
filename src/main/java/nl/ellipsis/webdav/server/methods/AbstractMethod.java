@@ -196,14 +196,17 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @throws ServletException 
 	 * @throws ParserConfigurationException 
 	 */
-	protected static Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
+	protected synchronized static Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
 		DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
-		if(LOG.isDebugEnabled()) {
-			String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
-			LOG.debug(xml);
+		// Note - DocumentBuilders are not thread safe, so I've synchronized this method (there are probably better solutions)
+		String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
+		LOG.debug(xml);
+
+		try {
 			return documentBuilder.parse(IOUtils.toInputStream(xml,java.nio.charset.StandardCharsets.UTF_8.name()));
-		} else {
-			return documentBuilder.parse(new InputSource(request.getInputStream()));
+		} catch (SAXException e) {
+			LOG.error("Failed to parse XML in request - " + xml, e);
+			throw e;
 		}
 	}
 
