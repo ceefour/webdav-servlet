@@ -73,11 +73,13 @@ public class DoCopy extends AbstractMethod {
 				} catch (ObjectNotFoundException e) {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
+				LOG.error("Sending internal error - Failed to lock");
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 
@@ -198,6 +200,7 @@ public class DoCopy extends AbstractMethod {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, destinationPath, lockOwner);
 			}
 		} else {
+			LOG.error("Sending internal error - Failed to lock");
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return false;
 		}

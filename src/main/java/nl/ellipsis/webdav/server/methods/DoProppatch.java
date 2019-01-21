@@ -146,11 +146,13 @@ public class DoProppatch extends AbstractMethod {
 						toremoveNode = XMLHelper.findSubElement(XMLHelper.findSubElement(rootElement, "remove"),
 								"prop");
 					} catch (Exception e) {
+						LOG.error("Sending internal error!", e);
 						resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						return;
 					}
 				} else {
 					// no content: error
+					LOG.error("Sending internal error - No content was provided (should that actually be a bad request?)");
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					return;
 				}
@@ -213,11 +215,13 @@ public class DoProppatch extends AbstractMethod {
 			} catch (AccessDeniedException e) {
 				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
+				LOG.error("Sending internal error!", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
 		} else {
+			LOG.error("Sending internal error - Failed to lock");
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}

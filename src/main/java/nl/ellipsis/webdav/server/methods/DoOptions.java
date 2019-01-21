@@ -62,11 +62,13 @@ public class DoOptions extends DeterminableMethod {
 			} catch (AccessDeniedException e) {
 				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
+				LOG.error("Sending internal error!", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
 		} else {
+			LOG.error("Sending internal error - Failed to lock");
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}

@@ -160,8 +160,8 @@ public class DoLock extends AbstractMethod {
 			// Thats the locking itself
 			executeLock(transaction, req, resp);
 		} catch (ServletException e) {
+			LOG.error("Sending internal error!", e);
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			LOG.error(e.toString());
 		} catch (LockFailedException e) {
 			sendLockFailError(transaction, req, resp);
 		} finally {
@@ -212,11 +212,11 @@ public class DoLock extends AbstractMethod {
 		} catch (LockFailedException e) {
 			sendLockFailError(transaction, req, resp);
 		} catch (WebDAVException e) {
+			LOG.error("Sending internal error!", e);
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			LOG.error("Webdav exception", e);
 		} catch (ServletException e) {
+			LOG.error("Sending internal error!", e);
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			LOG.error("Servlet exception", e);
 		} finally {
 			parentSo = null;
 			nullSo = null;
@@ -284,6 +284,7 @@ public class DoLock extends AbstractMethod {
 					if (lo != null) {
 						generateXMLReport(transaction, resp, lo);
 					} else {
+						LOG.error("Sending internal error - Failed to lock");
 						resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					}
 				} else {
@@ -541,6 +542,7 @@ public class DoLock extends AbstractMethod {
 			if (lo != null) {
 				generateXMLReport(transaction, resp, lo);
 			} else {
+				LOG.error("Sending internal error - Failed to lock");
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {

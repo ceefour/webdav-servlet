@@ -91,6 +91,7 @@ public class DoMkcol extends AbstractMethod {
 
 								LockedObject nullResourceLo = _resourceLocks.getLockedObjectByPath(transaction, path);
 								if (nullResourceLo == null) {
+									LOG.error("Sending internal error - Failed to lock");
 									resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 									return;
 								}
@@ -115,6 +116,7 @@ public class DoMkcol extends AbstractMethod {
 									if (_resourceLocks.unlock(transaction, lockToken, owner)) {
 										resp.setStatus(HttpServletResponse.SC_CREATED);
 									} else {
+										LOG.error("Sending internal error - Failed to lock");
 										resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 									}
 
@@ -149,6 +151,7 @@ public class DoMkcol extends AbstractMethod {
 				} catch (AccessDeniedException e) {
 					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);

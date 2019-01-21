@@ -105,6 +105,7 @@ public class DoPut extends AbstractMethod {
 
 							LockedObject nullResourceLo = _resourceLocks.getLockedObjectByPath(transaction, path);
 							if (nullResourceLo == null) {
+								LOG.error("Sending internal error - Failed to lock");
 								resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 								return;
 							}
@@ -127,6 +128,7 @@ public class DoPut extends AbstractMethod {
 									owner = nullResourceLockOwners[0];
 
 								if (!_resourceLocks.unlock(transaction, lockToken, owner)) {
+									LOG.error("Sending internal error - Failed to unlock");
 									resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 								}
 							} else {
@@ -149,11 +151,13 @@ public class DoPut extends AbstractMethod {
 				} catch (AccessDeniedException e) {
 					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
+				LOG.error("Sending internal error - Failed to lock");
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {
