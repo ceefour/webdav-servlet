@@ -128,7 +128,13 @@ public class DoDelete extends AbstractMethod {
 				} else {
 					if (so.isFolder()) {
 						deleteFolder(transaction, path, errorList, req, resp);
-						_store.removeObject(transaction, path);
+						try {
+						    _store.removeObject(transaction, path);
+						} catch (Exception e) {
+                            if(!recordException(path, errorList, e)) {
+                                throw e;
+                            }
+                        }
 					} else {
 						resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 					}
@@ -176,15 +182,27 @@ public class DoDelete extends AbstractMethod {
 					deleteFolder(transaction, childPath, errorList, req, resp);
 					_store.removeObject(transaction, childPath);
 				}
-			} catch (AccessDeniedException e) {
-				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_FORBIDDEN));
-			} catch (ObjectNotFoundException e) {
-				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_NOT_FOUND));
-			} catch (WebDAVException e) {
-				errorList.put(path + children[i], new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+			} catch (Exception e) {
+			    if(!recordException(path + children[i], errorList, e)) {
+			        throw e;
+			    }
 			}
 		}
 		so = null;
+	}
+	
+	private boolean recordException(String path, Hashtable<String, Integer> errorList, Exception e) {
+	    
+	    if(e instanceof AccessDeniedException) {
+                errorList.put(path, new Integer(HttpServletResponse.SC_FORBIDDEN));
+	    } else if(e instanceof ObjectNotFoundException) {
+                errorList.put(path, new Integer(HttpServletResponse.SC_NOT_FOUND));
+        } else if(e instanceof WebDAVException) {
+                errorList.put(path, new Integer(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+        } else {
+            return false;
+        }
+	    return true;
 	}
 
 }
