@@ -183,7 +183,7 @@ public class DoDelete extends AbstractMethod {
 					_store.removeObject(transaction, childPath);
 				}
 			} catch (Exception e) {
-			    if(!recordException(path + children[i], errorList, e)) {
+			    if(!recordException(path + "/" + children[i], errorList, e)) {
 			        throw e;
 			    }
 			}
