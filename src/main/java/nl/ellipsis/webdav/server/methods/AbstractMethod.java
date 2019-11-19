@@ -323,7 +323,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
 			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
 
-		if (Boolean.getBoolean("isWebdavLockingRespected")) {
+		if (Boolean.getBoolean("isWebdavLockingIgnored")) {
 			// We don't actually want to support locks for Funnelback, so we just always permit
 			// changes rather than risking clients which take locks but never release them.
 			return true;
