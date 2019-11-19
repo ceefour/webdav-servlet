@@ -94,7 +94,7 @@ public class DoHead extends AbstractMethod {
 
 			String tempLockOwner = "doGet" + System.currentTimeMillis() + req.toString();
 
-			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 
 					String eTagMatch = req.getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);

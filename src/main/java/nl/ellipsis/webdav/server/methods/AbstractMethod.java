@@ -55,7 +55,12 @@ import nl.ellipsis.webdav.server.util.XMLHelper;
 import nl.ellipsis.webdav.server.util.XMLWriter;
 
 public abstract class AbstractMethod implements IMethodExecutor {
-	
+
+	public static final String IS_WEBDAV_LOCKING_IGNORED_PROPERTY = "isWebdavLockingIgnored";
+	public static final String WEBDAV_DEFAULT_TIMEOUT_PROPERTY = "webdavDefaultTimeout";
+	public static final String WEBDAV_MAX_TIMEOUT_PROPERTY = "webdavMaxTimeout";
+	public static final String WEBDAV_TEMP_TIMEOUT_PROPERTY = "webdavTempTimeout";
+
 	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractMethod.class);
 	
 	private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
@@ -119,12 +124,16 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	/**
 	 * Default lock timeout value (in seconds).
 	 */
-	protected static final int DEFAULT_TIMEOUT = 1;
+	public static int getDefaultTimeout() {
+		return Integer.getInteger(WEBDAV_DEFAULT_TIMEOUT_PROPERTY, 3600);
+	}
 
 	/**
 	 * Maximum lock timeout (in seconds).
 	 */
-	protected static final int MAX_TIMEOUT = 2;
+	public static int getMaxTimeout() {
+		return Integer.getInteger(WEBDAV_MAX_TIMEOUT_PROPERTY, 604800);
+	}
 
 	/**
 	 * Boolean value to temporary lock resources (for method locks)
@@ -134,8 +143,10 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	/**
 	 * Timeout for temporary locks (in seconds).
 	 */
-	protected static final int TEMP_TIMEOUT = 1;
-	
+	public static int getTempTimeout() {
+		return Integer.getInteger(WEBDAV_TEMP_TIMEOUT_PROPERTY, 10);
+	}
+
 	public static String lastModifiedDateFormat(final Date date) {
 		DateFormat df = thLastmodifiedDateFormat.get();
 		if (df == null) {
@@ -323,7 +334,7 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
 			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
 
-		if (Boolean.getBoolean("isWebdavLockingIgnored")) {
+		if (Boolean.getBoolean(IS_WEBDAV_LOCKING_IGNORED_PROPERTY)) {
 			// We don't actually want to support locks for Funnelback, so we just always permit
 			// changes rather than risking clients which take locks but never release them.
 			return true;

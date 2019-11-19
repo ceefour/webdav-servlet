@@ -95,7 +95,7 @@ public class DoPropfind extends AbstractMethod {
 		String tempLockOwner = "doPropfind" + System.currentTimeMillis() + req.toString();
 		_depth = getDepth(req);
 
-		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, _depth, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, _depth, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 
 			StoredObject so = null;
 			try {

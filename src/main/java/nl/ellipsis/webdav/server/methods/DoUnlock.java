@@ -57,7 +57,7 @@ public class DoUnlock extends DeterminableMethod {
 		} else {
 			String tempLockOwner = "doUnlock" + System.currentTimeMillis() + req.toString();
 			try {
-				if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+				if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 
 					String lockId = getLockIdFromLockTokenHeader(req);
 					LockedObject lo;

@@ -71,7 +71,7 @@ public class DoMkcol extends AbstractMethod {
 
 			String tempLockOwner = "doMkcol" + System.currentTimeMillis() + req.toString();
 
-			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				StoredObject parentSo, so = null;
 				try {
 					parentSo = _store.getStoredObject(transaction, parentPath);

@@ -94,7 +94,7 @@ public class DoProppatch extends AbstractMethod {
 		// Retrieve the resources
 		String tempLockOwner = "doProppatch" + System.currentTimeMillis() + req.toString();
 
-		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 			StoredObject so = null;
 			LockedObject lo = null;
 			try {

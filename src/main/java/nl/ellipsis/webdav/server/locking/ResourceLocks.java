@@ -21,6 +21,7 @@ import java.util.Hashtable;
 
 import nl.ellipsis.webdav.server.ITransaction;
 import nl.ellipsis.webdav.server.exceptions.LockFailedException;
+import nl.ellipsis.webdav.server.methods.AbstractMethod;
 import nl.ellipsis.webdav.server.util.CharsetUtil;
 import nl.ellipsis.webdav.server.util.URLUtil;
 
@@ -114,12 +115,12 @@ public class ResourceLocks implements IResourceLocks {
 				return true;
 			} else {
 				LOG.debug("Could not set owner '" + owner + "' to resource at '" + path + "'");
-				return false;
+				return !(Boolean.getBoolean(AbstractMethod.IS_WEBDAV_LOCKING_IGNORED_PROPERTY));
 			}
 		} else {
 			// cannot lock
 			LOG.debug("Lock resource at '" + path + "' failed because a parent or child resource is currently locked");
-			return false;
+			return !(Boolean.getBoolean(AbstractMethod.IS_WEBDAV_LOCKING_IGNORED_PROPERTY));
 		}
 	}
 
@@ -137,7 +138,7 @@ public class ResourceLocks implements IResourceLocks {
 				// there is no lock at that path. someone tried to unlock it
 				// anyway. could point to a problem
 				LOG.debug("ResourceLocks.unlock(): no lock for path '" + path+"'");
-				return false;
+				return !(Boolean.getBoolean(AbstractMethod.IS_WEBDAV_LOCKING_IGNORED_PROPERTY));
 			}
 			if (_cleanupCounter > _cleanupLimit) {
 				_cleanupCounter = 0;

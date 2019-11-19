@@ -76,7 +76,7 @@ public class DoMove extends AbstractMethod {
 
 			String tempLockOwner = "doMove" + System.currentTimeMillis() + req.toString();
 
-			if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 
 					if (_doCopy.copyResource(transaction, req, resp)) {

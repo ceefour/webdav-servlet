@@ -70,7 +70,7 @@ public class DoDelete extends AbstractMethod {
 			}
 
 			String tempLockOwner = "doDelete" + System.currentTimeMillis() + req.toString();
-			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 					errorList = new Hashtable<String, Integer>();
 					deleteResource(transaction, path, errorList, req, resp);

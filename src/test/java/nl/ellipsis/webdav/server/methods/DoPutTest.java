@@ -309,7 +309,7 @@ public class DoPutTest extends MockTest {
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
 
-				oneOf(mockResourceLocks).exclusiveLock(mockTransaction, path, "I'am the Lock Owner", 0, AbstractMethod.MAX_TIMEOUT);
+				oneOf(mockResourceLocks).exclusiveLock(mockTransaction, path, "I'am the Lock Owner", 0, AbstractMethod.getMaxTimeout());
 				will(returnValue(true));
 
 				lockNullResourceLo = initLockNullLockedObject(resLocks, path);

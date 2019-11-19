@@ -50,7 +50,7 @@ public class DoOptions extends DeterminableMethod {
 		}
 
 		String tempLockOwner = "doOptions" + System.currentTimeMillis() + req.toString();
-		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 			StoredObject so = null;
 			try {
 				resp.addHeader(HttpHeaders.DAV, "1, 2");

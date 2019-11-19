@@ -108,7 +108,7 @@ public class DoLock extends AbstractMethod {
 			}
 
 			String tempLockOwner = "doLock" + System.currentTimeMillis() + req.toString();
-			if (_resourceLocks.lock(transaction, _path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, _path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 					if (req.getHeader(HttpHeaders.IF) != null) {
 						doRefreshLock(transaction, req, resp);
@@ -424,11 +424,11 @@ public class DoLock extends AbstractMethod {
 	 */
 	private int getTimeout(ITransaction transaction, HttpServletRequest req) {
 
-		int lockDuration = DEFAULT_TIMEOUT;
+		int lockDuration = AbstractMethod.getDefaultTimeout();
 		String lockDurationStr = req.getHeader(HttpHeaders.TIMEOUT);
 
 		if (lockDurationStr == null) {
-			lockDuration = DEFAULT_TIMEOUT;
+			lockDuration = AbstractMethod.getDefaultTimeout();
 		} else {
 			int commaPos = lockDurationStr.indexOf(',');
 			// if multiple timeouts, just use the first one
@@ -439,20 +439,20 @@ public class DoLock extends AbstractMethod {
 				lockDuration = new Integer(lockDurationStr.substring(7)).intValue();
 			} else {
 				if (lockDurationStr.equalsIgnoreCase("infinity")) {
-					lockDuration = MAX_TIMEOUT;
+					lockDuration = AbstractMethod.getMaxTimeout();
 				} else {
 					try {
 						lockDuration = new Integer(lockDurationStr).intValue();
 					} catch (NumberFormatException e) {
-						lockDuration = MAX_TIMEOUT;
+						lockDuration = AbstractMethod.getMaxTimeout();
 					}
 				}
 			}
 			if (lockDuration <= 0) {
-				lockDuration = DEFAULT_TIMEOUT;
+				lockDuration = AbstractMethod.getDefaultTimeout();
 			}
-			if (lockDuration > MAX_TIMEOUT) {
-				lockDuration = MAX_TIMEOUT;
+			if (lockDuration > AbstractMethod.getMaxTimeout()) {
+				lockDuration = AbstractMethod.getMaxTimeout();
 			}
 		}
 		return lockDuration;
@@ -530,8 +530,8 @@ public class DoLock extends AbstractMethod {
 		LockedObject lo;
 		int depth = getDepth(req);
 		int lockDuration = getTimeout(transaction, req);
-		if (lockDuration < 0 || lockDuration > MAX_TIMEOUT)
-			lockDuration = DEFAULT_TIMEOUT;
+		if (lockDuration < 0 || lockDuration > AbstractMethod.getMaxTimeout())
+			lockDuration = AbstractMethod.getDefaultTimeout();
 
 		boolean lockSuccess = false;
 		lockSuccess = _resourceLocks.exclusiveLock(transaction, _path, _lockOwner, depth, lockDuration);
