@@ -244,7 +244,7 @@ public class DoUnlockTest extends MockTest {
 
 				ResourceLocks resLocks = ResourceLocks.class.newInstance();
 
-				oneOf(mockResourceLocks).exclusiveLock(mockTransaction, nullLoPath, "I'am the Lock Owner", 0, 604800);
+				oneOf(mockResourceLocks).exclusiveLock(mockTransaction, nullLoPath, "I'am the Lock Owner", 0, AbstractMethod.MAX_TIMEOUT);
 				will(returnValue(true));
 
 				lockNullResourceLo = initLockNullLockedObject(resLocks, nullLoPath);
