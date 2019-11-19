@@ -117,14 +117,14 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static int BUF_SIZE = 65536;
 
 	/**
-	 * Default lock timeout value.
+	 * Default lock timeout value (in seconds).
 	 */
-	protected static final int DEFAULT_TIMEOUT = 3600;
+	protected static final int DEFAULT_TIMEOUT = 1;
 
 	/**
-	 * Maximum lock timeout.
+	 * Maximum lock timeout (in seconds).
 	 */
-	protected static final int MAX_TIMEOUT = 604800;
+	protected static final int MAX_TIMEOUT = 2;
 
 	/**
 	 * Boolean value to temporary lock resources (for method locks)
@@ -132,9 +132,9 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final boolean TEMPORARY = true;
 
 	/**
-	 * Timeout for temporary locks
+	 * Timeout for temporary locks (in seconds).
 	 */
-	protected static final int TEMP_TIMEOUT = 10;
+	protected static final int TEMP_TIMEOUT = 1;
 	
 	public static String lastModifiedDateFormat(final Date date) {
 		DateFormat df = thLastmodifiedDateFormat.get();
