@@ -80,6 +80,9 @@ public class ResourceLocks implements IResourceLocks {
 	public synchronized boolean lock(ITransaction transaction, String path, String owner, boolean exclusive, int depth,
 			int timeout, boolean temporary) throws LockFailedException {
 
+		// Before we take any new locks we want any exipred ones to be removed
+		checkTimeouts(transaction, temporary);
+
 		LockedObject lo = null;
 		
 		path = URLUtil.getCleanPath(path);
