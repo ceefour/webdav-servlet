@@ -323,41 +323,43 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
 			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
 
-		// We don't actually want to support locks for Funnelback, so we just always permit
-		// changes rather than risking clients which take locks but never release them.
-		return true;
+		if (Boolean.getBoolean("isWebdavLockingRespected")) {
+			// We don't actually want to support locks for Funnelback, so we just always permit
+			// changes rather than risking clients which take locks but never release them.
+			return true;
+		}
 
-//		LockedObject loByPath = resourceLocks.getLockedObjectByPath(transaction, path);
-//		if (loByPath != null) {
-//
-//			if (loByPath.isShared()) {
-//				return true;
-//			}
-//
-//			// the resource is locked
-//			String[] lockTokens = getLockIdFromIfHeader(req);
-//			String lockToken = null;
-//			if (lockTokens != null) {
-//				lockToken = lockTokens[0];
-//			} else {
-//				return false;
-//			}
-//			if (lockToken != null) {
-//				LockedObject loByIf = resourceLocks.getLockedObjectByID(transaction, lockToken);
-//				if (loByIf == null) {
-//					// no locked resource to the given lockToken
-//					return false;
-//				}
-//				if (!loByIf.equals(loByPath)) {
-//					loByIf = null;
-//					return false;
-//				}
-//				loByIf = null;
-//			}
-//
-//		}
-//		loByPath = null;
-//		return true;
+		LockedObject loByPath = resourceLocks.getLockedObjectByPath(transaction, path);
+		if (loByPath != null) {
+
+			if (loByPath.isShared()) {
+				return true;
+			}
+
+			// the resource is locked
+			String[] lockTokens = getLockIdFromIfHeader(req);
+			String lockToken = null;
+			if (lockTokens != null) {
+				lockToken = lockTokens[0];
+			} else {
+				return false;
+			}
+			if (lockToken != null) {
+				LockedObject loByIf = resourceLocks.getLockedObjectByID(transaction, lockToken);
+				if (loByIf == null) {
+					// no locked resource to the given lockToken
+					return false;
+				}
+				if (!loByIf.equals(loByPath)) {
+					loByIf = null;
+					return false;
+				}
+				loByIf = null;
+			}
+
+		}
+		loByPath = null;
+		return true;
 	}
 
 	/**
