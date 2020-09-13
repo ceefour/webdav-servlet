@@ -1,0 +1,26 @@
+<html>
+<head>
+	<title>Content of folder $path</title>
+	<style type="text/css">$css</style>
+</head>
+<body>
+	<h1>Content of folder $path</h1>
+	<table>
+	<tr>
+		<th>Name</th>
+		<th>Size</th>
+		<th>Created</th>
+		<th>Modified</th>
+	</tr>
+	<tr><td colspan="4"><a href="..">Parent</a></td></tr>
+#foreach($resource in $resources)
+	<tr class="#if($velocityCount % 2 == 0) even #else odd #end">
+		<td><a href="$resource.url">$resource.name</a></td> 
+		<td>#if($resource.folder)<b>Folder</b>#else$resource.resourceLength Bytes#end</td> 
+		<td>$resource.creationDate</td> 
+		<td>$resource.lastModified</td> 
+	</tr>
+#end
+	</table>
+</body>
+</html>
