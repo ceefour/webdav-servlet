@@ -76,7 +76,7 @@ public class DoMove extends AbstractMethod {
 
 			String tempLockOwner = "doMove" + System.currentTimeMillis() + req.toString();
 
-			if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, sourcePath, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 
 					if (_doCopy.copyResource(transaction, req, resp)) {
@@ -93,6 +93,7 @@ public class DoMove extends AbstractMethod {
 				} catch (ObjectAlreadyExistsException e) {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, sourcePath, tempLockOwner);

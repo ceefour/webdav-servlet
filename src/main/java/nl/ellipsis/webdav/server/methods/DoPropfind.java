@@ -95,7 +95,7 @@ public class DoPropfind extends AbstractMethod {
 		String tempLockOwner = "doPropfind" + System.currentTimeMillis() + req.toString();
 		_depth = getDepth(req);
 
-		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, _depth, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, _depth, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 
 			StoredObject so = null;
 			try {
@@ -127,6 +127,7 @@ public class DoPropfind extends AbstractMethod {
 							propertyFindType = FIND_ALL_PROP;
 						}
 					} catch (Exception e) {
+						LOG.error("Sending internal error!", e);
 						resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 						return;
 					}
@@ -158,7 +159,7 @@ public class DoPropfind extends AbstractMethod {
 			} catch (AccessDeniedException e) {
 				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
-				LOG.warn("Sending internal error!");
+				LOG.warn("Sending internal error!", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);

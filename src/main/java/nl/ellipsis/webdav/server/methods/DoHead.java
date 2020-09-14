@@ -94,7 +94,7 @@ public class DoHead extends AbstractMethod {
 
 			String tempLockOwner = "doGet" + System.currentTimeMillis() + req.toString();
 
-			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 
 					String eTagMatch = req.getHeader(javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH);
@@ -152,11 +152,13 @@ public class DoHead extends AbstractMethod {
 				} catch (ObjectAlreadyExistsException e) {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
+				LOG.error("Sending internal error - Failed to lock");
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} else {

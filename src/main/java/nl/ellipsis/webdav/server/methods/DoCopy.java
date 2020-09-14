@@ -62,7 +62,7 @@ public class DoCopy extends AbstractMethod {
 		}
 		if (!_readOnly) {
 			String tempLockOwner = "doCopy" + System.currentTimeMillis() + req.toString();
-			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+			if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 				try {
 					if (!copyResource(transaction, req, resp))
 						return;
@@ -73,11 +73,13 @@ public class DoCopy extends AbstractMethod {
 				} catch (ObjectNotFoundException e) {
 					resp.sendError(HttpServletResponse.SC_NOT_FOUND, req.getRequestURI());
 				} catch (WebDAVException e) {
+					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				} finally {
 					_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 				}
 			} else {
+				LOG.error("Sending internal error - Failed to lock");
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 
@@ -152,7 +154,7 @@ public class DoCopy extends AbstractMethod {
 		// Overwriting the destination
 		String lockOwner = "copyResource" + System.currentTimeMillis() + req.toString();
 
-		if (_resourceLocks.lock(transaction, destinationPath, lockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, destinationPath, lockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 			StoredObject copySo, destinationSo = null;
 			try {
 				copySo = _store.getStoredObject(transaction, path);
@@ -198,6 +200,7 @@ public class DoCopy extends AbstractMethod {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, destinationPath, lockOwner);
 			}
 		} else {
+			LOG.error("Sending internal error - Failed to lock");
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return false;
 		}

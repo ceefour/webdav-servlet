@@ -5,3 +5,5 @@ build
 /.classpath
 /.project
 /logs/
+/.idea
+*.iml

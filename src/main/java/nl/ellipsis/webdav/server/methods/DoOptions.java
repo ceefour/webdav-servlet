@@ -50,7 +50,7 @@ public class DoOptions extends DeterminableMethod {
 		}
 
 		String tempLockOwner = "doOptions" + System.currentTimeMillis() + req.toString();
-		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, TEMP_TIMEOUT, TEMPORARY)) {
+		if (_resourceLocks.lock(transaction, path, tempLockOwner, false, 0, AbstractMethod.getTempTimeout(), TEMPORARY)) {
 			StoredObject so = null;
 			try {
 				resp.addHeader(HttpHeaders.DAV, "1, 2");
@@ -62,11 +62,13 @@ public class DoOptions extends DeterminableMethod {
 			} catch (AccessDeniedException e) {
 				resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			} catch (WebDAVException e) {
+				LOG.error("Sending internal error!", e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			} finally {
 				_resourceLocks.unlockTemporaryLockedObjects(transaction, path, tempLockOwner);
 			}
 		} else {
+			LOG.error("Sending internal error - Failed to lock");
 			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}

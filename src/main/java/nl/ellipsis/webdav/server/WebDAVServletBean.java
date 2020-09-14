@@ -175,7 +175,7 @@ public class WebDAVServletBean extends HttpServlet {
 				java.io.StringWriter sw = new java.io.StringWriter();
 				java.io.PrintWriter pw = new java.io.PrintWriter(sw);
 				e.printStackTrace(pw);
-				LOG.error("IOException: " + sw.toString());
+				LOG.error("IOException: " + sw.toString(), e);
 				resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				_store.rollback(transaction);
 				throw new ServletException(e);

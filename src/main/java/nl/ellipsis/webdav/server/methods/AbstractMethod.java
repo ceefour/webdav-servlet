@@ -55,7 +55,12 @@ import nl.ellipsis.webdav.server.util.XMLHelper;
 import nl.ellipsis.webdav.server.util.XMLWriter;
 
 public abstract class AbstractMethod implements IMethodExecutor {
-	
+
+	public static final String IS_WEBDAV_LOCKING_IGNORED_PROPERTY = "isWebdavLockingIgnored";
+	public static final String WEBDAV_DEFAULT_TIMEOUT_PROPERTY = "webdavDefaultTimeout";
+	public static final String WEBDAV_MAX_TIMEOUT_PROPERTY = "webdavMaxTimeout";
+	public static final String WEBDAV_TEMP_TIMEOUT_PROPERTY = "webdavTempTimeout";
+
 	private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractMethod.class);
 	
 	private static final ThreadLocal<DateFormat> thLastmodifiedDateFormat = new ThreadLocal<DateFormat>();
@@ -117,14 +122,18 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static int BUF_SIZE = 65536;
 
 	/**
-	 * Default lock timeout value.
+	 * Default lock timeout value (in seconds).
 	 */
-	protected static final int DEFAULT_TIMEOUT = 3600;
+	public static int getDefaultTimeout() {
+		return Integer.getInteger(WEBDAV_DEFAULT_TIMEOUT_PROPERTY, 3600);
+	}
 
 	/**
-	 * Maximum lock timeout.
+	 * Maximum lock timeout (in seconds).
 	 */
-	protected static final int MAX_TIMEOUT = 604800;
+	public static int getMaxTimeout() {
+		return Integer.getInteger(WEBDAV_MAX_TIMEOUT_PROPERTY, 604800);
+	}
 
 	/**
 	 * Boolean value to temporary lock resources (for method locks)
@@ -132,10 +141,12 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	protected static final boolean TEMPORARY = true;
 
 	/**
-	 * Timeout for temporary locks
+	 * Timeout for temporary locks (in seconds).
 	 */
-	protected static final int TEMP_TIMEOUT = 10;
-	
+	public static int getTempTimeout() {
+		return Integer.getInteger(WEBDAV_TEMP_TIMEOUT_PROPERTY, 10);
+	}
+
 	public static String lastModifiedDateFormat(final Date date) {
 		DateFormat df = thLastmodifiedDateFormat.get();
 		if (df == null) {
@@ -196,14 +207,17 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 * @throws ServletException 
 	 * @throws ParserConfigurationException 
 	 */
-	protected static Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
+	protected synchronized static Document getDocument(HttpServletRequest request) throws ServletException, SAXException, IOException, ParserConfigurationException {
 		DocumentBuilder documentBuilder = XMLHelper.getDocumentBuilder();
-		if(LOG.isDebugEnabled()) {
-			String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
-			LOG.debug(xml);
+		// Note - DocumentBuilders are not thread safe, so I've synchronized this method (there are probably better solutions)
+		String xml = IOUtils.toString(request.getInputStream(),java.nio.charset.StandardCharsets.UTF_8.name());
+		LOG.debug(xml);
+
+		try {
 			return documentBuilder.parse(IOUtils.toInputStream(xml,java.nio.charset.StandardCharsets.UTF_8.name()));
-		} else {
-			return documentBuilder.parse(new InputSource(request.getInputStream()));
+		} catch (SAXException e) {
+			LOG.error("Failed to parse XML in request - " + xml, e);
+			throw e;
 		}
 	}
 
@@ -319,6 +333,12 @@ public abstract class AbstractMethod implements IMethodExecutor {
 	 */
 	protected static boolean checkLocks(ITransaction transaction, HttpServletRequest req, HttpServletResponse resp,
 			IResourceLocks resourceLocks, String path) throws IOException, LockFailedException {
+
+		if (Boolean.getBoolean(IS_WEBDAV_LOCKING_IGNORED_PROPERTY)) {
+			// We don't actually want to support locks for Funnelback, so we just always permit
+			// changes rather than risking clients which take locks but never release them.
+			return true;
+		}
 
 		LockedObject loByPath = resourceLocks.getLockedObjectByPath(transaction, path);
 		if (loByPath != null) {
