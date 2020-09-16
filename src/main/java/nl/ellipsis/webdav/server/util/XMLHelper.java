@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,10 +48,20 @@ public class XMLHelper {
 	 * Return JAXP document builder instance.
 	 * @throws ParserConfigurationException 
 	 */
-	public static DocumentBuilder getDocumentBuilder() throws ServletException, ParserConfigurationException {
+	public static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
 		if(documentBuilder == null) {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			documentBuilderFactory.setNamespaceAware(true);
+
+			// Defend against XXE based on https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+			documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+			documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			documentBuilderFactory.setXIncludeAware(false);
+			documentBuilderFactory.setExpandEntityReferences(false);
+			documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
 		}
 		return documentBuilder;
@@ -75,14 +86,12 @@ public class XMLHelper {
 	public static String format(String xml) {
 		String retval = xml;
 		
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		Document document = null;
 		StringReader sr = null;
 		try {
 	    	sr = new StringReader(xml);
 	    	InputSource inputSource = new InputSource(sr);
-	        documentBuilderFactory.setNamespaceAware(true);
-	        document = documentBuilderFactory.newDocumentBuilder().parse(inputSource);
+	        document = getDocumentBuilder().parse(inputSource);
 		} catch (SAXException | IOException | ParserConfigurationException e) {
 			e.printStackTrace();
 		} finally {
