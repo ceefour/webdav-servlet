@@ -42,14 +42,14 @@ public class WebDAVServlet extends WebDAVServletBean {
 
     private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WebDAVServlet.class);
 
-    private static final String INIT_PARAM_CREATE_ROOT_IF_NOT_EXISTS = "createRootIfNotExists";
-    private static final String INIT_PARAM_DEFAULT_INDEX_FILE = "default-index-file";
-    private static final String INIT_PARAM_INSTEAD_OF_404 = "instead-of-404";
-    private static final String INIT_PARAM_LAZY_FOLDER_CREATION_ON_PUT = "lazyFolderCreationOnPut";
-    private static final String INIT_PARAM_NO_CONTENT_LENGTH_HEADERS = "no-content-length-headers";
-    private static final String INIT_PARAM_RESOURCE_HANDLER_IMPL = "ResourceHandlerImplementation";
-    private static final String INIT_PARAM_ROOTPATH = "rootpath";
-    private static final String INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE = "*WAR-FILE-ROOT*";
+    public static final String INIT_PARAM_CREATE_ROOT_IF_NOT_EXISTS = "createRootIfNotExists";
+    public static final String INIT_PARAM_DEFAULT_INDEX_FILE = "default-index-file";
+    public static final String INIT_PARAM_INSTEAD_OF_404 = "instead-of-404";
+    public static final String INIT_PARAM_LAZY_FOLDER_CREATION_ON_PUT = "lazyFolderCreationOnPut";
+    public static final String INIT_PARAM_NO_CONTENT_LENGTH_HEADERS = "no-content-length-headers";
+    public static final String INIT_PARAM_RESOURCE_HANDLER_IMPL = "ResourceHandlerImplementation";
+    public static final String INIT_PARAM_ROOTPATH = "rootpath";
+    public static final String INIT_PARAM_ROOTPATH_WAR_FILE_ROOT_VALUE = "*WAR-FILE-ROOT*";
 
     public static boolean useVelocity = false;
 
