@@ -13,6 +13,13 @@
         <version>2.3.3.RELEASE</version>
     </parent>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/braully/webdav-servlet/</url>
+        </repository>
+    </distributionManagement>
 
 
     <properties>
