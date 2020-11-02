@@ -21,6 +21,7 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.ellipsis.webdav.server.exceptions.UploadedFileRejectedException;
 import org.springframework.http.HttpStatus;
 
 import nl.ellipsis.webdav.server.ITransaction;
@@ -150,6 +151,8 @@ public class DoPut extends AbstractMethod {
 					// Now lets report back what was actually saved
 				} catch (AccessDeniedException e) {
 					resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+				} catch (UploadedFileRejectedException e) {
+					resp.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE);
 				} catch (WebDAVException e) {
 					LOG.error("Sending internal error!", e);
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
