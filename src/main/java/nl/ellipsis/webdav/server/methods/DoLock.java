@@ -541,11 +541,11 @@ public class DoLock extends AbstractMethod {
 		  if the lock is exclusive it sends an error code (423 LOCKED) in response. Check Line number 155
 		  Therefore do not use exclusive locks for MacOS finder requests
 		 */
-		lockSuccess = _resourceLocks.lock(transaction, _path, _lockOwner, false, depth, lockDuration, TEMPORARY);
+		lockSuccess = _resourceLocks.lock(transaction, _path, _lockOwner, false, depth, lockDuration, false);
 
 		if (lockSuccess) {
 			// Locks successfully placed - return information about
-			lo = _resourceLocks.getTempLockedObjectByPath(transaction, _path);
+			lo = _resourceLocks.getLockedObjectByPath(transaction, _path);
 			if (lo != null) {
 				generateXMLReport(transaction, resp, lo);
 			} else {
