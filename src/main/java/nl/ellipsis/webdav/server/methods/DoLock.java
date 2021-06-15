@@ -545,7 +545,7 @@ public class DoLock extends AbstractMethod {
 
 		if (lockSuccess) {
 			// Locks successfully placed - return information about
-			lo = _resourceLocks.getLockedObjectByPath(transaction, _path);
+			lo = _resourceLocks.getTempLockedObjectByPath(transaction, _path);
 			if (lo != null) {
 				generateXMLReport(transaction, resp, lo);
 			} else {
