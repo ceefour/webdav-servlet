@@ -461,4 +461,64 @@ public class DoLockTest extends MockTest {
 		_mockery.assertIsSatisfied();
 
 	}
+
+	@Test
+	public void testLockOnMacOS() throws Exception {
+
+		final String lockPath = "/aFileToLock";
+		final String lockOwner = "owner";
+
+		ResourceLocks resLocks = new ResourceLocks();
+		resLocks.lock(mockTransaction, lockPath, lockOwner, false, depth, TEMP_TIMEOUT, !TEMPORARY);
+
+		LockedObject lo = resLocks.getLockedObjectByPath(mockTransaction, lockPath);
+		String lockTokenString = lo.getID();
+		final String lockToken = "(<opaquelocktoken:" + lockTokenString + ">)";
+
+		final PrintWriter pw = new PrintWriter(tmpFolder + "/XMLTestFile");
+
+		_mockery.checking(new Expectations() {
+			{
+				exactly(2).of(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
+				will(returnValue(null));
+
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DEPTH);
+				will(returnValue(depthString));
+
+				exactly(2).of(mockReq).getPathInfo();
+				will(returnValue(lockPath));
+
+				exactly(2).of(mockReq).getHeader(HttpHeaders.IF);
+				will(returnValue(null));
+
+				exactly(2).of(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
+				will(returnValue("Darwin"));
+
+				exactly(2).of(mockReq).getHeader(HttpHeaders.TIMEOUT);
+				will(returnValue("Infinite"));
+
+				exactly(2).of(mockRes).setContentType("text/xml; charset=UTF-8");
+
+				exactly(2).of(mockRes).getWriter();
+				will(returnValue(pw));
+				StoredObject so = initFileStoredObject(resourceContent);
+
+				exactly(2).of(mockStore).getStoredObject(mockTransaction, lockPath);
+				will(returnValue(so));
+
+				exactly(2).of(mockRes).setStatus(HttpServletResponse.SC_OK);
+
+				exactly(2).of(mockRes).addHeader("Lock-Token",
+					lockToken.substring(lockToken.indexOf("(") + 1, lockToken.indexOf(")")));
+			}
+		});
+
+		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
+		// calling lock twice should not return an error status
+		doLock.execute(mockTransaction, mockReq, mockRes);
+
+		_mockery.assertIsSatisfied();
+
+	}
 }
