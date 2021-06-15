@@ -479,41 +479,43 @@ public class DoLockTest extends MockTest {
 
 		_mockery.checking(new Expectations() {
 			{
-				oneOf(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
+				exactly(2).of(mockReq).getAttribute(WebDAVConstants.HttpRequestParam.INCLUDE_PATH_INFO);
 				will(returnValue(null));
 
-				oneOf(mockReq).getHeader(HttpHeaders.DEPTH);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.DEPTH);
 				will(returnValue(depthString));
 
-				oneOf(mockReq).getPathInfo();
+				exactly(2).of(mockReq).getPathInfo();
 				will(returnValue(lockPath));
 
-				oneOf(mockReq).getHeader(HttpHeaders.IF);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.IF);
 				will(returnValue(null));
 
-				oneOf(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
+				exactly(2).of(mockReq).getHeader(javax.ws.rs.core.HttpHeaders.USER_AGENT);
 				will(returnValue("Darwin"));
 
-				oneOf(mockReq).getHeader(HttpHeaders.TIMEOUT);
+				exactly(2).of(mockReq).getHeader(HttpHeaders.TIMEOUT);
 				will(returnValue("Infinite"));
 
-				oneOf(mockRes).setContentType("text/xml; charset=UTF-8");
+				exactly(2).of(mockRes).setContentType("text/xml; charset=UTF-8");
 
-				oneOf(mockRes).getWriter();
+				exactly(2).of(mockRes).getWriter();
 				will(returnValue(pw));
 				StoredObject so = initFileStoredObject(resourceContent);
 
-				oneOf(mockStore).getStoredObject(mockTransaction, lockPath);
+				exactly(2).of(mockStore).getStoredObject(mockTransaction, lockPath);
 				will(returnValue(so));
 
-				oneOf(mockRes).setStatus(HttpServletResponse.SC_OK);
+				exactly(2).of(mockRes).setStatus(HttpServletResponse.SC_OK);
 
-				oneOf(mockRes).addHeader("Lock-Token",
+				exactly(2).of(mockRes).addHeader("Lock-Token",
 					lockToken.substring(lockToken.indexOf("(") + 1, lockToken.indexOf(")")));
 			}
 		});
 
 		DoLock doLock = new DoLock(mockStore, resLocks, !readOnly);
+		doLock.execute(mockTransaction, mockReq, mockRes);
+		// calling lock twice should not return an error status
 		doLock.execute(mockTransaction, mockReq, mockRes);
 
 		_mockery.assertIsSatisfied();
