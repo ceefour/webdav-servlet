@@ -152,8 +152,7 @@ public class DoLock extends AbstractMethod {
 		LockedObject lo = _resourceLocks.getLockedObjectByPath(transaction, _path);
 		if (lo != null) {
 			if (lo.isExclusive()) {
-				// we don't need to send an error code here, as part of fixing (FUN-15544)
-				// sendLockFailError(transaction, req, resp);
+				sendLockFailError(transaction, req, resp);
 				return;
 			}
 		}
