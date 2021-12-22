@@ -534,7 +534,14 @@ public class DoLock extends AbstractMethod {
 			lockDuration = AbstractMethod.getDefaultTimeout();
 
 		boolean lockSuccess = false;
-		lockSuccess = _resourceLocks.exclusiveLock(transaction, _path, _lockOwner, depth, lockDuration);
+		/*
+		  (FUN-15544) Do not use exclusive locks for MacOS finder requests
+		  macos sends the first LOCK request -> resource temporary locked with an exclusive lock -> return 200
+		  macos send second LOCK request -> code checks if the object is already locked -> and then checks if the lock is exclusive
+		  if the lock is exclusive it sends an error code (423 LOCKED) in response. Check Line number 155
+		  Therefore do not use exclusive locks for MacOS finder requests
+		 */
+		lockSuccess = _resourceLocks.lock(transaction, _path, _lockOwner, false, depth, lockDuration, false);
 
 		if (lockSuccess) {
 			// Locks successfully placed - return information about
